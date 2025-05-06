@@ -11,9 +11,15 @@ export default function singIn() {
     prenom: "",
     password: "",
   });
-  const [alumniData, setAlumniData] = useState({
+  const [alumniData, setAlumniData] = useState<{
+    date_fin_cycle: string;
+    secteur_activite: keyof typeof jobBySector;
+    situation_pro: string;
+    poste_actuel: string;
+    nom_entreprise: string;
+  }>({
     date_fin_cycle: "",
-    secteur_activite: "",
+    secteur_activite: "Autres",
     situation_pro: "",
     poste_actuel: "",
     nom_entreprise: "",
@@ -25,6 +31,69 @@ export default function singIn() {
     a_besoin_mentor: false,
   });
 
+  const [selectedSector, setSelectedSector] = useState();
+  const jobBySector = {
+    "Marketing et Ventes": [
+      "Chef de produit",
+      "Responsable marketing",
+      "Commercial terrain",
+      "Category manager",
+      "Chef des ventes",
+    ],
+    "Ressources Humaines": [
+      "Chargé de recrutement",
+      "Gestionnaire de paie",
+      "Responsable formation",
+      "Chargé des relations sociales",
+      "Consultant RH",
+    ],
+    "Comptabilité Finance": [
+      "Comptable général",
+      "Contrôleur de gestion",
+      "Auditeur financier",
+      "Analyste financier",
+      "Trésorier d’entreprise",
+    ],
+    "Marketing Digital": [
+      "Community manager",
+      "Traffic manager",
+      "SEO/SEA manager",
+      "Growth hacker",
+      "Responsable e-mailing",
+    ],
+    Communication: [
+      "Chargé de communication",
+      "Attaché de presse",
+      "Directeur de la communication",
+      "Concepteur-rédacteur",
+      "Event manager",
+    ],
+    "Logistique et Transport": [
+      "Responsable logistique",
+      "Planificateur transport",
+      "Gestionnaire d’entrepôt",
+      "Chef de quai",
+      "Coordinateur supply chain",
+    ],
+    "Informatique, Réseaux et Télécommunications": [
+      "Administrateur systèmes et réseaux",
+      "Ingénieur télécoms",
+      "Développeur logiciel",
+      "Ingénieur cybersécurité",
+      "Architecte cloud",
+    ],
+    "Relations Internationales & Diplomatie": [
+      "Attaché diplomatique",
+      "Chargé de mission internationale",
+      "Analyste géopolitique",
+      "Coordinateur ONG",
+      "Conseiller en relations publiques internationales",
+    ],
+    Autres: ["Autres"],
+  };
+
+  const niveau_etude = ["Licence", "Master"];
+
   const handleUserChange = (e: { target: { name: any; value: any } }) => {
     const { name, value } = e.target;
     setUser((prev) => ({ ...prev, [name]: value }));
@@ -35,16 +104,22 @@ export default function singIn() {
     setAlumniData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleStudentChange = (e: {
-    target: { name: any; value: any; type: any; checked: any };
-  }) => {
-    const { name, value, type, checked } = e.target;
+  const handleStudentChange = (e: { target: { name: any; value: any } }) => {
+    const { name, value } = e.target;
     setStudentData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     }));
   };
 
+  //setInterval(() => console.log(alumniData), 15000);
+  //clearInterval(1);
+  const situationProOptions = [
+    { value: "stubbler", label: "Chaummeur" },
+    { value: "intern", label: "stagiaire" },
+    { value: "Employee", label: "Employé" },
+    { value: "entrepreneur", label: "Entrepreneur" },
+  ];
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     const payload = {
@@ -67,193 +142,228 @@ export default function singIn() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-semibold mb-6 text-center">Inscription</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block mb-2 font-medium">Type d'utilisateur :</label>
-          <select
-            value={userType}
-            onChange={(e) => setUserType(e.target.value)}
-            className="w-full border border-gray-300 p-2 rounded"
-          >
-            <option value="alumni">Alumni</option>
-            <option value="student">Étudiant</option>
-          </select>
-        </div>
-
-        <fieldset className="space-y-4">
-          <legend className="text-lg font-medium">
-            Informations utilisateur
-          </legend>
-          <div>
-            <label className="block mb-1">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={user.email}
-              onChange={handleUserChange}
-              required
-              className="w-full border border-gray-300 p-2 rounded"
-            />
-          </div>
-          <div>
-            <label className="block mb-1">Nom d'utilisateur</label>
-            <input
-              type="text"
-              name="username"
-              value={user.username}
-              onChange={handleUserChange}
-              required
-              className="w-full border border-gray-300 p-2 rounded"
-            />
-          </div>
-          <div>
-            <label className="block mb-1">Nom</label>
-            <input
-              type="text"
-              name="nom"
-              value={user.nom}
-              onChange={handleUserChange}
-              required
-              className="w-full border border-gray-300 p-2 rounded"
-            />
-          </div>
-          <div>
-            <label className="block mb-1">Prénom</label>
-            <input
-              type="text"
-              name="prenom"
-              value={user.prenom}
-              onChange={handleUserChange}
-              required
-              className="w-full border border-gray-300 p-2 rounded"
-            />
-          </div>
-          <div>
-            <label className="block mb-1">Mot de passe</label>
-            <input
-              type="password"
-              name="password"
-              value={user.password}
-              onChange={handleUserChange}
-              required
-              className="w-full border border-gray-300 p-2 rounded"
-            />
-          </div>
-        </fieldset>
-
-        {userType === "alumni" ? (
-          <fieldset className="space-y-4">
-            <legend className="text-lg font-medium">Informations Alumni</legend>
-            <div>
-              <label className="block mb-1">Date de fin de cycle</label>
-              <input
-                type="date"
-                name="date_fin_cycle"
-                value={alumniData.date_fin_cycle}
-                onChange={handleAlumniChange}
-                required
-                className="w-full border border-gray-300 p-2 rounded"
-              />
-            </div>
-            <div>
-              <label className="block mb-1">Secteur d'activité</label>
-              <input
-                type="text"
-                name="secteur_activite"
-                value={alumniData.secteur_activite}
-                onChange={handleAlumniChange}
-                className="w-full border border-gray-300 p-2 rounded"
-              />
-            </div>
-            <div>
-              <label className="block mb-1">Situation professionnelle</label>
-              <input
-                type="text"
-                name="situation_pro"
-                value={alumniData.situation_pro}
-                onChange={handleAlumniChange}
-                className="w-full border border-gray-300 p-2 rounded"
-              />
-            </div>
-            <div>
-              <label className="block mb-1">Poste actuel</label>
-              <input
-                type="text"
-                name="poste_actuel"
-                value={alumniData.poste_actuel}
-                onChange={handleAlumniChange}
-                className="w-full border border-gray-300 p-2 rounded"
-              />
-            </div>
-            <div>
-              <label className="block mb-1">Nom de l'entreprise</label>
-              <input
-                type="text"
-                name="nom_entreprise"
-                value={alumniData.nom_entreprise}
-                onChange={handleAlumniChange}
-                className="w-full border border-gray-300 p-2 rounded"
-              />
-            </div>
-          </fieldset>
-        ) : (
-          <fieldset className="space-y-4">
-            <legend className="text-lg font-medium">
-              Informations Étudiant
-            </legend>
-            <div>
-              <label className="block mb-1">Filière</label>
-              <input
-                type="text"
-                name="filiere"
-                value={studentData.filiere}
-                onChange={handleStudentChange}
-                required
-                className="w-full border border-gray-300 p-2 rounded"
-              />
-            </div>
-            <div>
-              <label className="block mb-1">Niveau d'étude</label>
-              <input
-                type="text"
-                name="niveau_etude"
-                value={studentData.niveau_etude}
-                onChange={handleStudentChange}
-                className="w-full border border-gray-300 p-2 rounded"
-              />
-            </div>
-            <div>
-              <label className="block mb-1">Année d'entrée</label>
-              <input
-                type="number"
-                name="annee_entree"
-                value={studentData.annee_entree}
-                onChange={handleStudentChange}
-                className="w-full border border-gray-300 p-2 rounded"
-              />
-            </div>
-            <div className="flex items-center">
+    <div className="in-h-screen flex items-center justify-center bg-gray-100">
+      <div
+        className={`bg-white p-8 rounded-2xl shadow-xl w-full
+    transition-all duration-500 ease-in-out
+    ${userType === "alumni" ? "max-w-lg" : "max-w-md"}`}
+      >
+        <h1 className="text-2xl font-semibold mb-6 text-center">Inscription</h1>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="form-control">
+            <label className="label cursor-pointer flex items-center space-x-3">
+              <span className="label-text">Étudiant</span>
               <input
                 type="checkbox"
-                name="a_besoin_mentor"
-                checked={studentData.a_besoin_mentor}
-                onChange={handleStudentChange}
-                className="h-4 w-4 text-blue-600"
+                className="toggle border-indigo-600 bg-indigo-500 checked:border-purple-500 checked:bg-purple-400 checked:text-purple-800"
+                checked={userType === "alumni"}
+                onChange={() =>
+                  setUserType((prev) =>
+                    prev === "alumni" ? "student" : "alumni"
+                  )
+                }
               />
-              <label className="ml-2">A besoin d'un mentor</label>
+              <span className="label-text mb-1">Alumni</span>
+            </label>
+          </div>
+
+          <fieldset className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block mb-1">Nom</label>
+                <input
+                  type="text"
+                  name="nom"
+                  value={user.nom}
+                  onChange={handleUserChange}
+                  required
+                  className="input input-primary"
+                />
+              </div>
+              <div>
+                <label className="block mb-1">Prénom</label>
+                <input
+                  type="text"
+                  name="prenom"
+                  value={user.prenom}
+                  onChange={handleUserChange}
+                  required
+                  className="input input-primary"
+                />
+              </div>
+            </div>
+            <legend className="text-lg font-medium">
+              Informations utilisateur
+            </legend>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block mb-1">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={user.email}
+                  onChange={handleUserChange}
+                  required
+                  data-label="Email"
+                  className="input input-primary"
+                />
+              </div>
+              <div>
+                <label className="block mb-1">Nom d'utilisateur</label>
+                <input
+                  type="text"
+                  name="username"
+                  value={user.username}
+                  onChange={handleUserChange}
+                  required
+                  className="input input-primary"
+                  data-label="Nom d'utilisateur"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block mb-1">Mot de passe</label>
+              <div className="">
+                <input
+                  type="password"
+                  name="password"
+                  value={user.password}
+                  onChange={handleUserChange}
+                  required
+                  className="input input-primary"
+                />
+              </div>
             </div>
           </fieldset>
-        )}
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded"
-        >
-          S'inscrire
-        </button>
-      </form>
+          {userType === "alumni" ? (
+            <fieldset className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-1">Date de fin de cycle</label>
+                  <input
+                    type="date"
+                    name="date_fin_cycle"
+                    value={alumniData.date_fin_cycle}
+                    onChange={handleAlumniChange}
+                    required
+                    className="input input-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1">Secteur d'activité</label>
+                  <select
+                    className="select select-primary"
+                    onChange={handleAlumniChange}
+                    name="secteur_activite"
+                  >
+                    {Object.keys(jobBySector).map((item: string) => (
+                      <option value={item} key={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-1 content-center">
+                    Situation professionnelle
+                  </label>
+                  <select
+                    defaultValue="Chaumage"
+                    className="select select-primary"
+                    onChange={handleAlumniChange}
+                    name="situation_pro"
+                  >
+                    <option disabled={false}>Chaumage</option>
+                    <option value={"stage"}>Stage</option>
+                    <option value={"employee"}>Employé</option>
+                    <option value={"Entrepreneur"}>Entrepreneur</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block mb-1">Poste actuel</label>
+                  <select
+                    className="select select-primary"
+                    onChange={handleAlumniChange}
+                    name="poste_actuel"
+                  >
+                    {jobBySector[alumniData.secteur_activite].map(
+                      (item: string) => (
+                        <option value={item} key={item}>
+                          {item}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block mb-1">Nom de l'entreprise</label>
+                <input
+                  type="text"
+                  name="nom_entreprise"
+                  value={alumniData.nom_entreprise}
+                  onChange={handleAlumniChange}
+                  className="input input-primary"
+                />
+              </div>
+            </fieldset>
+          ) : (
+            <fieldset className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-1">Filière</label>
+                  <select
+                    name="filiere"
+                    value={studentData.filiere}
+                    onChange={handleStudentChange}
+                    required
+                    className="input input-primary"
+                  >
+                    {Object.keys(jobBySector).map((item: string) => (
+                      <option value={item} key={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block mb-1">Niveau d'étude</label>
+                  <select
+                    name="niveau_etude"
+                    value={studentData.niveau_etude}
+                    onChange={handleStudentChange}
+                    className="select select-primary"
+                  >
+                    {niveau_etude.map((item: string) => (
+                      <option value={item} key={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block mb-1">Année d'entrée</label>
+                <input
+                  type="date"
+                  name="annee_entree"
+                  value={studentData.annee_entree}
+                  onChange={handleStudentChange}
+                  className="select select-primary"
+                />
+              </div>
+            </fieldset>
+          )}
+
+          <button type="submit" className="w-full btn btn-primary">
+            S'inscrire
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

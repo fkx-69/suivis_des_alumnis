@@ -92,7 +92,13 @@ export default function singIn() {
     Autres: ["Autres"],
   };
 
-  const niveau_etude = ["Licence", "Master"];
+  const niveau_etude = [
+    "Licence 1",
+    "Licence 2",
+    "Licence 3",
+    "Master 1",
+    "Master 2",
+  ];
 
   const handleUserChange = (e: { target: { name: any; value: any } }) => {
     const { name, value } = e.target;
@@ -292,7 +298,11 @@ export default function singIn() {
                   >
                     {jobBySector[alumniData.secteur_activite].map(
                       (item: string) => (
-                        <option value={item} key={item}>
+                        <option
+                          defaultValue={jobBySector["Marketing Digital"]}
+                          value={item}
+                          key={item}
+                        >
                           {item}
                         </option>
                       )
@@ -321,7 +331,7 @@ export default function singIn() {
                     value={studentData.filiere}
                     onChange={handleStudentChange}
                     required
-                    className="input input-primary"
+                    className="select select-primary"
                   >
                     {Object.keys(jobBySector).map((item: string) => (
                       <option value={item} key={item}>

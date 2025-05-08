@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useRef, ReactNode } from "react";
-import PersonalProfile from "./personal-profile";
+import React, { useState, ReactNode, useEffect, useRef } from "react";
+import PersonalProfile from "../components/personal-profile";
 
 import {
   HomeIcon,
-  UsersIcon,
+  MessageCircleMore,
   CalendarIcon,
   UserCircleIcon,
   SettingsIcon,
@@ -20,7 +20,7 @@ const navItems = [
     href: "#",
     active: true,
   },
-  { label: "Groups", icon: <UsersIcon size={20} />, href: "#" },
+  { label: "Messages", icon: <MessageCircleMore size={20} />, href: "#" },
   { label: "Events", icon: <CalendarIcon size={20} />, href: "#" },
 ];
 const profileItems = {
@@ -29,29 +29,24 @@ const profileItems = {
   href: "#",
 };
 
-const bottomItems = [
-  { label: "Settings", icon: <SettingsIcon size={20} />, href: "#" },
-  { label: "Sign Out", icon: <LogOutIcon size={20} />, href: "#" },
-];
-
 export default function SidePanel({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const panelWidth = collapsed ? "w-16" : "w-50";
 
-  const panelWidth = collapsed ? "w-16" : "w-40";
+  const profileButtonRef = useRef<HTMLButtonElement>(null);
 
-  const profileButtonRef = useRef<HTMLLIElement>(null);
-  const profilePopoverRef = useRef<HTMLDivElement>(null);
+  const handleCloseProfile = () => {
+    setShowProfile(false);
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
-        profilePopoverRef.current &&
-        !profilePopoverRef.current.contains(event.target as Node) &&
         profileButtonRef.current &&
-        !profileButtonRef.current.contains(event.target as Node)
+        profileButtonRef.current.contains(event.target as Node)
       ) {
-        setShowProfile(false);
+        return;
       }
     }
 
@@ -66,7 +61,7 @@ export default function SidePanel({ children }: { children: ReactNode }) {
   }, [showProfile]);
 
   return (
-    <div className="flex h-screen bg-amber-50">
+    <div className="flex flex-auto bg-amber-50 h-screen overflow-hidden">
       <aside
         className={`${panelWidth} bg-base-200 border-r border-gray-200 flex flex-col justify-between transition-all duration-300`}
       >
@@ -99,21 +94,21 @@ export default function SidePanel({ children }: { children: ReactNode }) {
                   className={`flex items-center gap-3 p-2 ${
                     collapsed ? "justify-center" : ""
                   }`}
-                  onClick={() => setShowProfile(false)}
+                  onClick={() => {
+                    if (showProfile) setShowProfile(false);
+                  }}
                 >
                   {item.icon}
                   {!collapsed && <span className="text-sm">{item.label}</span>}
                 </a>
               </li>
             ))}
-            <li
-              ref={profileButtonRef}
-              className="relative hover:bg-base-300 rounded-md"
-            >
+            <li>
               <button
+                ref={profileButtonRef}
                 className={`flex items-center gap-3 p-2 w-full ${
                   collapsed ? "justify-center" : ""
-                }`}
+                } hover:bg-base-300 rounded-md`}
                 onClick={() => setShowProfile((prev) => !prev)}
                 aria-haspopup="true"
                 aria-expanded={showProfile}
@@ -121,38 +116,11 @@ export default function SidePanel({ children }: { children: ReactNode }) {
                 {profileItems.icon}
                 {!collapsed && <span className="text-sm">Profile</span>}
               </button>
-              {showProfile && (
-                <div
-                  ref={profilePopoverRef}
-                  className={`absolute top-0 ${
-                    collapsed ? "left-full ml-2" : "left-full ml-2"
-                  } z-20 bg-white rounded-lg shadow-xl border border-gray-200 w-80`}
-                >
-                  <div className="max-h-[80vh] overflow-auto p-1">
-                    <PersonalProfile />
-                  </div>
-                </div>
-              )}
             </li>
           </ul>
         </div>
-
-        <ul className="menu p-2 space-y-1 mb-2">
-          {bottomItems.map((item) => (
-            <li key={item.label} className="hover:bg-base-300 rounded-md">
-              <a
-                href={item.href}
-                className={`flex items-center gap-3 p-2 ${
-                  collapsed ? "justify-center" : ""
-                }`}
-              >
-                {item.icon}
-                {!collapsed && <span className="text-sm">{item.label}</span>}
-              </a>
-            </li>
-          ))}
-        </ul>
       </aside>
+      {showProfile && <PersonalProfile onClose={handleCloseProfile} />}
 
       <main className="flex-1 overflow-auto">{children}</main>
     </div>

@@ -1,149 +1,137 @@
-import React from "react";
-import {
-  MDBCol,
-  MDBRow,
-  MDBCard,
-  MDBCardText,
-  MDBCardBody,
-  MDBCardImage,
-  MDBTypography,
-  MDBIcon,
-} from "mdb-react-ui-kit";
+"use client";
 
-import { SquarePen, SquarePenIcon } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Edit2 as Pencil } from "lucide-react";
+import { motion } from "framer-motion";
 
-// Gradient identique à la maquette
-const gradientStyle = {
-  background: "linear-gradient(to bottom right, #FFD259, #FF8E53)",
-};
+interface ProfileField {
+  label: string;
+  value: string;
+}
 
-export default function PersonalProfile() {
+const initialFields: ProfileField[] = [
+  { label: "Username", value: "Fab123" },
+  { label: "Email", value: "fab@gmail.com" },
+  { label: "Prenoms", value: "Fabien" },
+  { label: "Nom", value: "Konaré" },
+  { label: "Secteur", value: "Informatique" },
+  { label: "Emploie", value: " Developpeur web" },
+];
+
+interface PersonalProfileProps {
+  onClose: () => void;
+}
+export default function PersonalProfile({ onClose }: PersonalProfileProps) {
+  const [fields, setFields] = useState<ProfileField[]>(initialFields);
+  const [editing, setEditing] = useState<string | null>(null);
+  const [showButton, setShowButton] = useState(false);
+
+  const profileContentRef = useRef<HTMLDivElement>(null);
+
+  const handleChange = (label: string, newValue: string) => {
+    setFields((prev) =>
+      prev.map((f) => (f.label === label ? { ...f, value: newValue } : f))
+    );
+    setShowButton(true);
+  };
+
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    label: string
+  ) => {
+    if (e.key === "Enter") {
+      setEditing(null);
+    }
+  };
+
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", handleEscKey);
+    return () => {
+      document.removeEventListener("keydown", handleEscKey);
+    };
+  }, [onClose]);
+
   return (
-    <MDBCard className="flex flex-wrap relative max-w-max font-sans rounded-lg overflow-hidden">
-      <SquarePenIcon
-        className="absolute top-3 right-3 text-white/80 text-lg cursor-pointer z-10"
-        size="20"
-        color="back"
-      />
-      {/* ─────────── Colonne de gauche ─────────── */}
-      <MDBCol
-        className="d-flex flex-column align-items-center text-center text-white"
-        style={{
-          ...gradientStyle,
-          borderTopLeftRadius: ".5rem",
-          borderBottomLeftRadius: ".5rem",
-          width: "120px", // taille fixe pour col gauche
-          padding: "1.5rem",
-        }}
+    <div
+      className="fixed flex flex-auto top-0 left-0 w-full h-full z-50 items-center justify-center bg-opacity-30"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <motion.div
+        ref={profileContentRef}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-3xl bg-white border border-gray-200 rounded-b-md shadow p-8"
+        onClick={(e) => e.stopPropagation()}
       >
-        <MDBCardImage
-          src="/profile/avatar.jpg"
-          alt="Avatar"
-          className="rounded-circle mb-3"
-          style={{ width: "80px", height: "80px", objectFit: "cover" }}
-          fluid
-          onError={(e) => {
-            const img = e.target as HTMLImageElement;
-            img.src = "/profile/default-avatar.png";
-            img.onerror = null;
-          }}
-        />
+        <div className="flex flex-col items-center">
+          <img
+            src="/profile/avatar.jpg"
+            alt="Profile"
+            className="w-32 h-32 rounded-full object-cover border-2 border-indigo-500"
+          />
+          <h1 className="mt-4 text-2xl font-semibold text-gray-800">
+            Fabien Konaré
+          </h1>
+          <p className="text-gray-500 flex items-center">Alumni </p>
+        </div>
 
-        <MDBTypography tag="h5" className="mb-1" style={{ fontWeight: "600" }}>
-          Marie Horwitz
-        </MDBTypography>
-        <MDBCardText className="small mb-4" style={{ opacity: 0.9 }}>
-          Web Designer
-        </MDBCardText>
+        <div className="mt-8 space-y-6">
+          {fields.map((field) => (
+            <div
+              key={field.label}
+              className="flex justify-between items-center"
+            >
+              <span className="font-medium text-gray-700">{field.label}</span>
+              <div className="flex items-center text-gray-500">
+                {editing === field.label ? (
+                  <input
+                    type="text"
+                    className="input input-primary bg-white border-b border-gray-300 focus:outline-none text-gray-800"
+                    value={field.value}
+                    autoFocus
+                    onChange={(e) => handleChange(field.label, e.target.value)}
+                    onBlur={() => setEditing(null)}
+                    onKeyDown={(e) => handleKeyDown(e, field.label)}
+                  />
+                ) : (
+                  <>
+                    <span>{field.value}</span>
+                    <Pencil
+                      className="ml-2 h-4 w-4 text-gray-400 hover:text-gray-600 cursor-pointer"
+                      onClick={() => setEditing(field.label)}
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
 
-        <a href="#!" className="text-white">
-          <MDBIcon far icon="edit" size="lg" />
-        </a>
-      </MDBCol>
-
-      {/* ─────────── Colonne de droite ─────────── */}
-      <MDBCol>
-        <MDBCardBody style={{ padding: "1.5rem" }}>
-          {/* Information */}
-          <MDBTypography tag="h6" style={{ fontWeight: "500" }}>
-            Information
-          </MDBTypography>
-          <hr style={{ margin: "0.5rem 0 1rem" }} />
-
-          <MDBRow className="mb-3">
-            <MDBCol size="6">
-              <MDBTypography tag="h6" className="small text-muted">
-                Email
-              </MDBTypography>
-              {/* on force le retour à la ligne si besoin */}
-              <MDBCardText style={{ wordBreak: "break-word" }}>
-                info@example.
-                <br />
-                com
-              </MDBCardText>
-            </MDBCol>
-            <MDBCol size="6">
-              <MDBTypography tag="h6" className="small text-muted">
-                Phone
-              </MDBTypography>
-              <MDBCardText>123 456 789</MDBCardText>
-            </MDBCol>
-          </MDBRow>
-
-          {/* Projets */}
-          <MDBTypography
-            tag="h6"
-            className="mt-2"
-            style={{ fontWeight: "500" }}
-          >
-            Projects
-          </MDBTypography>
-          <hr style={{ margin: "0.5rem 0 1rem" }} />
-
-          <MDBRow className="mb-3">
-            <MDBCol size="6">
-              <MDBTypography tag="h6" className="small text-muted">
-                Recent
-              </MDBTypography>
-              <MDBCardText>Lorem ipsum</MDBCardText>
-            </MDBCol>
-            <MDBCol size="6">
-              <MDBTypography tag="h6" className="small text-muted">
-                Most Viewed
-              </MDBTypography>
-              <MDBCardText>Dolor sit amet</MDBCardText>
-            </MDBCol>
-          </MDBRow>
-
-          {/* Réseaux sociaux */}
-          <div className="d-flex">
-            <a href="#!" className="me-3">
-              <MDBIcon
-                fab
-                icon="facebook-f"
-                size="lg"
-                style={{ color: "#3b5998" }}
-              />
-            </a>
-            <a href="#!" className="me-3">
-              <MDBIcon
-                fab
-                icon="twitter"
-                size="lg"
-                style={{ color: "#1da1f2" }}
-              />
-            </a>
-            <a href="#!">
-              <MDBIcon
-                fab
-                icon="instagram"
-                size="lg"
-                style={{ color: "#c32aa3" }}
-              />
-            </a>
-          </div>
-        </MDBCardBody>
-      </MDBCol>
-    </MDBCard>
+        <div className="flex justify-center mt-6">
+          {showButton && (
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                setShowButton(false);
+                console.log("Saving changes:", fields);
+                onClose();
+              }}
+            >
+              Enregistrer
+            </button>
+          )}
+        </div>
+      </motion.div>
+    </div>
   );
 }

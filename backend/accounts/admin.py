@@ -11,15 +11,26 @@ class CustomUserAdmin(UserAdmin):
     list_display = ('email', 'username', 'prenom', 'nom', 'role', 'is_staff', 'is_active')
     list_filter = ('role', 'is_staff', 'is_active')
     fieldsets = (
-        (None, {'fields': ('email', 'username', 'prenom', 'nom', 'password', 'role', 'photo_profil')}),
-        ('Permissions', {'fields': ('is_staff', 'is_active', 'is_superuser', 'groups', 'user_permissions')}),
+        (None, {
+            'fields': (
+                'email', 'username', 'prenom', 'nom', 'password',
+                'role', 'photo_profil', 'biographie'  # <-- ajout de biographie ici
+            )
+        }),
+        ('Permissions', {
+            'fields': ('is_staff', 'is_active', 'is_superuser', 'groups', 'user_permissions')
+        }),
         ('Important dates', {'fields': ('last_login',)}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'username', 'prenom', 'nom', 'password1', 'password2', 'role', 'is_staff', 'is_active')}
-        ),
+            'fields': (
+                'email', 'username', 'prenom', 'nom',
+                'password1', 'password2', 'role',
+                'is_staff', 'is_active'
+            )
+        }),
     )
     search_fields = ('email', 'username', 'nom', 'prenom')
     ordering = ('email',)
@@ -44,9 +55,9 @@ class ParcoursAcademiqueAdmin(admin.ModelAdmin):
 
 # Admin pour Parcours Professionnel
 class ParcoursProfessionnelAdmin(admin.ModelAdmin):
-    list_display = ('alumni', 'poste', 'entreprise', 'date_debut', 'date_fin')
+    list_display = ('alumni', 'poste', 'entreprise', 'date_debut','type_contrat')
     search_fields = ('alumni__user__username', 'poste', 'entreprise')
-    list_filter = ('date_debut', 'date_fin')
+    list_filter = ('poste', 'entreprise', 'date_debut', 'type_contrat')
 
 # Enregistrement des modèles
 admin.site.register(CustomUser, CustomUserAdmin)

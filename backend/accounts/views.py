@@ -1,5 +1,6 @@
 from rest_framework import generics, status, permissions, viewsets
 from rest_framework.response import Response
+from .models import Role
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from .models import Etudiant, Alumni, ParcoursAcademique,ParcoursProfessionnel, CustomUser
@@ -34,7 +35,7 @@ class RegisterEtudiantAPIView(APIView):
     def post(self, request):
         serializer = RegisterEtudiantSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(role=Role.ETUDIANT)
         return Response({"message": "Étudiant inscrit avec succès"}, status=status.HTTP_201_CREATED)
 
 class RegisterAlumniAPIView(APIView):
@@ -42,7 +43,7 @@ class RegisterAlumniAPIView(APIView):
     def post(self, request):
         serializer = RegisterAlumniSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(role=Role.ALUMNI)
         return Response({"message": "Alumni inscrit avec succès"}, status=status.HTTP_201_CREATED)
 
 class ListEtudiantsAPIView(generics.ListAPIView):

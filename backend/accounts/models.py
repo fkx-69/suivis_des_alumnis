@@ -15,19 +15,19 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         return self.create_user(email, nom, prenom, username, password, **extra_fields)
-
+class Role(models.TextChoices): 
+        ETUDIANT= 'ETUDIANT','Etudiant'
+        ALUMNI = 'ALUMNI','Alumni'
+        ADMIN = 'ADMIN','Admin'
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-    ROLES = (
-        ('admin', 'Admin'),
-        ('etudiant', 'Étudiant'),
-        ('alumni', 'Alumni'),
-    )
+   
     email = models.EmailField(max_length=45, unique=True)  
     username = models.CharField(max_length=45, unique=True) 
     nom = models.CharField(max_length=50)
     prenom = models.CharField(max_length=50)
-    role = models.CharField(max_length=10, choices=ROLES)
+    role = models.CharField(max_length=10, choices=Role.choices, default=Role.ETUDIANT)
     photo_profil = models.ImageField(upload_to='photos/', null=True, blank=True)
+    biographie = models.TextField (max_length=45,blank=True,null=True)
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -64,6 +64,15 @@ class Etudiant(models.Model):
 class Alumni(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     date_fin_cycle = models.DateField()
+    mention = models.CharField (
+        max_length=45, null=True, blank=True,
+        choices=[
+        ('mention_passable', 'Mention Passable'),
+        ('mention_assez_bien', 'Mention Assez Bien'),
+        ('mention_bien', 'Mention Bien'),
+        ('mention_tres_bien', 'Mention Très Bien'),
+    ]
+    )
     secteur_activite = models.CharField(max_length=45, null=True, blank=True)
     situation_pro = models.CharField(
         max_length=15,
@@ -95,7 +104,16 @@ class ParcoursProfessionnel(models.Model):
     poste = models.CharField(max_length=45)
     entreprise = models.CharField(max_length=45)
     date_debut = models.DateField()
-    date_fin = models.DateField(null=True, blank=True)
-
+    type_contrat = models.CharField(
+        max_length=15,
+        choices=[
+            ('CDI', 'CDI'),
+            ('CDD', 'CDD'),
+            ('stage', 'Stage'),
+            ('freelance', 'Freelance'),
+            ('autre', 'Autre')
+        ],
+        default='autre'
+    )
     def __str__(self):
         return f"{self.poste} - {self.entreprise}"

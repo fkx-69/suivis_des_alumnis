@@ -4,36 +4,38 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
 class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = ['id', 'email', 'username', 'nom', 'prenom', 'role', 'photo_profil']
-
-class RegisterEtudiantSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
     password = serializers.CharField(write_only=True)
 
     class Meta:
+        model = CustomUser
+        fields = ['id', 'email', 'username', 'nom', 'prenom', 'role', 'photo_profil','biographie', 'password']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+class RegisterEtudiantSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
+    class Meta:
         model = Etudiant
-        fields = ['user', 'filiere', 'niveau_etude', 'annee_entree', 'password']
+        fields = ['user', 'filiere', 'niveau_etude', 'annee_entree']
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
-        password = validated_data.pop('password')
+        password = user_data.pop('password')
         user = CustomUser.objects.create_user(**user_data, password=password, role='etudiant')
         etudiant = Etudiant.objects.create(user=user, **validated_data)
         return etudiant
 
 class RegisterAlumniSerializer(serializers.ModelSerializer):
     user = UserSerializer()
-    password = serializers.CharField(write_only=True)
 
     class Meta:
         model = Alumni
-        fields = ['user', 'date_fin_cycle', 'secteur_activite', 'situation_pro', 'poste_actuel', 'nom_entreprise', 'password']
+        fields = ['user', 'date_fin_cycle','mention', 'secteur_activite', 'situation_pro', 'poste_actuel', 'nom_entreprise']
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
-        password = validated_data.pop('password')
+        password = user_data.pop('password')
         user = CustomUser.objects.create_user(**user_data, password=password, role='alumni')
         alumni = Alumni.objects.create(user=user, **validated_data)
         return alumni
@@ -89,4 +91,4 @@ class ChangeEmailSerializer(serializers.Serializer):
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['username', 'nom', 'prenom', 'photo_profil']
+        fields = ['username', 'nom', 'prenom', 'photo_profil','biographie']

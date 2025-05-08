@@ -28,7 +28,7 @@ class WelcomeScreen extends StatelessWidget {
                   color: primaryColor,
                 ),
               ),
-
+// Test
               const SizedBox(height: 24),
 
               Text(

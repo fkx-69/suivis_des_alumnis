@@ -7,6 +7,7 @@ import 'package:memoire/screens/student/RegisterStudent_screen.dart';
 import 'package:memoire/screens/login_screen.dart';
 import 'package:memoire/screens/register_screen.dart';
 import 'package:memoire/screens/welcome_screen.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -27,9 +28,9 @@ class MyApp extends StatelessWidget {
         '/register':(context)=> RegisterScreen(),
         '/register-student':(context)=> RegisterStudent(),
         '/register-alumni':(context)=> RegisterAlumni(),
-        'dashboard-alumni':(context)=> DashboardAlumni(),
-        'profil-alumni':(context)=> ProfileAlumni(),
-        'edit-profil-alumni':(context)=> EditProfileAlumni(),
+        '/dashboard-alumni':(context)=> DashboardPage(),
+        '/profil-alumni':(context)=> ProfileAlumni(),
+        '/edit-profil-alumni':(context)=> EditProfileAlumni(),
       },
     );
   }

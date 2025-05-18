@@ -4,6 +4,8 @@ import { useState } from "react";
 
 export default function singIn() {
   const [userType, setUserType] = useState("alumni");
+  const [isPasswordEqual, setIsPasswordEqual] = useState(true);
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [user, setUser] = useState({
     email: "",
     username: "",
@@ -100,6 +102,10 @@ export default function singIn() {
     "Master 2",
   ];
 
+  const handleConfirmPasswordChange = (e: { target: { value: string } }) => {
+    setConfirmPassword(e.target.value);
+  };
+
   const handleUserChange = (e: { target: { name: any; value: any } }) => {
     const { name, value } = e.target;
     setUser((prev) => ({ ...prev, [name]: value }));
@@ -132,6 +138,10 @@ export default function singIn() {
       user,
       ...(userType === "alumni" ? alumniData : studentData),
     };
+    if (user.password !== confirmPassword) {
+      setIsPasswordEqual(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/register", {
@@ -148,11 +158,11 @@ export default function singIn() {
   };
 
   return (
-    <div className="in-h-screen flex items-center justify-center bg-gray-100">
+    <div className="in-h-screen flex flex-11/12 items-center justify-center bg-gray-100">
       <div
         className={`bg-white p-8 rounded-2xl shadow-xl w-full
     transition-all duration-500 ease-in-out
-    ${userType === "alumni" ? "max-w-lg" : "max-w-md"}`}
+    ${userType === "alumni" ? "max-w-lg max-h-max" : "max-w-lg max-h-max"}`}
       >
         <h1 className="text-2xl font-semibold mb-6 text-center">Inscription</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -198,9 +208,6 @@ export default function singIn() {
                 />
               </div>
             </div>
-            <legend className="text-lg font-medium">
-              Informations utilisateur
-            </legend>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block mb-1">Email</label>
@@ -228,19 +235,39 @@ export default function singIn() {
               </div>
             </div>
 
-            <div>
-              <label className="block mb-1">Mot de passe</label>
-              <div className="">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block mb-1">Mot de passe</label>
+
                 <input
                   type="password"
                   name="password"
                   value={user.password}
                   onChange={handleUserChange}
                   required
-                  className="input input-primary"
+                  className={`input ${
+                    isPasswordEqual ? "input-primary" : "input-error"
+                  }`}
+                />
+              </div>
+              <div>
+                <label className="block mb-1">Confirmer le mot de passe</label>
+                <input
+                  type="password"
+                  name="password"
+                  onChange={handleConfirmPasswordChange}
+                  required
+                  className={`input ${
+                    isPasswordEqual ? "input-primary" : "input-error"
+                  }`}
                 />
               </div>
             </div>
+            {!isPasswordEqual && (
+              <p className="text-red-500 text-sm">
+                Les mots de passe ne correspondent pas.
+              </p>
+            )}
           </fieldset>
 
           {userType === "alumni" ? (
@@ -361,6 +388,7 @@ export default function singIn() {
                 <input
                   type="date"
                   name="annee_entree"
+                  min="2016-01-01"
                   value={studentData.annee_entree}
                   onChange={handleStudentChange}
                   className="select select-primary"
@@ -373,6 +401,12 @@ export default function singIn() {
             S'inscrire
           </button>
         </form>
+        <div className="mt-4 text-sm text-center text-gray-500">
+          Vous avez déjà un compte ?{" "}
+          <a href="/login" className="text-blue-600 hover:underline">
+            Connectez-vous
+          </a>
+        </div>
       </div>
     </div>
   );

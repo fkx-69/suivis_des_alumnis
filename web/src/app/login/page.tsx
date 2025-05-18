@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { loginUser } from "../../../components/backend";
 
 const Page: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -28,7 +29,7 @@ const Page: React.FC = () => {
             <label className="block mb-1 text-sm font-medium">Email</label>
             <input
               type="email"
-              className="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full input input-primary px-4 py-2 border rounded-xl"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="exemple@mail.com"
@@ -40,7 +41,7 @@ const Page: React.FC = () => {
             </label>
             <input
               type="password"
-              className="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border rounded-xl input input-primary"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
@@ -49,14 +50,25 @@ const Page: React.FC = () => {
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition duration-200"
+            className="btn btn-primary px-4 py-2 border rounded-xl transition duration-200 justify-center w-full "
+            onClick={() => {
+              // Appel de la fonction de connexion
+              loginUser({ email: email, password: password })
+                .then((response) => {
+                  console.log("Connexion réussie:", response.data);
+                })
+                .catch((error) => {
+                  console.error("Erreur de connexion:", error);
+                  setError("Email ou mot de passe invalid.");
+                });
+            }}
           >
             Se connecter
           </button>
         </form>
         <div className="mt-4 text-sm text-center text-gray-500">
           Vous n'avez pas de compte ?{" "}
-          <a href="#" className="text-blue-600 hover:underline">
+          <a href="/signIn" className="text-blue-600 hover:underline">
             Inscrivez-vous
           </a>
         </div>

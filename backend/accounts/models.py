@@ -1,4 +1,5 @@
 from django.db import models
+from filiere.models import Filiere
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
 class CustomUserManager(BaseUserManager):
@@ -25,9 +26,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=45, unique=True) 
     nom = models.CharField(max_length=50)
     prenom = models.CharField(max_length=50)
-    role = models.CharField(max_length=10, choices=Role.choices, default=Role.ETUDIANT)
+    role = models.CharField(max_length=10, choices=Role.choices,blank=True, null=True)
     photo_profil = models.ImageField(upload_to='photos/', null=True, blank=True)
     biographie = models.TextField (max_length=45,blank=True,null=True)
+    is_banned = models.BooleanField(default=False)
+
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -40,12 +43,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return f"{self.prenom} {self.nom} ({self.username}) - {self.role}"
 
 class Etudiant(models.Model):
-    FILIERES = (
-        ('IRT', 'Informatique, Réseaux et Télécoms'),
-        ('SGE', 'Science de Gestion'),
-        ('GL', 'Génie Logiciel'),
-        ('DRD', 'Droit Relation Internationale Diplomatie'),
-    )
     NIVEAUX_ETUDE = (
         ('L1', 'Licence 1'),
         ('L2', 'Licence 2'),
@@ -54,25 +51,16 @@ class Etudiant(models.Model):
         ('M2', 'Master 2'),
     )
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    filiere = models.CharField(max_length=8, choices=FILIERES)
+    filiere = models.ForeignKey(Filiere, on_delete=models.SET_NULL, null=True)
     niveau_etude = models.CharField(max_length=8, choices=NIVEAUX_ETUDE)
-    annee_entree = models.PositiveIntegerField(choices=[(y, str(y)) for y in range(2016, 2025)])
+    annee_entree = models.PositiveIntegerField(choices=[(y, str(y)) for y in range(2016, 2026)])
 
     def __str__(self):
         return f"Étudiant: {self.user.username}"
 
 class Alumni(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    date_fin_cycle = models.DateField()
-    mention = models.CharField (
-        max_length=45, null=True, blank=True,
-        choices=[
-        ('mention_passable', 'Mention Passable'),
-        ('mention_assez_bien', 'Mention Assez Bien'),
-        ('mention_bien', 'Mention Bien'),
-        ('mention_tres_bien', 'Mention Très Bien'),
-    ]
-    )
+    filiere = models.ForeignKey(Filiere, on_delete=models.SET_NULL, null=True)
     secteur_activite = models.CharField(max_length=45, null=True, blank=True)
     situation_pro = models.CharField(
         max_length=15,
@@ -95,6 +83,15 @@ class ParcoursAcademique(models.Model):
     diplome = models.CharField(max_length=45)
     institution = models.CharField(max_length=45)
     annee_obtention = models.PositiveIntegerField()
+    mention = models.CharField (
+        max_length=45, null=True, blank=True,
+        choices=[
+        ('mention_passable', 'Mention Passable'),
+        ('mention_assez_bien', 'Mention Assez Bien'),
+        ('mention_bien', 'Mention Bien'),
+        ('mention_tres_bien', 'Mention Très Bien'),
+    ]
+    )
 
     def __str__(self):
         return f"{self.diplome} - {self.institution}"

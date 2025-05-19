@@ -14,7 +14,7 @@ class CustomUserAdmin(UserAdmin):
         (None, {
             'fields': (
                 'email', 'username', 'prenom', 'nom', 'password',
-                'role', 'photo_profil', 'biographie'  # <-- ajout de biographie ici
+                'role', 'photo_profil', 'biographie'  
             )
         }),
         ('Permissions', {
@@ -43,13 +43,13 @@ class EtudiantAdmin(admin.ModelAdmin):
 
 # Admin pour Alumni
 class AlumniAdmin(admin.ModelAdmin):
-    list_display = ('user', 'poste_actuel', 'nom_entreprise', 'secteur_activite', 'situation_pro')
+    list_display = ('user','filiere', 'poste_actuel', 'nom_entreprise', 'secteur_activite', 'situation_pro')
     search_fields = ('user__username', 'poste_actuel', 'nom_entreprise')
     list_filter = ('secteur_activite', 'situation_pro')
 
 # Admin pour Parcours Académique
 class ParcoursAcademiqueAdmin(admin.ModelAdmin):
-    list_display = ('alumni', 'diplome', 'institution', 'annee_obtention')
+    list_display = ('alumni', 'diplome', 'institution', 'annee_obtention','mention')
     search_fields = ('alumni__user__username', 'diplome', 'institution')
     list_filter = ('annee_obtention',)
 

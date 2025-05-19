@@ -1,16 +1,16 @@
 from rest_framework import generics, status, permissions, viewsets
 from rest_framework.response import Response
-from .models import Role
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
-from .models import Etudiant, Alumni, ParcoursAcademique,ParcoursProfessionnel, CustomUser
+from .models import Etudiant, Alumni, ParcoursAcademique, ParcoursProfessionnel, CustomUser
 from .serializers import (
     RegisterEtudiantSerializer, RegisterAlumniSerializer,
     LoginSerializer, EtudiantSerializer, AlumniSerializer,
-    UserSerializer, ParcoursAcademiqueSerializer,ParcoursProfessionnelSerializer, ChangePasswordSerializer,
-    ChangeEmailSerializer, UpdateUserSerializer
+    UserSerializer, ParcoursAcademiqueSerializer, ParcoursProfessionnelSerializer,
+    ChangePasswordSerializer, ChangeEmailSerializer, UpdateUserSerializer
 )
 
+# === AUTHENTIFICATION ===
 class LoginAPIView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -22,6 +22,7 @@ class MeAPIView(APIView):
     def get(self, request):
         return Response(UserSerializer(request.user).data)
 
+# === PROFIL ===
 class UpdateProfileAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def put(self, request):
@@ -30,12 +31,13 @@ class UpdateProfileAPIView(APIView):
         serializer.save()
         return Response(serializer.data)
 
+# === REGISTREMENTS ===
 class RegisterEtudiantAPIView(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
         serializer = RegisterEtudiantSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(role=Role.ETUDIANT)
+        serializer.save()
         return Response({"message": "Étudiant inscrit avec succès"}, status=status.HTTP_201_CREATED)
 
 class RegisterAlumniAPIView(APIView):
@@ -43,9 +45,10 @@ class RegisterAlumniAPIView(APIView):
     def post(self, request):
         serializer = RegisterAlumniSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(role=Role.ALUMNI)
+        serializer.save()
         return Response({"message": "Alumni inscrit avec succès"}, status=status.HTTP_201_CREATED)
 
+# === LISTES POUR ADMIN ===
 class ListEtudiantsAPIView(generics.ListAPIView):
     queryset = Etudiant.objects.all()
     serializer_class = EtudiantSerializer
@@ -56,10 +59,12 @@ class ListAlumnisAPIView(generics.ListAPIView):
     serializer_class = AlumniSerializer
     permission_classes = [IsAdminUser]
 
+# === PERMISSION PERSONNALISÉE ===
 class IsOwnerAlumni(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.alumni.user == request.user
 
+# === PARCOURS ===
 class ParcoursAcademiqueViewSet(viewsets.ModelViewSet):
     serializer_class = ParcoursAcademiqueSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerAlumni]
@@ -80,6 +85,7 @@ class ParcoursProfessionnelViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(alumni=self.request.user.alumni)
 
+# === MISE À JOUR EMAIL / MOT DE PASSE ===
 class ChangePasswordAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def put(self, request):
@@ -99,4 +105,3 @@ class ChangeEmailAPIView(APIView):
         request.user.email = serializer.validated_data['email']
         request.user.save()
         return Response({"message": "Email mis à jour avec succès."})
-

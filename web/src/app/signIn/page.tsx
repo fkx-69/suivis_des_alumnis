@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import "../globals.css";
 
 export default function singIn() {
   const [userType, setUserType] = useState("alumni");
@@ -158,9 +159,9 @@ export default function singIn() {
   };
 
   return (
-    <div className="in-h-screen flex flex-11/12 items-center justify-center bg-gray-100">
+    <div className="in-h-screen flex flex-11/12 items-center justify-center">
       <div
-        className={`bg-white p-8 rounded-2xl shadow-xl w-full
+        className={`p-8 rounded-2xl shadow-xl w-full
     transition-all duration-500 ease-in-out
     ${userType === "alumni" ? "max-w-lg max-h-max" : "max-w-lg max-h-max"}`}
       >

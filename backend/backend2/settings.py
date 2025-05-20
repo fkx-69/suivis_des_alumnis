@@ -58,6 +58,8 @@ INSTALLED_APPS = [
     'accounts',
     'reports',
     'filiere',
+    'groups',
+    'publications',
     'drf_yasg',
 ]
 

@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'filiere',
     'groups',
     'publications',
+    'events',
     'drf_yasg',
 ]
 

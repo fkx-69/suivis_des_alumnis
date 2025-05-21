@@ -1,4 +1,6 @@
 "use client";
+import "../globals.css";
+import { ThemeProvider } from "next-themes";
 
 import React, { useState } from "react";
 import { loginUser } from "../../../components/backend";

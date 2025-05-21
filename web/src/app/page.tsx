@@ -7,16 +7,10 @@ export default function Home() {
         Bienvenue sur notre plateforme
       </h1>
       <div className="space-x-4">
-        <Link
-          href="/login"
-          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg"
-        >
+        <Link href="/login" className="btn btn-primary btn-lg">
           Connexion
         </Link>
-        <Link
-          href="/signIn"
-          className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg"
-        >
+        <Link href="/signIn" className="btn btn-accent btn-lg">
           S'inscrire
         </Link>
       </div>

@@ -63,7 +63,7 @@ export default function SidePanel({ children }: { children: ReactNode }) {
   return (
     <div className="flex flex-auto bg-amber-50 h-screen overflow-hidden">
       <aside
-        className={`${panelWidth} bg-base-200 border-r border-gray-200 flex flex-col justify-between transition-all duration-300`}
+        className={`${panelWidth} bg-base-300 border-r border-base-300 flex flex-col justify-between transition-all duration-300`}
       >
         <div>
           <div
@@ -91,30 +91,31 @@ export default function SidePanel({ children }: { children: ReactNode }) {
               >
                 <a
                   href={item.href}
-                  className={`flex items-center gap-3 p-2 ${
-                    collapsed ? "justify-center" : ""
-                  }`}
-                  onClick={() => {
-                    if (showProfile) setShowProfile(false);
-                  }}
+                  className={`flex items-center p-2 w-full btn-primary   /* <= nouveau */
+                ${collapsed ? "justify-center" : "gap-3"}   
+                `}
+                  onClick={() => showProfile && setShowProfile(false)}
                 >
                   {item.icon}
-                  {!collapsed && <span className="text-sm">{item.label}</span>}
+                  {!collapsed && (
+                    <span className="text-content">{item.label}</span>
+                  )}
                 </a>
               </li>
             ))}
             <li>
               <button
                 ref={profileButtonRef}
-                className={`flex items-center gap-3 p-2 w-full ${
-                  collapsed ? "justify-center" : ""
+                className={`flex items-center p-2 w-full   /* <= nouveau */
+                ${
+                  collapsed ? "justify-center" : "gap-3"
                 } hover:bg-base-300 rounded-md`}
                 onClick={() => setShowProfile((prev) => !prev)}
                 aria-haspopup="true"
                 aria-expanded={showProfile}
               >
                 {profileItems.icon}
-                {!collapsed && <span className="text-sm">Profile</span>}
+                {!collapsed && <span className="text-content">Profile</span>}
               </button>
             </li>
           </ul>

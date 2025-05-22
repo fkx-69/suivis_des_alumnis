@@ -40,7 +40,7 @@ SECRET_KEY = 'django-insecure-)m()@(h4+e07&u1#9wj^9fc4!*-i86-$+bygyhs!nujm-f(!7x
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '192.168.137.40']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -89,6 +89,7 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -96,12 +97,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware'
+    
     ]
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # pour React
 
-]
 CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'backend2.urls'

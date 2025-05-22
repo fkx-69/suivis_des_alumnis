@@ -51,7 +51,7 @@ class Etudiant(models.Model):
         ('M2', 'Master 2'),
     )
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    filiere = models.ForeignKey(Filiere, on_delete=models.SET_NULL, null=True)
+    filiere = models.ForeignKey(Filiere, on_delete=models.SET_NULL, null=True,related_name='etudiants')
     niveau_etude = models.CharField(max_length=8, choices=NIVEAUX_ETUDE)
     annee_entree = models.PositiveIntegerField(choices=[(y, str(y)) for y in range(2016, 2026)])
 

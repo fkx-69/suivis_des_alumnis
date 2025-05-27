@@ -7,31 +7,41 @@ class ApiConstants {
   static const String registerEtudiant = '$baseUrl/accounts/register/etudiant/';
   static const String registerAlumni = '$baseUrl/accounts/register/alumni/';
   static const String userInfo = '$baseUrl/accounts/me/';
-  static const String updateUserInfo = '$baseUrl/accounts/me/update/';
+  static const String userUpdate = '$baseUrl/accounts/me/update/';
   static const String changePassword = '$baseUrl/accounts/change-password/';
   static const String changeEmail = '$baseUrl/accounts/change-email/';
   static const String verifyPassword = '$baseUrl/accounts/verify-password/';
-  static const String getProfile = '$baseUrl/accounts/profile';
+  static const String getProfile = '$baseUrl/accounts/profile_widgets';
 
   // Parcours
-  static const String parcoursAcademiques = '$baseUrl/accounts/parcours-academiques/';
-  static const String parcoursProfessionnels = '$baseUrl/accounts/parcours-professionnels/';
+  // 🎓 Parcours Académiques
+  static const String parcoursAcademiquesList        = "$baseUrl/accounts/parcours-academiques/";
+  static const String parcoursAcademiquesCreate      = "$baseUrl/accounts/parcours-academiques/";
+  static const String parcoursAcademiquesRead        = "$baseUrl/accounts/parcours-academiques/{id}/";
+  static const String parcoursAcademiquesUpdate      = "$baseUrl/accounts/parcours-academiques/{id}/";
+  static const String parcoursAcademiquesPartial     = "$baseUrl/accounts/parcours-academiques/{id}/";
+  static const String parcoursAcademiquesDelete      = "$baseUrl/accounts/parcours-academiques/{id}/";
+
+  // 💼 Parcours Professionnels
+  static const String parcoursProfessionnelsList     = "$baseUrl/accounts/parcours-professionnels/";
+  static const String parcoursProfessionnelsCreate   = "$baseUrl/accounts/parcours-professionnels/";
+  static const String parcoursProfessionnelsRead     = "$baseUrl/accounts/parcours-professionnels/{id}/";
+  static const String parcoursProfessionnelsUpdate   = "$baseUrl/accounts/parcours-professionnels/{id}/";
+  static const String parcoursProfessionnelsPartial  = "$baseUrl/accounts/parcours-professionnels/{id}/";
+  static const String parcoursProfessionnelsDelete   = "$baseUrl/accounts/parcours-professionnels/{id}/";
 
   // Filières
   static const String filieres = '$baseUrl/filiere/';
 
-  // Reports
-  static const String reportUser = '$baseUrl/reports/report/';
-  static const String banUser = '$baseUrl/reports/ban';
-  static const String deleteUser = '$baseUrl/reports/delete';
+  /// Récupérer le fil
+  static const String publicationsFeed = "$baseUrl/publications/fil/";
 
-  // Publications
-  static const String publications = '$baseUrl/publications/';
-  static const String filPublications = '$baseUrl/publications/fil/';
+  /// Créer une nouvelle publication (texte, photo, vidéo)
+  static const String publicationsCreate = "$baseUrl/publications/creer/";
 
-  // Commentaires
-  static String commentaires(int pubId) => '$publications$pubId/commentaires/';
-  static String commentaireDetail(int pubId, int comId) => '$publications$pubId/commentaires/$comId/';
-  static String reponses(int pubId, int comId) => '$publications$pubId/commentaires/$comId/reponses/';
-  static String reponseDetail(int pubId, int comId, int repId) => '$publications$pubId/commentaires/$comId/reponses/$repId/';
+  /// Commenter une publication
+  static const String publicationsComment = "$baseUrl/publications/commenter/";
+
+  /// Supprimer une publication (remplace {id} par l’ID)
+  static const String publicationsDelete = "$baseUrl/publications/{id}/supprimer/";
 }

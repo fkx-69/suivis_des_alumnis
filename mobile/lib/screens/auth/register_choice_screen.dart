@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'register_student_screen.dart';
 import 'register_alumni_screen.dart';
-import 'widgets/choice_card.dart';
+import 'package:memoire/widgets/auth_widgets/choice_card.dart';
 
 class RegisterChoiceScreen extends StatelessWidget {
   const RegisterChoiceScreen({super.key});

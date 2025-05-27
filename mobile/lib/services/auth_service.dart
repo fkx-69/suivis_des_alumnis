@@ -4,6 +4,8 @@ import 'package:memoire/constants/api_constants.dart';
 import 'package:dio/dio.dart';
 import 'package:memoire/models/alumni_model.dart';
 import 'package:memoire/models/student_model.dart';
+import 'package:memoire/models/user_model.dart';
+import 'dart:io';
 
 class AuthService {
   Future<Map<String, dynamic>> login(String email, String password) async {
@@ -88,4 +90,60 @@ class AuthService {
     }
   }
 
-}
+  /// 🔐 Récupère les infos utilisateur connecté
+  Future<UserModel> getUserInfo() async {
+    try {
+      final response = await DioClient.dio.get(ApiConstants.userInfo);
+      if (response.statusCode == 200) {
+        return UserModel.fromJson(response.data);
+      } else {
+        throw Exception('Erreur ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      final message = e.response?.data['detail'] ?? 'Erreur de récupération utilisateur';
+      throw Exception(message.toString());
+    }
+  }
+
+  Future<UserModel> updateProfile({
+    required String prenom,
+    required String nom,
+    required String username,
+    String? biographie,
+    File? photo,
+  }) async {
+    try {
+      // Préparation des données
+      final formData = FormData.fromMap({
+        'prenom': prenom,
+        'nom': nom,
+        'username': username,
+        if (biographie != null) 'biographie': biographie,
+        if (photo != null)
+          'photo': await MultipartFile.fromFile(
+            photo.path,
+            filename: photo.path.split(Platform.pathSeparator).last,
+          ),
+      });
+
+      final response = await DioClient.dio.put(
+        ApiConstants.userUpdate, // doit être "/accounts/me/update/"
+        data: formData,
+      );
+
+      if (response.statusCode == 200) {
+        return UserModel.fromJson(response.data);
+      } else {
+        throw Exception('Erreur ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      final message =
+          e.response?.data['detail'] ?? 'Erreur de mise à jour du profil';
+      throw Exception(message.toString());
+    }
+  }
+  }
+
+
+
+

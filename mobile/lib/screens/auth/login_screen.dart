@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:memoire/services/auth_service.dart';
-import 'widgets/login_form.dart';
-import 'widgets/signup_link.dart';
+import 'package:memoire/widgets/auth_widgets/login_form.dart';
+import 'package:memoire/widgets/auth_widgets/signup_link.dart';
+import 'package:memoire/screens/profile/profile_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -38,8 +39,12 @@ class _LoginScreenState extends State<LoginScreen> {
           _emailController.text,
           _passwordController.text,
         );
-
         // configurer le bouton de redirection
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const ProfileScreen()),
+        );
+
       } catch (e) {
         setState(() {
           _errorMessage = e.toString();

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'widgets/login_button.dart';
-import 'widgets/register_button.dart';
+import 'package:memoire/widgets/auth_widgets/login_button.dart';
+import 'package:memoire/widgets/auth_widgets/register_button.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

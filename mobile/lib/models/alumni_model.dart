@@ -4,20 +4,11 @@ class AlumniModel {
   final String nom;
   final String prenom;
   final String password;
-  final String? biographie;
   final int filiere;
-  final String secteurActivite;
   final String situationPro;
+  final String? secteurActivite;
   final String? posteActuel;
   final String? nomEntreprise;
-
-  static const Map<String, String> situationsPro = {
-    'emploi': 'En emploi',
-    'stage': 'En stage',
-    'chomage': 'En recherche d\'emploi',
-    'formation': 'En formation',
-    'autre': 'Autre'
-  };
 
   AlumniModel({
     required this.email,
@@ -25,10 +16,9 @@ class AlumniModel {
     required this.nom,
     required this.prenom,
     required this.password,
-    this.biographie,
     required this.filiere,
-    required this.secteurActivite,
     required this.situationPro,
+    this.secteurActivite,
     this.posteActuel,
     this.nomEntreprise,
   });
@@ -41,29 +31,36 @@ class AlumniModel {
         'nom': nom,
         'prenom': prenom,
         'password': password,
-        'biographie': biographie,
       },
       'filiere': filiere,
-      'secteur_activite': secteurActivite,
       'situation_pro': situationPro,
-      'poste_actuel': posteActuel,
-      'nom_entreprise': nomEntreprise,
+      'secteur_activite': situationPro == 'chomage' ? null : secteurActivite,
+      'poste_actuel': situationPro == 'chomage' ? null : posteActuel,
+      'nom_entreprise': situationPro == 'chomage' ? null : nomEntreprise,
     };
   }
 
   factory AlumniModel.fromJson(Map<String, dynamic> json) {
+    final user = json['user'];
     return AlumniModel(
-      email: json['user']['email'],
-      username: json['user']['username'],
-      nom: json['user']['nom'],
-      prenom: json['user']['prenom'],
-      password: json['user']['password'],
-      biographie: json['user']['biographie'],
-      filiere: json['filiere']['id'],
-      secteurActivite: json['secteur_activite'],
+      email: user['email'],
+      username: user['username'],
+      nom: user['nom'],
+      prenom: user['prenom'],
+      password: '', // on ne récupère pas les mdp
+      filiere: json['filiere'],
       situationPro: json['situation_pro'],
+      secteurActivite: json['secteur_activite'],
       posteActuel: json['poste_actuel'],
       nomEntreprise: json['nom_entreprise'],
     );
   }
+
+  static const Map<String, String> situationsPro = {
+    'emploi': 'En emploi',
+    'stage': 'En stage',
+    'chomage': 'En recherche d\'emploi',
+    'formation': 'En formation',
+    'autre': 'Autre'
+  };
 }

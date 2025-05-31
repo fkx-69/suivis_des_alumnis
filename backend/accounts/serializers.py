@@ -55,8 +55,6 @@ class RegisterAlumniSerializer(serializers.ModelSerializer):
         user_data = validated_data.pop('user')
         filiere = validated_data.pop('filiere')
 
-        
-
         password = user_data.pop('password')
         user_data['role'] = Role.ALUMNI
         user = CustomUser.objects.create_user(**user_data, password=password)

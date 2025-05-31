@@ -4,6 +4,7 @@ from .views import (
     ModifierEvenementView,
     ValiderEvenementView,
     ListeEvenementsVisiblesView,
+    SupprimerEvenementView
 )
 
 urlpatterns = [
@@ -11,4 +12,6 @@ urlpatterns = [
     path('<int:pk>/modifier/', ModifierEvenementView.as_view(), name='modifier-evenement'),
     path('<int:pk>/valider/', ValiderEvenementView.as_view(), name='valider-evenement'),
     path('calendrier/', ListeEvenementsVisiblesView.as_view(), name='evenements-visibles'),
+    path('evenements/<int:pk>/supprimer/', SupprimerEvenementView.as_view(), name='supprimer-evenement'),
+
 ]

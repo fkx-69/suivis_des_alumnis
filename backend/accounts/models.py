@@ -122,7 +122,7 @@ class Etudiant(models.Model):
 
 class Alumni(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    filiere = models.ForeignKey(Filiere, on_delete=models.SET_NULL, null=True)
+    filiere = models.ForeignKey(Filiere, on_delete=models.SET_NULL, null=True,related_name='alumnis')
     secteur_activite = models.CharField(max_length=45, null=True, blank=True)
     situation_pro = models.CharField(
         max_length=15,

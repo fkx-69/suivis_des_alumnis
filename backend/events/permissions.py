@@ -8,6 +8,3 @@ class IsEtudiant(BasePermission):
     def has_permission(self, request, view):
         return hasattr(request.user, 'etudiant')
 
-class IsAlumni(BasePermission):
-    def has_permission(self, request, view):
-        return hasattr(request.user, 'alumni')

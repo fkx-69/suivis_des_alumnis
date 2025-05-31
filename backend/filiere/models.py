@@ -9,9 +9,9 @@ class Filiere(models.Model):
 
     @property
     def nombre_etudiants(self):
-        from accounts.models import Etudiant
-        return Etudiant.objects.filter(filiere__code=self.code).count()
+        return self.etudiants.count()
+
     @property
     def nombre_alumnis(self):
-        from accounts.models import Alumni
-        return Alumni.objects.filter(filiere__code=self.code).count()   
+        return self.alumnis.count()
+ 

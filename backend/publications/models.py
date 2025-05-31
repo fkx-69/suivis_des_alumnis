@@ -16,9 +16,9 @@ class Publication(models.Model):
     def clean(self):
         from django.core.exceptions import ValidationError
         if not (self.texte or self.photo or self.video):
-            raise ValidationError("Au moins un contenu (texte, photo ou vidéo) est requis.")
-        if sum(bool(x) for x in [self.texte, self.photo, self.video]) > 1:
-            raise ValidationError("Une seule forme de contenu est autorisée par publication.")
+            raise ValidationError("Au moins une image, une vidéo ou un texte est requis.")
+        if self.photo and self.video:
+            raise ValidationError("Vous ne pouvez pas publier une photo et une vidéo en même temps.")
 
 class Commentaire(models.Model):
     publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='commentaires')

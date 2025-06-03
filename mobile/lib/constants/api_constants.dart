@@ -44,4 +44,11 @@ class ApiConstants {
 
   /// Supprimer une publication (remplace {id} par l’ID)
   static const String publicationsDelete = "$baseUrl/publications/{id}/supprimer/";
+
+  // Événements
+  static const String eventsCalendar  = "$baseUrl/events/calendrier/";
+  static const String eventsCreate    = "$baseUrl/events/creer/";
+  static const String eventsUpdate    = "$baseUrl/events/{id}/modifier/";
+  static const String eventsPartial   = "$baseUrl/events/{id}/modifier/";
+  static const String eventsValidate  = "$baseUrl/events/{id}/valider/";
 }

@@ -8,6 +8,7 @@ import 'package:memoire/widgets/profile_widgets/profile_header.dart';
 import 'package:memoire/widgets/profile_widgets/user_info_card.dart';
 import 'package:memoire/widgets/profile_widgets/parcours_section.dart';
 import 'package:memoire/widgets/profile_widgets/user_publication_list.dart';
+import 'package:memoire/screens/event/event_list_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -63,7 +64,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Navigator.pushReplacementNamed(context, '/home');
         break;
       case 1:
-        Navigator.pushReplacementNamed(context, '/events');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const EventListScreen()),
+        );
         break;
       case 2:
         Navigator.pushReplacementNamed(context, '/messages');

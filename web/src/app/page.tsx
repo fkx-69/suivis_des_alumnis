@@ -7,10 +7,10 @@ export default function Home() {
         Bienvenue sur notre plateforme
       </h1>
       <div className="space-x-4">
-        <Link href="/login" className="btn btn-primary btn-lg">
+        <Link href="auth/login" className="btn btn-primary btn-lg">
           Connexion
         </Link>
-        <Link href="/signIn" className="btn btn-accent btn-lg">
+        <Link href="auth/signIn" className="btn btn-accent btn-lg">
           S'inscrire
         </Link>
       </div>

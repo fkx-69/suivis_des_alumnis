@@ -1,22 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import "../globals.css";
+import { registerAlumni, registerStudent } from "@/lib/api/auth";
+import axios from "axios";
+import { arrayOutputType, object } from "zod";
 
 export default function SignIn() {
   // États de base
   const [userType, setUserType] = useState<"student" | "alumni">("alumni");
   const [isPasswordEqual, setIsPasswordEqual] = useState(true);
   const [confirmPassword, setConfirmPassword] = useState("");
-  /**
-   * Lorsque `isJobSeeking` est à `true` l'utilisateur a sélectionné
-   * « En recherche d'emploi » ; les champs qui suivent doivent alors être désactivés.
-   */
+
+  const currentYear = new Date().getFullYear();
+  const years = [];
+  const [messageError, setMessageError] = useState<MessageError>({});
+  type MessageError = {
+    [key: string]: Array<string>;
+  };
+  for (let year = 2017; year <= currentYear; year++) {
+    years.push(year);
+  }
   const [isJobSeeking, setIsJobSeeking] = useState(true);
 
-  /**
-   * Données utilisateur communes
-   */
   const [user, setUser] = useState({
     email: "",
     username: "",
@@ -98,31 +103,29 @@ export default function SignIn() {
     situation_pro: string;
     poste_actuel: string;
     nom_entreprise: string;
+    filiere: SectorKey;
+    role: string;
   }>({
     date_fin_cycle: "",
     secteur_activite: "autres",
     situation_pro: "",
     poste_actuel: "",
     nom_entreprise: "",
+    filiere: "autres",
+    role: "alumni",
   });
 
   const [studentData, setStudentData] = useState({
     filiere: "",
     niveau_etude: "",
-    annee_entree: "",
-    a_besoin_mentor: false,
+    annee_entree: 2019,
+    role: "etudiant",
   });
 
   /**
    * Listes fixes
    */
-  const niveau_etude = [
-    "Licence 1",
-    "Licence 2",
-    "Licence 3",
-    "Master 1",
-    "Master 2",
-  ];
+  const niveau_etude = ["L1", "L2", "L3", "M1", "M2"];
 
   /** Handlers */
   const handleConfirmPasswordChange = (
@@ -150,34 +153,65 @@ export default function SignIn() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 1. Vérification mot de passe
     if (user.password !== confirmPassword) {
       setIsPasswordEqual(false);
       return;
     }
 
+    // 2. Construction du payload
     const payload = {
       user,
       ...(userType === "alumni" ? alumniData : studentData),
     };
 
     try {
-      const res = await fetch("/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error("Registration failed");
-      alert("Inscription réussie !");
+      console.log("Payload envoyé :", payload);
+
+      // 3. Appel API : on attend la réponse UNE fois
+      const res =
+        userType === "alumni"
+          ? await registerAlumni(payload)
+          : await registerStudent(payload);
+
+      // 4. Succès (2xx)
+      console.log("Réponse succès :", res.data);
+      alert("Inscription réussie !");
     } catch (err) {
+      if (axios.isAxiosError(err) && err.response) {
+        const { status, data } = err.response;
+
+        if (status === 400) {
+          // 1. On récupère soit data.user, soit tout data
+          const errors = (data.user as MessageError) ?? (data as MessageError);
+
+          // 2. On reconstruit un objet d’erreurs
+          const newMessageError: MessageError = {};
+          Object.keys(errors).forEach((field) => {
+            newMessageError[field] = errors[field];
+            if (messageError[field] && !errors[field]) {
+              // Si le champ n'a plus d'erreurs, on le retire du state
+              delete messageError[field];
+            }
+          });
+
+          // 3. On met à jour le state pour déclencher le rendu
+          setMessageError(newMessageError);
+
+          // on sort avant l’alert générique
+          return;
+        }
+      }
+
       console.error(err);
       alert("Une erreur est survenue.");
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-11/12 items-center justify-center bg-base-200">
+    <div className="min-h-screen flex w-full items-center justify-center bg-base-200">
       <div
-        className={`p-8 rounded-2xl shadow-xl w-full bg-base-100 transition-all duration-500 ease-in-out max-w-lg max-h-max`}
+        className={`p-8 rounded-2xl shadow-xl w-full bg-base-100 transition-all duration-500 ease-in-out max-w-max max-h-max`}
       >
         <h1 className="text-2xl font-semibold mb-6 text-center text-base-content">
           Inscription
@@ -187,7 +221,7 @@ export default function SignIn() {
           {/* Type d'utilisateur */}
           <div className="form-control">
             <label className="block mb-1 text-base-content">
-              Type d’utilisateur
+              Type d'utilisateur
             </label>
             <select
               className="select select-primary w-full max-w-xs"
@@ -214,6 +248,10 @@ export default function SignIn() {
                   required
                   className="input input-primary"
                 />
+                {messageError.nom &&
+                  messageError.nom.map((msg) => (
+                    <p className="text-error">{msg}</p>
+                  ))}
               </div>
               <div>
                 <label className="block mb-1 text-base-content">Prénom</label>
@@ -225,6 +263,10 @@ export default function SignIn() {
                   required
                   className="input input-primary"
                 />
+                {messageError.prenom &&
+                  messageError.prenom.map((msg) => (
+                    <p className="text-error">{msg}</p>
+                  ))}
               </div>
             </div>
 
@@ -239,6 +281,10 @@ export default function SignIn() {
                   required
                   className="input input-primary"
                 />
+                {messageError.email &&
+                  messageError.email.map((msg) => (
+                    <p className="text-error">{msg}</p>
+                  ))}
               </div>
               <div>
                 <label className="block mb-1 text-base-content">
@@ -252,6 +298,10 @@ export default function SignIn() {
                   required
                   className="input input-primary"
                 />
+                {messageError.username &&
+                  messageError.username.map((msg) => (
+                    <p className="text-error">{msg}</p>
+                  ))}
               </div>
             </div>
 
@@ -440,14 +490,18 @@ export default function SignIn() {
                 <label className="block mb-1 text-base-content">
                   Année d'entrée
                 </label>
-                <input
-                  type="date"
-                  name="annee_entree"
-                  min="2016-01-01"
-                  value={studentData.annee_entree}
+                <select
+                  className="select select-primary"
                   onChange={handleStudentChange}
-                  className="input input-primary"
-                />
+                  name="annee_entree"
+                  value={studentData.annee_entree}
+                >
+                  {years.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
               </div>
             </fieldset>
           )}
@@ -459,7 +513,7 @@ export default function SignIn() {
 
         <div className="mt-4 text-sm text-center text-gray-500">
           Vous avez déjà un compte ?{" "}
-          <a href="/login" className="text-blue-600 hover:underline">
+          <a href="/auth/login" className="text-blue-600 hover:underline">
             Connectez-vous
           </a>
         </div>

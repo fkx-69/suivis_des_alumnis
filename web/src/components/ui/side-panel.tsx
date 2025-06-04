@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, ReactNode, useEffect, useRef } from "react";
-import PersonalProfile from "../components/personal-profile";
+import PersonalProfile from "./personal-profile";
 
 import {
   HomeIcon,
@@ -17,11 +17,11 @@ const navItems = [
   {
     label: "Updates",
     icon: <HomeIcon size={20} />,
-    href: "#",
+    href: "/",
     active: true,
   },
   { label: "Messages", icon: <MessageCircleMore size={20} />, href: "#" },
-  { label: "Events", icon: <CalendarIcon size={20} />, href: "#" },
+  { label: "Events", icon: <CalendarIcon size={20} />, href: "/evenement" },
 ];
 const profileItems = {
   label: "Profile",

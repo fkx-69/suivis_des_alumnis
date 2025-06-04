@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SidePanel from "../components/ui/side-panel";
-import { useRouter } from "next/router";
-import { useAuth } from "@/lib/api/authContext";
+import { useRouter } from "next/navigation";
+import { AuthProvider, useAuth } from "@/lib/api/authContext";
 import { useEffect } from "react";
 
 const geistSans = Geist({
@@ -27,23 +27,32 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  return (
+    <html data-theme="emerald" lang="en" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <AuthProvider>
+          <AuthGuard>
+            <SidePanel>{children}</SidePanel>
+          </AuthGuard>
+        </AuthProvider>
+      </body>
+    </html>
+  );
+}
+
+function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    // Dès que le loading est terminé, si user est null, on redirige
     if (!loading && !user) {
-      router.push("/auth/login"); // Redirection vers la page de connexion
+      router.push("/auth/login");
     }
-    // Note : on inclut router dans le tableau de dépendances pour éviter les warnings
   }, [loading, user, router]);
-  return (
-    <html data-theme="emerald" lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <SidePanel>{children}</SidePanel>
-      </body>
-    </html>
-  );
+
+  if (loading) {
+    return null;
+  }
+
+  return <>{children}</>;
 }

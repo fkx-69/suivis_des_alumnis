@@ -40,7 +40,7 @@ SECRET_KEY = 'django-insecure-)m()@(h4+e07&u1#9wj^9fc4!*-i86-$+bygyhs!nujm-f(!7x
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost:3000']
+ALLOWED_HOSTS = ['127.0.0.1', '192.168.137.40']
 
 
 # Application definition
@@ -58,6 +58,14 @@ INSTALLED_APPS = [
     'accounts',
     'reports',
     'filiere',
+    'groups',
+    'publications',
+    'events',
+    'mentorat',
+    'notifications',
+    'channels',
+    'messaging',
+    'statistiques',
     'drf_yasg',
 ]
 
@@ -65,6 +73,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
@@ -87,6 +96,7 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -96,7 +106,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware'
     ]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # pour React
 
+]
 CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'backend2.urls'

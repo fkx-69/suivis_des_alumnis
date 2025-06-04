@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
 # === ÉTUDIANT REGISTRATION SERIALIZER ===
 class RegisterEtudiantSerializer(serializers.ModelSerializer):
     user = UserSerializer()
-    filiere = serializers.CharField()  # Reçoit un code (ex: "IRT")
+    #filiere = serializers.CharField()  # Reçoit un code (ex: "IRT")
 
     class Meta:
         model = Etudiant
@@ -31,12 +31,9 @@ class RegisterEtudiantSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
-        filiere_code = validated_data.pop('filiere')
-
-        try:
-            filiere = Filiere.objects.get(code=filiere_code)
-        except Filiere.DoesNotExist:
-            raise serializers.ValidationError({'filiere': "Filière invalide"})
+        filiere = validated_data.pop('filiere')
+        
+      
 
         password = user_data.pop('password')
         user_data['role'] = Role.ETUDIANT
@@ -48,7 +45,7 @@ class RegisterEtudiantSerializer(serializers.ModelSerializer):
 # === ALUMNI REGISTRATION SERIALIZER ===
 class RegisterAlumniSerializer(serializers.ModelSerializer):
     user = UserSerializer()
-    filiere = serializers.CharField()  # Reçoit un code (ex: "IRT")
+   # filiere = serializers.CharField()  # Reçoit un code (ex: "IRT")
 
     class Meta:
         model = Alumni
@@ -56,12 +53,7 @@ class RegisterAlumniSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
-        filiere_code = validated_data.pop('filiere')
-
-        try:
-            filiere = Filiere.objects.get(code=filiere_code)
-        except Filiere.DoesNotExist:
-            raise serializers.ValidationError({'filiere': "Filière invalide"})
+        filiere = validated_data.pop('filiere')
 
         password = user_data.pop('password')
         user_data['role'] = Role.ALUMNI

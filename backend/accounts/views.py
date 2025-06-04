@@ -1,4 +1,4 @@
-from rest_framework import generics, status, permissions, viewsets
+from rest_framework import generics, status, permissions, viewsets, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
@@ -10,6 +10,30 @@ from .serializers import (
     ChangePasswordSerializer, ChangeEmailSerializer, UpdateUserSerializer
 )
 
+class UserSearchView(generics.ListAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nom', 'prenom', 'username']
+
+
+class EtudiantSearchView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nom', 'prenom', 'username']
+
+    def get_queryset(self):
+        return CustomUser.objects.filter(role='ETUDIANT')
+
+
+class AlumniSearchView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nom', 'prenom', 'username']
+
+    def get_queryset(self):
+        return CustomUser.objects.filter(role='ALUMNI')
+    
 # === AUTHENTIFICATION ===
 class LoginAPIView(APIView):
     def post(self, request):

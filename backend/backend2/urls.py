@@ -40,6 +40,12 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('api/reports/', include('reports.urls')),
     path('api/filiere/', include('filiere.urls')),
+    path('api/groups/', include('groups.urls')),
+    path('api/publications/', include('publications.urls')),
+    path('api/events/', include('events.urls')),
+    path('api/mentorat/', include('mentorat.urls')),
+    path('api/notifications/', include('notifications.urls')),
+    path('api/statistiques/', include('statistiques.urls')),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
 

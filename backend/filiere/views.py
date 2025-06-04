@@ -1,4 +1,5 @@
 from rest_framework import generics, permissions
+from rest_framework.permissions import  AllowAny
 from .models import Filiere
 from .serializers import FiliereSerializer
 
@@ -9,7 +10,8 @@ class IsAdminUser(permissions.BasePermission):
 class FiliereListCreateView(generics.ListCreateAPIView):
     queryset = Filiere.objects.all()
     serializer_class = FiliereSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [AllowAny]
+
 
 class FiliereDeleteView(generics.DestroyAPIView):
     queryset = Filiere.objects.all()

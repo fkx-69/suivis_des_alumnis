@@ -2,8 +2,9 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { login } from "@/lib/api/auth";
-import { useAuth } from "@/lib/store/auth";
+import { login as loginApi } from "@/lib/api/auth";
+import { useAuth } from "@/lib/api/authContext";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { toast } from "@/components/ui/toast";
 import "@/app/globals.css";
@@ -16,7 +17,8 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function LoginPage() {
-  const setUser = useAuth((s) => s.setUser);
+  const { login } = useAuth();
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -25,10 +27,11 @@ export default function LoginPage() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await login(data);
-      const user = { id: response.user.id, username: response.user.username }; // Ensure the response matches the expected type
-      setUser(user);
+      const response = await loginApi(data);
+      localStorage.setItem("token", response.access);
+      login(response.user);
       toast.success("Connexion réussie");
+      router.push("/");
     } catch {
       toast.error("Identifiants incorrects");
     }

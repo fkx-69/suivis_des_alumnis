@@ -3,26 +3,30 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Edit2 as Pencil } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/lib/api/authContext";
 
 interface ProfileField {
   label: string;
   value: string;
 }
 
-const initialFields: ProfileField[] = [
-  { label: "Username", value: "Fab123" },
-  { label: "Email", value: "fab@gmail.com" },
-  { label: "Prenoms", value: "Fabien" },
-  { label: "Nom", value: "Konaré" },
-  { label: "Secteur", value: "Informatique" },
-  { label: "Emploie", value: " Developpeur web" },
-];
+function buildFields(user: any): ProfileField[] {
+  if (!user) return [];
+  return [
+    { label: "Username", value: user.username },
+    { label: "Email", value: user.email },
+    { label: "Prenoms", value: user.prenom },
+    { label: "Nom", value: user.nom },
+    { label: "Role", value: user.role },
+  ];
+}
 
 interface PersonalProfileProps {
   onClose: () => void;
 }
 export default function PersonalProfile({ onClose }: PersonalProfileProps) {
-  const [fields, setFields] = useState<ProfileField[]>(initialFields);
+  const { user } = useAuth();
+  const [fields, setFields] = useState<ProfileField[]>(buildFields(user));
   const [editing, setEditing] = useState<string | null>(null);
   const [showButton, setShowButton] = useState(false);
 
@@ -55,6 +59,10 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
       document.removeEventListener("keydown", handleEscKey);
     };
   }, [onClose]);
+
+  useEffect(() => {
+    setFields(buildFields(user));
+  }, [user]);
 
   return (
     <div

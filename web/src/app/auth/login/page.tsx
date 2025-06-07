@@ -39,19 +39,21 @@ export default function LoginPage() {
       <div className="bg-s p-8 rounded-2xl shadow-xl w-full max-w-md bg-base-100">
         <h2 className="text-2xl font-bold mb-6 text-center">Connexion</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <Input
-            className="w-full px-4 py-4 border rounded-xl"
-            label="Email"
-            {...register("email")}
-            error={errors.email?.message}
-          />
-          <Input
-            className="w-full px-4 py-4 border rounded-xl"
-            type="password"
-            label="Mot de passe"
-            {...register("password")}
-            error={errors.password?.message}
-          />
+          <fieldset className="space-y-4">
+            <Input
+              className="input input-primary"
+              label="Email"
+              {...register("email")}
+              error={errors.email?.message}
+            />
+            <Input
+              className="input input-primary"
+              type="password"
+              label="Mot de passe"
+              {...register("password")}
+              error={errors.password?.message}
+            />
+          </fieldset>
           <button
             type="submit"
             disabled={isSubmitting}

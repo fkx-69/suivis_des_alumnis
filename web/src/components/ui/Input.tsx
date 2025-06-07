@@ -14,7 +14,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   // Renamed the destructured 'className' prop to 'propClassName' to avoid ambiguity
   // if 'className' also exists within '...props' (though less likely with explicit destructuring).
   ({ label, error, className: propClassName, ...props }, ref) => (
-    <label className="block mb-2 text-sm font-medium">
+    <label className="block mb-1 text-base-content">
       {label && <span className="">{label}</span>}
       <input
         ref={ref}

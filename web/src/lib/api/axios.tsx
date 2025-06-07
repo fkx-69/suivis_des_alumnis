@@ -8,7 +8,15 @@ export const api = axios.create({
 
 // Intercepteur : attache automatiquement le JWT (stocké en cookie httpOnly)
 api.interceptors.request.use((config) => {
-  // Ex : lecture d’un token CSRF si besoin
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers = {
+        ...config.headers,
+        Authorization: `Bearer ${token}`,
+      };
+    }
+  }
   return config;
 });
 

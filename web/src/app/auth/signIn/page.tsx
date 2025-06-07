@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { registerAlumni, registerStudent } from "@/lib/api/auth";
+import { registerAlumni, registerStudent, login as loginApi } from "@/lib/api/auth";
+import { useAuth } from "@/lib/api/authContext";
+import { useRouter } from "next/navigation";
 import axios from "axios";
-import { arrayOutputType, object } from "zod";
 
 export default function SignIn() {
+  const { login } = useAuth();
+  const router = useRouter();
   // États de base
   const [userType, setUserType] = useState<"student" | "alumni">("alumni");
   const [isPasswordEqual, setIsPasswordEqual] = useState(true);
@@ -176,7 +179,13 @@ export default function SignIn() {
 
       // 4. Succès (2xx)
       console.log("Réponse succès :", res.data);
-      alert("Inscription réussie !");
+      const loginRes = await loginApi({
+        email: user.email,
+        password: user.password,
+      });
+      localStorage.setItem("token", loginRes.access);
+      login(loginRes.user);
+      router.push("/");
     } catch (err) {
       if (axios.isAxiosError(err) && err.response) {
         const { status, data } = err.response;

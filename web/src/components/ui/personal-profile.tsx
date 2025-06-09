@@ -19,19 +19,18 @@ function buildFields(user: any): ProfileField[] {
     { label: "Email", value: user.email },
     { label: "Prenoms", value: user.prenom },
     { label: "Nom", value: user.nom },
-    { label: "Role", value: user.role },
   ];
 }
 
 interface PersonalProfileProps {
   onClose: () => void;
 }
+
 export default function PersonalProfile({ onClose }: PersonalProfileProps) {
   const { user, login } = useAuth();
   const [fields, setFields] = useState<ProfileField[]>(buildFields(user));
   const [editing, setEditing] = useState<string | null>(null);
   const [showButton, setShowButton] = useState(false);
-
   const profileContentRef = useRef<HTMLDivElement>(null);
 
   const handleChange = (label: string, newValue: string) => {
@@ -45,96 +44,82 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
     e: React.KeyboardEvent<HTMLInputElement>,
     label: string
   ) => {
-    if (e.key === "Enter") {
-      setEditing(null);
-    }
+    if (e.key === "Enter") setEditing(null);
   };
 
   useEffect(() => {
-    const handleEscKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-    document.addEventListener("keydown", handleEscKey);
-    return () => {
-      document.removeEventListener("keydown", handleEscKey);
-    };
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", esc);
+    return () => window.removeEventListener("keydown", esc);
   }, [onClose]);
 
-  useEffect(() => {
-    setFields(buildFields(user));
-  }, [user]);
+  useEffect(() => setFields(buildFields(user)), [user]);
 
   return (
     <div
-      className="cards fixed flex flex-auto top-0 left-0 w-full h-full z-50 items-center justify-center bg-opacity-30"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <motion.div
         ref={profileContentRef}
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-3xl bg-white border border-gray-200 rounded-b-md shadow p-8"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.25 }}
         onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-lg border border-base-200 bg-base-100 p-6 shadow-xl"
       >
-        <div className="flex flex-col items-center">
+        {/* header */}
+        <div className="flex flex-col items-center text-center">
           <div className="avatar">
             <div className="w-24 rounded-full">
-              <img src="/profile/avatar.jpg" alt="Profile" className="" />
+              <img src="/profile/avatar.jpg" alt="Profile" />
             </div>
           </div>
-          <h1 className="mt-4 text-2xl font-semibold text-gray-800">
-            Fabien Konaré
+          <h1 className="mt-3 text-xl font-semibold">
+            {user?.prenom} {user?.nom}
           </h1>
-          <p className="text-gray-500 flex items-center">Alumni </p>
+          <p className="text-sm text-gray-500">{user?.role}</p>
         </div>
 
-        <div className="card-body">
-          <div className="mt-8 space-y-6">
-            {fields.map((field) => (
-              <div
-                key={field.label}
-                className="flex justify-between items-center"
-              >
-                <span className="font-medium text-gray-700">{field.label}</span>
-                <div className="flex items-center text-gray-500">
-                  {editing === field.label ? (
-                    <input
-                      type="text"
-                      className="input input-primary bg-white border-b border-gray-300 focus:outline-none text-gray-800"
-                      value={field.value}
-                      autoFocus
-                      onChange={(e) =>
-                        handleChange(field.label, e.target.value)
-                      }
-                      onBlur={() => setEditing(null)}
-                      onKeyDown={(e) => handleKeyDown(e, field.label)}
-                    />
-                  ) : (
-                    <>
-                      <span>{field.value}</span>
-                      <Pencil
-                        className="ml-2 h-4 w-4 text-gray-400 hover:text-gray-600 cursor-pointer"
-                        onClick={() => setEditing(field.label)}
-                      />
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+        {/* champs */}
+        <div className="mt-6 space-y-2">
+          {fields.map((field) => (
+            <div
+              key={field.label}
+              className="flex items-center justify-between gap-2"
+            >
+              <span className="whitespace-nowrap font-medium">
+                {field.label}
+              </span>
+
+              {editing === field.label ? (
+                <input
+                  type="text"
+                  className="input input-sm input-primary w-full max-w-[60%]"
+                  value={field.value}
+                  autoFocus
+                  onChange={(e) => handleChange(field.label, e.target.value)}
+                  onBlur={() => setEditing(null)}
+                  onKeyDown={(e) => handleKeyDown(e, field.label)}
+                />
+              ) : (
+                <span className="flex items-center gap-1">
+                  {field.value}
+                  <Pencil
+                    className="h-4 w-4 cursor-pointer text-gray-400 hover:text-gray-600"
+                    onClick={() => setEditing(field.label)}
+                  />
+                </span>
+              )}
+            </div>
+          ))}
         </div>
 
-        <div className="flex justify-center mt-6">
-          {showButton && (
+        {/* bouton */}
+        {showButton && (
+          <div className="mt-6 flex justify-center">
             <button
-              className="btn btn-primary"
+              className="btn btn-primary btn-sm"
               onClick={async () => {
                 setShowButton(false);
                 if (!user) return;
@@ -145,23 +130,21 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
                     data.username = f.value;
                   if (f.label === "Prenoms" && f.value !== user.prenom)
                     data.prenom = f.value;
-                  if (f.label === "Nom" && f.value !== user.nom) data.nom = f.value;
+                  if (f.label === "Nom" && f.value !== user.nom)
+                    data.nom = f.value;
                 });
 
                 try {
                   let newUser = user;
-                  if (fields.find((f) => f.label === "Email")?.value !== user.email) {
-                    await changeEmail({
-                      email: fields.find((f) => f.label === "Email")!.value,
-                    });
-                    newUser = { ...newUser, email: fields.find((f) => f.label === "Email")!.value };
+                  const emailField = fields.find((f) => f.label === "Email");
+                  if (emailField && emailField.value !== user.email) {
+                    await changeEmail({ email: emailField.value });
+                    newUser = { ...newUser, email: emailField.value };
                   }
-
-                  if (Object.keys(data).length > 0) {
+                  if (Object.keys(data).length) {
                     const updated = await updateProfile(data);
                     newUser = { ...newUser, ...updated };
                   }
-
                   login(newUser);
                   toast.success("Profil mis à jour");
                 } catch {
@@ -173,8 +156,8 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
             >
               Enregistrer
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </motion.div>
     </div>
   );

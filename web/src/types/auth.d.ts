@@ -43,7 +43,7 @@ export interface StudentRegisterPayload {
     annee_entree: number;
     role:         string;
 }
-  export interface AlumniRegisterPayload {
+export interface AlumniRegisterPayload {
     user:             UserForm;
     date_fin_cycle:   string;
     secteur_activite: string;
@@ -52,6 +52,18 @@ export interface StudentRegisterPayload {
     nom_entreprise:   string;
     filiere:          string;
     role:             string;
+}
+
+export interface UpdateProfilePayload {
+  username?: string;
+  nom?: string;
+  prenom?: string;
+  photo_profil?: string | null;
+  biographie?: string | null;
+}
+
+export interface ChangeEmailPayload {
+  email: string;
 }
 
 

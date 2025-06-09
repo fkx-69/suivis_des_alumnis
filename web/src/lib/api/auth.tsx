@@ -26,3 +26,19 @@ export async function registerAlumni(data: AlumniRegisterPayload) {
   );
   return res;
 }
+
+export async function updateProfile(data: Partial<{
+  username: string;
+  nom: string;
+  prenom: string;
+  photo_profil: string | null;
+  biographie: string | null;
+}>) {
+  const res = await api.put("/accounts/me/update/", data);
+  return res.data;
+}
+
+export async function changeEmail(data: { email: string }) {
+  const res = await api.put("/accounts/change-email/", data);
+  return res.data;
+}

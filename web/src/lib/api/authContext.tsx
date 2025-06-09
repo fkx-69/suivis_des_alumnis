@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Appel API pour vérifier l'utilisateur connecté
   useEffect(() => {
     api // Use the configured 'api' instance
-      .get("/api/me", { withCredentials: true }) // Pass withCredentials if not globally set in 'api' instance
+      .get("/accounts/me", { withCredentials: true }) // Pass withCredentials if not globally set in 'api' instance
       .then((res) => {
         setUser(res.data as User); // It's good practice to validate or cast res.data
       })

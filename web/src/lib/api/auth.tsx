@@ -11,7 +11,7 @@ export async function login(data: LoginPayload) {
   return res.data;
 }
 
-export async function registerStudent(data: any) {
+export async function registerStudent(data: StudentRegisterPayload) {
   const res = await axios.post(
     "http://127.0.0.1:8000/api/accounts/register/etudiant/",
     data
@@ -19,7 +19,7 @@ export async function registerStudent(data: any) {
   return res;
 }
 
-export async function registerAlumni(data: any) {
+export async function registerAlumni(data: AlumniRegisterPayload) {
   const res = await axios.post(
     "http://127.0.0.1:8000/api/accounts/register/alumni/",
     data

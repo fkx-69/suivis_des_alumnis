@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosRequestHeaders } from "axios";
 
 // Création d’une instance pré‑configurée
 export const api = axios.create({
@@ -14,13 +14,11 @@ api.interceptors.request.use((config) => {
       config.headers = {
         ...config.headers,
         Authorization: `Bearer ${token}`,
-      };
+      } as AxiosRequestHeaders; // Explicitly cast to AxiosRequestHeaders
     }
   }
   return config;
 });
-
-
 
 // Intercepteur de réponse : refresh token ou déconnexion automatique
 api.interceptors.response.use((response) => {

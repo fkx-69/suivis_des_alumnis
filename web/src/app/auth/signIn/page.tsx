@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { registerAlumni, registerStudent, login as loginApi } from "@/lib/api/auth";
 import { useAuth } from "@/lib/api/authContext";
+import { fetchFilieres, Filiere } from "@/lib/api/filiere";
+import type { AlumniRegisterPayload, StudentRegisterPayload, UserForm } from "@/types/auth";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
@@ -25,7 +27,15 @@ export default function SignIn() {
   }
   const [isJobSeeking, setIsJobSeeking] = useState(true);
 
-  const [user, setUser] = useState({
+  const [filieres, setFilieres] = useState<Filiere[]>([]);
+
+  useEffect(() => {
+    fetchFilieres()
+      .then((data) => setFilieres(data))
+      .catch((err) => console.error(err));
+  }, []);
+
+  const [user, setUser] = useState<UserForm>({
     email: "",
     username: "",
     nom: "",
@@ -100,25 +110,17 @@ export default function SignIn() {
   /**
    * Données spécifiques alumni / étudiants
    */
-  const [alumniData, setAlumniData] = useState<{
-    date_fin_cycle: string;
-    secteur_activite: SectorKey;
-    situation_pro: string;
-    poste_actuel: string;
-    nom_entreprise: string;
-    filiere: SectorKey;
-    role: string;
-  }>({
+  const [alumniData, setAlumniData] = useState<Omit<AlumniRegisterPayload, "user">>({
     date_fin_cycle: "",
     secteur_activite: "autres",
     situation_pro: "",
     poste_actuel: "",
     nom_entreprise: "",
-    filiere: "autres",
+    filiere: "",
     role: "alumni",
   });
 
-  const [studentData, setStudentData] = useState({
+  const [studentData, setStudentData] = useState<Omit<StudentRegisterPayload, "user">>({
     filiere: "",
     niveau_etude: "",
     annee_entree: 2019,
@@ -162,20 +164,18 @@ export default function SignIn() {
       return;
     }
 
-    // 2. Construction du payload
-    const payload = {
-      user,
-      ...(userType === "alumni" ? alumniData : studentData),
-    };
-
     try {
-      console.log("Payload envoyé :", payload);
+      let res;
 
-      // 3. Appel API : on attend la réponse UNE fois
-      const res =
-        userType === "alumni"
-          ? await registerAlumni(payload)
-          : await registerStudent(payload);
+      if (userType === "alumni") {
+        const payload: AlumniRegisterPayload = { user, ...alumniData };
+        console.log("Payload envoyé :", payload);
+        res = await registerAlumni(payload);
+      } else {
+        const payload: StudentRegisterPayload = { user, ...studentData };
+        console.log("Payload envoyé :", payload);
+        res = await registerStudent(payload);
+      }
 
       // 4. Succès (2xx)
       console.log("Réponse succès :", res.data);
@@ -359,18 +359,16 @@ export default function SignIn() {
               <div className="grid grid-cols-2 gap-4">
                 {/* Sélection du secteur (label « Filière » dans la maquette) – TOUJOURS actif */}
                 <div>
-                  <label className="block mb-1 text-base-content">
-                    Filière
-                  </label>
+                  <label className="block mb-1 text-base-content">Filière</label>
                   <select
                     className="select select-primary"
-                    name="secteur_activite"
-                    value={alumniData.secteur_activite}
+                    name="filiere"
+                    value={alumniData.filiere}
                     onChange={handleAlumniChange}
                   >
-                    {Object.keys(jobBySector).map((key) => (
-                      <option key={key} value={key}>
-                        {key}
+                    {filieres.map((filiere) => (
+                      <option key={filiere.code} value={filiere.code}>
+                        {filiere.nom_complet}
                       </option>
                     ))}
                   </select>
@@ -470,9 +468,9 @@ export default function SignIn() {
                     required
                     className="select select-primary"
                   >
-                    {Object.keys(jobBySector).map((key) => (
-                      <option key={key} value={key}>
-                        {key}
+                    {filieres.map((filiere) => (
+                      <option key={filiere.code} value={filiere.code}>
+                        {filiere.nom_complet}
                       </option>
                     ))}
                   </select>

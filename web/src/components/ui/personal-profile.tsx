@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { Edit2 as Pencil } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/api/authContext";
+import { updateProfile, changeEmail } from "@/lib/api/auth";
+import { toast } from "@/components/ui/toast";
 
 interface ProfileField {
   label: string;
@@ -25,7 +27,7 @@ interface PersonalProfileProps {
   onClose: () => void;
 }
 export default function PersonalProfile({ onClose }: PersonalProfileProps) {
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const [fields, setFields] = useState<ProfileField[]>(buildFields(user));
   const [editing, setEditing] = useState<string | null>(null);
   const [showButton, setShowButton] = useState(false);
@@ -133,10 +135,40 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
           {showButton && (
             <button
               className="btn btn-primary"
-              onClick={() => {
+              onClick={async () => {
                 setShowButton(false);
-                console.log("Saving changes:", fields);
-                onClose();
+                if (!user) return;
+
+                const data: Record<string, string> = {};
+                fields.forEach((f) => {
+                  if (f.label === "Username" && f.value !== user.username)
+                    data.username = f.value;
+                  if (f.label === "Prenoms" && f.value !== user.prenom)
+                    data.prenom = f.value;
+                  if (f.label === "Nom" && f.value !== user.nom) data.nom = f.value;
+                });
+
+                try {
+                  let newUser = user;
+                  if (fields.find((f) => f.label === "Email")?.value !== user.email) {
+                    await changeEmail({
+                      email: fields.find((f) => f.label === "Email")!.value,
+                    });
+                    newUser = { ...newUser, email: fields.find((f) => f.label === "Email")!.value };
+                  }
+
+                  if (Object.keys(data).length > 0) {
+                    const updated = await updateProfile(data);
+                    newUser = { ...newUser, ...updated };
+                  }
+
+                  login(newUser);
+                  toast.success("Profil mis à jour");
+                } catch {
+                  toast.error("Erreur lors de la mise à jour");
+                } finally {
+                  onClose();
+                }
               }}
             >
               Enregistrer

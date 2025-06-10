@@ -2,6 +2,8 @@
 
 import React, { useState, ReactNode, useEffect, useRef } from "react";
 import PersonalProfile from "./personal-profile";
+import { useAuth } from "@/lib/api/authContext";
+import { useRouter } from "next/navigation";
 
 import {
   HomeIcon,
@@ -33,6 +35,17 @@ export default function SidePanel({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const panelWidth = collapsed ? "w-16" : "w-50";
+
+  const { logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await logout();
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+    }
+    router.push("/auth/login");
+  };
 
   const profileButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -119,6 +132,19 @@ export default function SidePanel({ children }: { children: ReactNode }) {
               </button>
             </li>
           </ul>
+        </div>
+        <div className="p-2">
+          <button
+            onClick={handleLogout}
+            className={`flex items-center p-2 w-full hover:bg-base-300 rounded-md ${
+              collapsed ? "justify-center" : "gap-3"
+            }`}
+          >
+            <LogOutIcon size={20} />
+            {!collapsed && (
+              <span className="text-content">Déconnexion</span>
+            )}
+          </button>
         </div>
       </aside>
       {showProfile && <PersonalProfile onClose={handleCloseProfile} />}

@@ -9,6 +9,7 @@ export default function Page() {
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [openedId, setOpenedId] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -66,8 +67,11 @@ export default function Page() {
     <main className="p-4 lg:p-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {events.map((ev) => (
         <div
-          key={ev.date_debut}
-          className={`card card-lg w-96 bg-base-100 ${ev.image ? "" : "card-xl"} shadow-sm`}
+          key={ev.id}
+          onClick={() =>
+            setOpenedId((current) => (current === ev.id ? null : ev.id))
+          }
+          className={`card card-lg w-96 bg-base-100 ${ev.image ? "" : "card-xl"} shadow-sm cursor-pointer`}
         >
           {ev.image && (
             <figure>
@@ -80,7 +84,11 @@ export default function Page() {
           )}
           <div className="card-body">
             <h2 className="card-title">{ev.titre}</h2>
-            <p className="text-sm opacity-80 line-clamp-3">{ev.description}</p>
+            <p
+              className={`text-sm opacity-80 ${openedId === ev.id ? "" : "line-clamp-3"}`}
+            >
+              {ev.description}
+            </p>
             <div className="flex items-center gap-2 mt-2 text-sm">
               <CalendarIcon size={18} />
               {new Date(ev.date_debut).toLocaleString(undefined, {

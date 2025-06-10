@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CalendarIcon, MapPinIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { api } from "@/lib/api/axios";
 import { ApiEvent } from "@/types/evenement";
 
@@ -9,6 +9,7 @@ export default function Page() {
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -66,7 +67,7 @@ export default function Page() {
     <main className="p-4 lg:p-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {events.map((ev) => (
         <div
-          key={ev.date_debut}
+          key={ev.id}
           className={`card card-lg w-full bg-base-100 ${ev.image ? "" : "card-md"} shadow-sm`}
         >
           {ev.image && (
@@ -80,7 +81,16 @@ export default function Page() {
           )}
           <div className="card-body">
             <h2 className="card-title">{ev.titre}</h2>
-            <p className="text-sm opacity-80 line-clamp-3">{ev.description}</p>
+            <p
+              className={`text-sm opacity-80 cursor-pointer ${
+                expandedId === ev.id ? "" : "line-clamp-3"
+              }`}
+              onClick={() =>
+                setExpandedId(expandedId === ev.id ? null : ev.id)
+              }
+            >
+              {ev.description}
+            </p>
             <div className="flex items-center gap-2 mt-2 text-sm">
               <CalendarIcon size={18} />
               {new Date(ev.dateDebut).toLocaleString(undefined, {

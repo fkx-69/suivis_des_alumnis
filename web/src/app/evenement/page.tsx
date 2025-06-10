@@ -65,7 +65,10 @@ export default function Page() {
   return (
     <main className="p-4 lg:p-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {events.map((ev) => (
-        <article key={ev.id} className="card bg-base-100 shadow-xl">
+        <div
+          key={ev.id}
+          className={`card w-full bg-base-100 ${ev.image ? "" : "card-md"} shadow-sm`}
+        >
           {ev.image && (
             <figure>
               <img
@@ -94,7 +97,7 @@ export default function Page() {
               {ev.lieu}
             </div>
           </div>
-        </article>
+        </div>
       ))}
     </main>
   );

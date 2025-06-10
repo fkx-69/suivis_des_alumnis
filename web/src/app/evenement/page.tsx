@@ -9,7 +9,7 @@ export default function Page() {
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -67,8 +67,11 @@ export default function Page() {
     <main className="p-4 lg:p-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {events.map((ev) => (
         <div
-          key={ev.date_debut}
+          key={ev.titre}
           className={`card card-lg w-96 bg-base-100 ${ev.image ? "" : "card-xl"} shadow-sm`}
+          onClick={() =>
+            setExpandedId(expandedId === ev.titre ? null : ev.titre)
+          }
         >
           {ev.image && (
             <figure>
@@ -83,9 +86,8 @@ export default function Page() {
             <h2 className="card-title">{ev.titre}</h2>
             <p
               className={`text-sm opacity-80 cursor-pointer ${
-                expandedId === ev.id ? "" : "line-clamp-3"
+                expandedId === ev.titre ? "" : "line-clamp-3"
               }`}
-              onClick={() => setExpandedId(expandedId === ev.id ? null : ev.id)}
             >
               {ev.description}
             </p>

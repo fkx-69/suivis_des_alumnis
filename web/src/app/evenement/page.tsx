@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CalendarIcon, MapPinIcon } from "lucide-react";
+import { api } from "@/lib/api/axios";
 
 interface Event {
   id: number;
@@ -22,9 +23,10 @@ export default function Page() {
     async function fetchEvents() {
       try {
         // Remplace la route ci‑dessous par celle de ton backend
-        const res = await fetch("/api/evenements/prochains/");
-        if (!res.ok) throw new Error("Impossible de récupérer les événements");
-        const data: Event[] = await res.json();
+        const res = await api.get("/events/calendrier/");
+        if (res.status < 200 || res.status >= 300)
+          throw new Error("Impossible de récupérer les événements");
+        const data: Event[] = await res.data;
 
         // Garder uniquement ceux à venir et trier par date
         const futurs = data

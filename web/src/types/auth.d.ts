@@ -9,8 +9,8 @@ export interface User {
   nom:          string;
   prenom:       string;
   role:         string;
-  photo_profil: null | any;
-  biographie:   null | string;
+  photo_profil: null;
+  biographie:   null;
 }
 
 export interface LoginPayload {
@@ -46,10 +46,10 @@ export interface StudentRegisterPayload {
 export interface AlumniRegisterPayload {
     user:             UserForm;
     date_fin_cycle:   string;
-    secteur_activite: string;
+    secteur_activite?: string;
     situation_pro:    string;
-    poste_actuel:     string;
-    nom_entreprise:   string;
+    poste_actuel?:     string;
+    nom_entreprise?:   string;
     filiere:          string;
     role:             string;
 }
@@ -58,8 +58,8 @@ export interface UpdateProfilePayload {
   username?: string;
   nom?: string;
   prenom?: string;
-  photo_profil?: string | null;
-  biographie?: string | null;
+  photo_profil?: string;
+  biographie?: string;
 }
 
 export interface ChangeEmailPayload {

@@ -1,10 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { registerAlumni, registerStudent, login as loginApi } from "@/lib/api/auth";
+import {
+  registerAlumni,
+  registerStudent,
+  login as loginApi,
+} from "@/lib/api/auth";
 import { useAuth } from "@/lib/api/authContext";
 import { fetchFilieres, Filiere } from "@/lib/api/filiere";
-import type { AlumniRegisterPayload, StudentRegisterPayload, UserForm } from "@/types/auth";
+import type {
+  AlumniRegisterPayload,
+  StudentRegisterPayload,
+  UserForm,
+} from "@/types/auth";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
@@ -110,7 +118,9 @@ export default function SignIn() {
   /**
    * Données spécifiques alumni / étudiants
    */
-  const [alumniData, setAlumniData] = useState<Omit<AlumniRegisterPayload, "user">>({
+  const [alumniData, setAlumniData] = useState<
+    Omit<AlumniRegisterPayload, "user">
+  >({
     date_fin_cycle: "",
     secteur_activite: "autres",
     situation_pro: "",
@@ -120,7 +130,9 @@ export default function SignIn() {
     role: "alumni",
   });
 
-  const [studentData, setStudentData] = useState<Omit<StudentRegisterPayload, "user">>({
+  const [studentData, setStudentData] = useState<
+    Omit<StudentRegisterPayload, "user">
+  >({
     filiere: "",
     niveau_etude: "",
     annee_entree: 2019,
@@ -359,7 +371,9 @@ export default function SignIn() {
               <div className="grid grid-cols-2 gap-4">
                 {/* Sélection du secteur (label « Filière » dans la maquette) – TOUJOURS actif */}
                 <div>
-                  <label className="block mb-1 text-base-content">Filière</label>
+                  <label className="block mb-1 text-base-content">
+                    Filière
+                  </label>
                   <select
                     className="select select-primary"
                     name="filiere"
@@ -427,13 +441,14 @@ export default function SignIn() {
                     onChange={handleAlumniChange}
                     disabled={isJobSeeking}
                   >
-                    {(jobBySector[alumniData.secteur_activite] ?? []).map(
-                      (poste) => (
-                        <option key={poste} value={poste}>
-                          {poste}
-                        </option>
-                      )
-                    )}
+                    {(
+                      jobBySector[alumniData.secteur_activite as SectorKey] ??
+                      []
+                    ).map((poste) => (
+                      <option key={poste} value={poste}>
+                        {poste}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>

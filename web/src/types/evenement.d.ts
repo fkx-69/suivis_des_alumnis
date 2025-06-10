@@ -1,5 +1,4 @@
 export interface ApiEvent {
-    lieu: string;
     dateDebut: string | number | Date;
     id: number;
     titre: string;

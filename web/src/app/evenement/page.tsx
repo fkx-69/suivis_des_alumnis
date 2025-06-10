@@ -66,8 +66,8 @@ export default function Page() {
     <main className="p-4 lg:p-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {events.map((ev) => (
         <div
-          key={ev.id}
-          className={`card w-full bg-base-100 ${ev.image ? "" : "card-md"} shadow-sm`}
+          key={ev.date_debut}
+          className={`card card-lg w-full bg-base-100 ${ev.image ? "" : "card-md"} shadow-sm`}
         >
           {ev.image && (
             <figure>
@@ -91,10 +91,6 @@ export default function Page() {
                 hour: "2-digit",
                 minute: "2-digit",
               })}
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <MapPinIcon size={18} />
-              {ev.lieu}
             </div>
           </div>
         </div>

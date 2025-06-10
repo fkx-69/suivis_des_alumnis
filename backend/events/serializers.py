@@ -11,13 +11,15 @@ class EvenementSerializer(serializers.ModelSerializer):
         fields = [
             'titre',
             'description',
+            'date_debut',
+            'date_fin',
             'date_debut_affiche',
             'date_fin_affiche',
             'createur',
         ]
 
     def get_date_debut_affiche(self, obj):
-        return obj.date_debut.strftime('%d-%m-%Y à %Hh:%M')
+        return obj.date_debut.strftime('%d-%m-%YT%Hh:%MZ') if obj.date_debut else None
 
     def get_date_fin_affiche(self, obj):
-        return obj.date_fin.strftime('%d-%m-%Y à %Hh:%M')
+        return obj.date_fin.strftime('%d-%m-%YT%Hh:%MZ') if obj.date_fin else None

@@ -3,39 +3,30 @@
 import { useEffect, useState } from "react";
 import { CalendarIcon, MapPinIcon } from "lucide-react";
 import { api } from "@/lib/api/axios";
-
-interface Event {
-  id: number;
-  titre: string;
-  description: string;
-  lieu: string;
-  dateDebut: string; // ISO string
-  dateFin?: string; // ISO string (optional)
-  image?: string; // URL (optional)
-}
+import { ApiEvent } from "@/types/evenement";
 
 export default function Page() {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchEvents() {
       try {
-        // Remplace la route ci‑dessous par celle de ton backend
-        const res = await api.get("/events/calendrier/");
-        if (res.status < 200 || res.status >= 300)
+        const res = await api.get<ApiEvent[]>("/events/calendrier/");
+        if (res.status < 200 || res.status >= 300) {
           throw new Error("Impossible de récupérer les événements");
-        const data: Event[] = await res.data;
+        }
 
-        // Garder uniquement ceux à venir et trier par date
-        const futurs = data
-          .filter((e) => new Date(e.dateDebut).getTime() > Date.now())
+        const futurs = res.data
+          .filter((e) => new Date(e.date_debut).getTime() > Date.now())
           .sort(
             (a, b) =>
-              new Date(a.dateDebut).getTime() - new Date(b.dateDebut).getTime()
+              new Date(a.date_debut).getTime() -
+              new Date(b.date_debut).getTime()
           );
 
+        // On garde les mêmes clés que ton composant attend :
         setEvents(futurs);
       } catch (err: any) {
         setError(err.message ?? "Erreur inconnue");

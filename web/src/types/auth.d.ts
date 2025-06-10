@@ -1,7 +1,3 @@
-import { Filiere } from "@/lib/api/filiere";
-
-
-
 export interface User {
   id:           number;
   email:        string;

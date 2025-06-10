@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { CalendarIcon } from "lucide-react";
 import { api } from "@/lib/api/axios";
 import { ApiEvent } from "@/types/evenement";
+import AddEventForm from "@/components/AddEventForm";
 
 export default function Page() {
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -39,6 +41,11 @@ export default function Page() {
     fetchEvents();
   }, []);
 
+  const handleCreated = (ev: ApiEvent) => {
+    setEvents((prev) => [...prev, ev]);
+    setShowForm(false);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center mt-10">
@@ -55,16 +62,20 @@ export default function Page() {
     );
   }
 
-  if (events.length === 0) {
-    return (
-      <div className="alert alert-info max-w-lg mx-auto mt-10">
-        <span>Aucun événement futur pour le moment.</span>
-      </div>
-    );
-  }
-
   return (
-    <main className="p-4 lg:p-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <main className="p-4 lg:p-8">
+      <div className="mb-4">
+        <button className="btn btn-secondary" onClick={() => setShowForm((s) => !s)}>
+          + ajouter un évènement
+        </button>
+      </div>
+      {showForm && <AddEventForm onCreated={handleCreated} />}
+      {events.length === 0 && (
+        <div className="alert alert-info max-w-lg mx-auto mt-10">
+          <span>Aucun événement futur pour le moment.</span>
+        </div>
+      )}
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {events.map((ev) => (
         <div
           key={ev.titre}
@@ -105,6 +116,7 @@ export default function Page() {
           </div>
         </div>
       ))}
+      </div>
     </main>
   );
 }

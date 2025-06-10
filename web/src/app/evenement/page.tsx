@@ -67,7 +67,7 @@ export default function Page() {
       {events.map((ev) => (
         <div
           key={ev.date_debut}
-          className={`card card-lg w-full bg-base-100 ${ev.image ? "" : "card-md"} shadow-sm`}
+          className={`card card-lg w-96 bg-base-100 ${ev.image ? "" : "card-xl"} shadow-sm`}
         >
           {ev.image && (
             <figure>
@@ -83,7 +83,7 @@ export default function Page() {
             <p className="text-sm opacity-80 line-clamp-3">{ev.description}</p>
             <div className="flex items-center gap-2 mt-2 text-sm">
               <CalendarIcon size={18} />
-              {new Date(ev.dateDebut).toLocaleString(undefined, {
+              {new Date(ev.date_debut).toLocaleString(undefined, {
                 weekday: "short",
                 day: "numeric",
                 month: "short",

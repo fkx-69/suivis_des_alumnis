@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Edit2 as Pencil } from "lucide-react";
+import { Edit2 as Pencil, CameraIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/api/authContext";
 import { updateProfile, changeEmail } from "@/lib/api/auth";
@@ -19,6 +19,7 @@ function buildFields(user: any): ProfileField[] {
     { label: "Email", value: user.email },
     { label: "Prenoms", value: user.prenom },
     { label: "Nom", value: user.nom },
+    { label: "Biographie", value: user.biographie ?? "" },
   ];
 }
 
@@ -31,6 +32,7 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
   const [fields, setFields] = useState<ProfileField[]>(buildFields(user));
   const [editing, setEditing] = useState<string | null>(null);
   const [showButton, setShowButton] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const profileContentRef = useRef<HTMLDivElement>(null);
 
   const handleChange = (label: string, newValue: string) => {
@@ -40,8 +42,14 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
     setShowButton(true);
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setSelectedFile(file);
+    if (file) setShowButton(true);
+  };
+
   const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
+    e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
     label: string
   ) => {
     if (e.key === "Enter") setEditing(null);
@@ -71,8 +79,45 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
         {/* header */}
         <div className="flex flex-col items-center text-center">
           <div className="avatar">
-            <div className="w-24 rounded-full">
-              <img src="/profile/avatar.jpg" alt="Profile" />
+            <div className="w-24 rounded-full relative group overflow-hidden">
+              {user?.photo_profil ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={user.photo_profil}
+                  alt="Profile"
+                  className="object-cover w-full h-full"
+                />
+              ) : (
+                <svg
+                  className="w-full h-full text-base-content bg-base-200"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 100 100"
+                >
+                  <rect width="100" height="100" fill="currentColor" />
+                  <text
+                    x="50"
+                    y="55"
+                    textAnchor="middle"
+                    fontSize="50"
+                    fill="white"
+                  >
+                    {user?.username?.charAt(0).toUpperCase()}
+                  </text>
+                </svg>
+              )}
+              <label
+                htmlFor="photo-upload"
+                className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 cursor-pointer"
+              >
+                <CameraIcon className="text-white h-5 w-5" />
+              </label>
+              <input
+                id="photo-upload"
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
             </div>
           </div>
           <h1 className="mt-3 text-xl font-semibold">
@@ -93,18 +138,29 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
               </span>
 
               {editing === field.label ? (
-                <input
-                  type="text"
-                  className="input input-sm input-primary w-full max-w-[60%]"
-                  value={field.value}
-                  autoFocus
-                  onChange={(e) => handleChange(field.label, e.target.value)}
-                  onBlur={() => setEditing(null)}
-                  onKeyDown={(e) => handleKeyDown(e, field.label)}
-                />
+                field.label === "Biographie" ? (
+                  <textarea
+                    className="textarea textarea-primary w-full max-w-[60%]"
+                    value={field.value}
+                    rows={3}
+                    autoFocus
+                    onChange={(e) => handleChange(field.label, e.target.value)}
+                    onBlur={() => setEditing(null)}
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    className="input input-sm input-primary w-full max-w-[60%]"
+                    value={field.value}
+                    autoFocus
+                    onChange={(e) => handleChange(field.label, e.target.value)}
+                    onBlur={() => setEditing(null)}
+                    onKeyDown={(e) => handleKeyDown(e, field.label)}
+                  />
+                )
               ) : (
                 <span className="flex items-center gap-1">
-                  {field.value}
+                  {field.value || "-"}
                   <Pencil
                     className="h-4 w-4 cursor-pointer text-gray-400 hover:text-gray-600"
                     onClick={() => setEditing(field.label)}
@@ -124,7 +180,7 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
                 setShowButton(false);
                 if (!user) return;
 
-                const data: Record<string, string> = {};
+                const data: Record<string, any> = {};
                 fields.forEach((f) => {
                   if (f.label === "Username" && f.value !== user.username)
                     data.username = f.value;
@@ -132,7 +188,16 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
                     data.prenom = f.value;
                   if (f.label === "Nom" && f.value !== user.nom)
                     data.nom = f.value;
+                  if (
+                    f.label === "Biographie" &&
+                    f.value !== (user.biographie ?? "")
+                  )
+                    data.biographie = f.value;
                 });
+
+                if (selectedFile) {
+                  data.photo_profil = selectedFile;
+                }
 
                 try {
                   let newUser = user;
@@ -144,6 +209,7 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
                   if (Object.keys(data).length) {
                     const updated = await updateProfile(data);
                     newUser = { ...newUser, ...updated };
+                    setSelectedFile(null);
                   }
                   login(newUser);
                   toast.success("Profil mis à jour");

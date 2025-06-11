@@ -3,15 +3,18 @@ from .views import (
     CreateEvenementView,
     ModifierEvenementView,
     ValiderEvenementView,
+    SupprimerEvenementView,
     ListeEvenementsVisiblesView,
-    SupprimerEvenementView
+    MesEvenementsView,
 )
 
 urlpatterns = [
-    path('creer/', CreateEvenementView.as_view(), name='creer-evenement'),
-    path('<int:pk>/modifier/', ModifierEvenementView.as_view(), name='modifier-evenement'),
-    path('<int:pk>/valider/', ValiderEvenementView.as_view(), name='valider-evenement'),
-    path('calendrier/', ListeEvenementsVisiblesView.as_view(), name='evenements-visibles'),
+    path('evenements/creer/', CreateEvenementView.as_view(), name='creer-evenement'),
+    path('evenements/<int:pk>/modifier/', ModifierEvenementView.as_view(), name='modifier-evenement'),
     path('evenements/<int:pk>/supprimer/', SupprimerEvenementView.as_view(), name='supprimer-evenement'),
-
+    path('evenements/<int:pk>/valider/', ValiderEvenementView.as_view(), name='valider-evenement'),
+    path('evenements/', ListeEvenementsVisiblesView.as_view(), name='evenements-visibles'),
+    path('evenements/mes/', MesEvenementsView.as_view(), name='mes-evenements'),
 ]
+
+

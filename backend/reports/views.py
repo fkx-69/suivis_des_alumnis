@@ -11,16 +11,29 @@ from .serializers import ReportSerializer
 from accounts.models import CustomUser
 from .permissions import IsEtudiantOrAlumni
 
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
+
+# === Créer un signalement ===
 class ReportCreateView(generics.CreateAPIView):
     serializer_class = ReportSerializer
     permission_classes = [IsAuthenticated, IsEtudiantOrAlumni]
+
+    @swagger_auto_schema(
+        operation_description="Permet à un étudiant ou un alumni de signaler un utilisateur.",
+        request_body=ReportSerializer,
+        responses={201: ReportSerializer}
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         serializer.save()
         reported_user = serializer.instance.reported_user
         reason = serializer.instance.reason
 
+        # Envoi d’un email à l’admin
         send_mail(
             subject="Un utilisateur a été signalé",
             message=(
@@ -33,12 +46,29 @@ class ReportCreateView(generics.CreateAPIView):
         )
 
 
+# === Lister tous les signalements (admin uniquement) ===
 class ReportedUsersListView(generics.ListAPIView):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
 
+    @swagger_auto_schema(
+        operation_description="Liste tous les utilisateurs signalés (réservé à l'admin).",
+        responses={200: ReportSerializer(many=True)}
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
+
+# === Bannir un utilisateur ===
+@swagger_auto_schema(
+    method='post',
+    operation_description="Bannir un utilisateur (admin uniquement).",
+    manual_parameters=[
+        openapi.Parameter('user_id', openapi.IN_PATH, description="ID de l'utilisateur à bannir", type=openapi.TYPE_INTEGER)
+    ],
+    responses={200: openapi.Response("Utilisateur banni avec succès"), 404: "Utilisateur non trouvé"}
+)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsAdmin])
 def ban_user(request, user_id):
@@ -51,6 +81,15 @@ def ban_user(request, user_id):
         return Response({'detail': 'Utilisateur non trouvé.'}, status=status.HTTP_404_NOT_FOUND)
 
 
+# === Supprimer un utilisateur ===
+@swagger_auto_schema(
+    method='delete',
+    operation_description="Supprimer un utilisateur du système (admin uniquement).",
+    manual_parameters=[
+        openapi.Parameter('user_id', openapi.IN_PATH, description="ID de l'utilisateur à supprimer", type=openapi.TYPE_INTEGER)
+    ],
+    responses={200: "Utilisateur supprimé avec succès", 404: "Utilisateur non trouvé"}
+)
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated, IsAdmin])
 def delete_user(request, user_id):

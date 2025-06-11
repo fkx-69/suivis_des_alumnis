@@ -9,12 +9,25 @@ from .serializers import (
     UserSerializer, ParcoursAcademiqueSerializer, ParcoursProfessionnelSerializer,
     ChangePasswordSerializer, ChangeEmailSerializer, UpdateUserSerializer
 )
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
+
+search_param = openapi.Parameter(
+    'search', openapi.IN_QUERY,
+    description="Recherche par nom, prénom ou username",
+    type=openapi.TYPE_STRING
+)
 
 class UserSearchView(generics.ListAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['nom', 'prenom', 'username']
+
+    @swagger_auto_schema(manual_parameters=[search_param])
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
 
 class EtudiantSearchView(generics.ListAPIView):
@@ -25,6 +38,10 @@ class EtudiantSearchView(generics.ListAPIView):
     def get_queryset(self):
         return CustomUser.objects.filter(role='ETUDIANT')
 
+    @swagger_auto_schema(manual_parameters=[search_param])
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
 
 class AlumniSearchView(generics.ListAPIView):
     serializer_class = UserSerializer
@@ -33,7 +50,12 @@ class AlumniSearchView(generics.ListAPIView):
 
     def get_queryset(self):
         return CustomUser.objects.filter(role='ALUMNI')
-    
+
+    @swagger_auto_schema(manual_parameters=[search_param])
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
 # === AUTHENTIFICATION ===
 class LoginAPIView(APIView):
     def post(self, request):

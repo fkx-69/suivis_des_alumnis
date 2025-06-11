@@ -4,7 +4,8 @@ from .views import (
     RejoindreGroupeView,
     QuitterGroupeView,
     ListeMembresView,
-    EnvoyerMessageView
+    EnvoyerMessageView,
+    ListeMessagesView,
 )
 
 urlpatterns = [
@@ -13,4 +14,5 @@ urlpatterns = [
     path('<int:groupe_id>/quitter/', QuitterGroupeView.as_view(), name='quitter-groupe'),
     path('<int:groupe_id>/membres/', ListeMembresView.as_view(), name='liste-membres'),
     path('<int:groupe_id>/envoyer-message/', EnvoyerMessageView.as_view(), name='envoyer-message'),
+    path('<int:groupe_id>/messages/', ListeMessagesView.as_view(), name='liste-messages'),
 ]

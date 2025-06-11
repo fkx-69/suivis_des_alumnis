@@ -27,14 +27,19 @@ export async function registerAlumni(data: AlumniRegisterPayload) {
   return res;
 }
 
-export async function updateProfile(data: Partial<{
-  username: string;
-  nom: string;
-  prenom: string;
-  photo_profil: string | null;
-  biographie: string | null;
-}>) {
-  const res = await api.put("/accounts/me/update/", data);
+export async function updateProfile(
+  data: Record<string, string | File | null | undefined>
+) {
+  const formData = new FormData();
+  Object.entries(data).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      formData.append(key, value);
+    }
+  });
+
+  const res = await api.put("/accounts/me/update/", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return res.data;
 }
 

@@ -39,7 +39,13 @@ export default function SignIn() {
 
   useEffect(() => {
     fetchFilieres()
-      .then((data) => setFilieres(data))
+      .then((data) => {
+        setFilieres(data);
+        if (data.length > 0) {
+          setAlumniData((prev) => ({ ...prev, filiere: data[0].code }));
+          setStudentData((prev) => ({ ...prev, filiere: data[0].code }));
+        }
+      })
       .catch((err) => console.error(err));
   }, []);
 
@@ -154,7 +160,11 @@ export default function SignIn() {
 
   const handleAlumniChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => setAlumniData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  ) =>
+    setAlumniData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
 
   // Combinaison : met à jour alumniData + l'état « en recherche d'emploi »
   const handleSituationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -164,7 +174,11 @@ export default function SignIn() {
 
   const handleStudentChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => setStudentData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  ) =>
+    setStudentData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
 
   /** Soumission du formulaire */
   const handleSubmit = async (e: React.FormEvent) => {
@@ -399,12 +413,10 @@ export default function SignIn() {
                     value={alumniData.situation_pro}
                     onChange={handleSituationChange}
                   >
-                    <option value="En recherche d'emploi">
-                      En recherche d'emploi
-                    </option>
+                    <option value="chomage">En recherche d'emploi</option>
                     <option value="stage">En stage</option>
-                    <option value="employee">En emploi</option>
-                    <option value="Entrepreneur">En formation</option>
+                    <option value="emploi">En emploi</option>
+                    <option value="formation">En formation</option>
                     <option value="autre">Autre</option>
                   </select>
                 </div>

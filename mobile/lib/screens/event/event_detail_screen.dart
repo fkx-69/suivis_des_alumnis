@@ -26,7 +26,6 @@ class EventDetailScreen extends StatelessWidget {
           Navigator.popUntil(context, (r) => r.isFirst || r.settings.name == null);
           break;
         case 2:
-
           break;
         case 3:
           Navigator.pushReplacement(
@@ -43,22 +42,33 @@ class EventDetailScreen extends StatelessWidget {
             icon: const Icon(Icons.check_circle_outline),
             tooltip: 'Valider',
             onPressed: () async {
-              await service.validateEvent(event.id);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Événement validé')),
-              );
+              try {
+                await service.validateEvent(event.id);
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Événement validé')),
+                );
+                Navigator.pop(context, true);
+              } catch (e) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Erreur validation : $e')),
+                );
+              }
             },
           ),
           IconButton(
             icon: const Icon(Icons.edit),
             tooltip: 'Modifier',
             onPressed: () async {
-              await Navigator.push(
+              final updated = await Navigator.push<bool>(
                 context,
                 MaterialPageRoute(
                     builder: (_) => EditEventScreen(event: event)),
               );
-              Navigator.pop(context);
+              if (updated == true && context.mounted) {
+                Navigator.pop(context, true);
+              }
             },
           ),
         ],

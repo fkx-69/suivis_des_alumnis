@@ -1,5 +1,3 @@
-// lib/widgets/event/event_list_view.dart
-
 import 'package:flutter/material.dart';
 import '../../models/event_model.dart';
 import 'event_card.dart';

@@ -1,5 +1,3 @@
-// lib/widgets/event/event_form.dart
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -34,16 +32,16 @@ class _EventFormState extends State<EventForm> {
     super.initState();
     final init = widget.initial;
     _titreCtl = TextEditingController(text: init?.titre ?? '');
-    _descCtl  = TextEditingController(text: init?.description ?? '');
+    _descCtl = TextEditingController(text: init?.description ?? '');
     if (init != null) {
       _date = DateTime(init.dateDebut.year, init.dateDebut.month, init.dateDebut.day);
       _timeStart = TimeOfDay.fromDateTime(init.dateDebut);
-      _timeEnd   = TimeOfDay.fromDateTime(init.dateFin);
+      _timeEnd = TimeOfDay.fromDateTime(init.dateFin);
     } else {
       final now = DateTime.now();
       _date = now;
       _timeStart = TimeOfDay.fromDateTime(now);
-      _timeEnd   = TimeOfDay.fromDateTime(now.add(const Duration(hours: 1)));
+      _timeEnd = TimeOfDay.fromDateTime(now.add(const Duration(hours: 1)));
     }
   }
 
@@ -89,34 +87,48 @@ class _EventFormState extends State<EventForm> {
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final dtDebut = DateTime(
+    final localDebut = DateTime(
       _date.year, _date.month, _date.day,
       _timeStart.hour, _timeStart.minute,
     );
-    final dtFin = DateTime(
+    final localFin = DateTime(
       _date.year, _date.month, _date.day,
       _timeEnd.hour, _timeEnd.minute,
     );
+
+    if (localFin.isBefore(localDebut)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('La date de fin doit être après la date de début')),
+      );
+      return;
+    }
+
+    // **Convertir en UTC** pour être sûr que DRF le lira
+    final dtDebutUtc = localDebut.toUtc();
+    final dtFinUtc   = localFin.toUtc();
 
     final ev = EventModel(
       id: widget.initial?.id ?? 0,
       titre: _titreCtl.text.trim(),
       description: _descCtl.text.trim(),
-      dateDebut: dtDebut,
-      dateFin: dtFin,
-      dateDebutAffiche: DateFormat.yMMMd().add_Hm().format(dtDebut),
-      dateFinAffiche: DateFormat.yMMMd().add_Hm().format(dtFin),
+      dateDebut: dtDebutUtc,
+      dateFin: dtFinUtc,
+      dateDebutAffiche: DateFormat.yMMMd().add_Hm().format(localDebut),
+      dateFinAffiche: DateFormat.yMMMd().add_Hm().format(localFin),
       createur: widget.initial?.createur,
     );
+
+    // Debug final
+    print("→ Payload final EventModel (UTC) : ${ev.toJson()}");
 
     await widget.onSubmit(ev);
   }
 
   @override
   Widget build(BuildContext context) {
-    final fmtDate   = DateFormat.yMMMMd().format(_date);
-    final fmtStart  = _timeStart.format(context);
-    final fmtEnd    = _timeEnd.format(context);
+    final fmtDate = DateFormat.yMMMMd().format(_date);
+    final fmtStart = _timeStart.format(context);
+    final fmtEnd = _timeEnd.format(context);
 
     return Form(
       key: _formKey,

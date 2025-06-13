@@ -1,11 +1,10 @@
-// lib/screens/events/event_calendar_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../models/event_model.dart';
 import '../../services/event_service.dart';
 import '../../widgets/app_bottom_nav_bar.dart';
 import 'create_event_screen.dart';
+import 'event_detail_screen.dart';
 
 class EventCalendarScreen extends StatefulWidget {
   const EventCalendarScreen({super.key});
@@ -29,8 +28,10 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
   }
 
   Future<void> _loadAll() async {
+    print('🔄 Chargement calendrier');
     setState(() => _loading = true);
     final list = await _svc.fetchCalendar();
+    print('🔄 Événements totaux reçus : ${list.length}');
     final Map<DateTime, List<EventModel>> map = {};
     for (var e in list) {
       final day = DateTime(e.dateDebut.year, e.dateDebut.month, e.dateDebut.day);
@@ -54,8 +55,6 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     switch (idx) {
       case 0:
         Navigator.pushReplacementNamed(context, '/home');
-        break;
-      case 1: // déjà ici
         break;
       case 2:
         Navigator.pushReplacementNamed(context, '/messages');
@@ -88,11 +87,10 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
                 color: Colors.blueAccent.withOpacity(0.5),
                 shape: BoxShape.circle,
               ),
-              markerDecoration: BoxDecoration(
+              markerDecoration: const BoxDecoration(
                 color: Colors.redAccent,
                 shape: BoxShape.circle,
               ),
-              // griser les jours passés
               outsideDaysVisible: false,
             ),
             onDaySelected: (selected, focused) {
@@ -103,7 +101,6 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
               });
             },
           ),
-
           const SizedBox(height: 8),
           Expanded(
             child: _selectedEvents.isEmpty
@@ -114,9 +111,20 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
                 final ev = _selectedEvents[i];
                 return ListTile(
                   title: Text(ev.titre),
-                  subtitle: Text(
-                    "${ev.dateDebutAffiche} – ${ev.dateFinAffiche}",
-                  ),
+                  subtitle:
+                  Text("${ev.dateDebutAffiche} – ${ev.dateFinAffiche}"),
+                  onTap: () async {
+                    final modified = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => EventDetailScreen(event: ev),
+                      ),
+                    );
+                    print('✏️ EventDetailScreen returned: $modified');
+                    if (modified == true) {
+                      await _loadAll();
+                    }
+                  },
                 );
               },
             ),
@@ -125,14 +133,16 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          // passe la date sélectionnée à l'écran de création
-          await Navigator.push(
+          final created = await Navigator.push<bool>(
             context,
             MaterialPageRoute(
               builder: (_) => CreateEventScreen(initialDay: _selectedDay),
             ),
           );
-          await _loadAll();
+          print('📝 CreateEventScreen returned: $created');
+          if (created == true) {
+            await _loadAll();
+          }
         },
         child: const Icon(Icons.add),
       ),

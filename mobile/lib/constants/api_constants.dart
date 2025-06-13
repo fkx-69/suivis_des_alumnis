@@ -46,9 +46,11 @@ class ApiConstants {
   static const String publicationsDelete = "$baseUrl/publications/{id}/supprimer/";
 
   // Événements
-  static const String eventsCalendar  = "$baseUrl/events/calendrier/";
-  static const String eventsCreate    = "$baseUrl/events/creer/";
-  static const String eventsUpdate    = "$baseUrl/events/{id}/modifier/";
-  static const String eventsPartial   = "$baseUrl/events/{id}/modifier/";
-  static const String eventsValidate  = "$baseUrl/events/{id}/valider/";
+  // Endpoints "events"
+  static const String eventsCalendar       = "$baseUrl/events/calendrier/";         // GET
+  static const String eventsCreate         = "$baseUrl/events/creer/";              // POST
+  static const String eventsDelete         = "$baseUrl/events/evenements/{id}/supprimer/"; // DELETE
+  static const String eventsUpdate         = "$baseUrl/events/{id}/modifier/";       // PUT
+  static const String eventsPartial        = "$baseUrl/events/{id}/modifier/";       // PATCH
+  static const String eventsValidate       = "$baseUrl/events/{id}/valider/";        // POST
 }

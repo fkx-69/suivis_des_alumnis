@@ -1,9 +1,7 @@
-// lib/screens/events/edit_event_screen.dart
-
 import 'package:flutter/material.dart';
 import '../../models/event_model.dart';
 import '../../services/event_service.dart';
-import 'package:memoire/widgets/event/event_form.dart';
+import '../../widgets/event/event_form.dart';
 
 class EditEventScreen extends StatelessWidget {
   final EventModel event;
@@ -18,8 +16,19 @@ class EditEventScreen extends StatelessWidget {
         child: EventForm(
           initial: event,
           onSubmit: (e) async {
-            await EventService().updateEvent(e.id, e);
-            Navigator.pop(context);
+            try {
+              await EventService().updateEvent(e.id, e);
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Événement mis à jour')),
+              );
+              Navigator.pop(context, true);
+            } catch (e) {
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Erreur mise à jour : $e')),
+              );
+            }
           },
         ),
       ),

@@ -6,8 +6,8 @@ import '../../widgets/app_bottom_nav_bar.dart';
 import '../../widgets/event/event_list_view.dart';
 import '../auth/home_screen.dart';
 import '../profile/profile_screen.dart';
-import 'event_detail_screen.dart';
 import 'create_event_screen.dart';
+import 'event_detail_screen.dart';
 
 class EventListScreen extends StatefulWidget {
   const EventListScreen({super.key});
@@ -29,9 +29,14 @@ class _EventListScreenState extends State<EventListScreen> {
   }
 
   Future<void> _loadEvents() async {
+    print('🔄 Début chargement des événements');
     setState(() => _loading = true);
-    _events = await _service.fetchCalendar();
-    setState(() => _loading = false);
+    final fetched = await _service.fetchCalendar();
+    print('🔄 Événements reçus : ${fetched.length}');
+    setState(() {
+      _events = fetched;
+      _loading = false;
+    });
   }
 
   void _onNavTap(int idx) {
@@ -42,12 +47,6 @@ class _EventListScreenState extends State<EventListScreen> {
           context,
           MaterialPageRoute(builder: (_) => const HomeScreen()),
         );
-        break;
-      case 1:
-      // déjà sur Événements
-        break;
-      case 2:
-
         break;
       case 3:
         Navigator.pushReplacement(
@@ -69,11 +68,14 @@ class _EventListScreenState extends State<EventListScreen> {
             icon: const Icon(Icons.add),
             tooltip: 'Créer',
             onPressed: () async {
-              await Navigator.push(
+              final created = await Navigator.push<bool>(
                 context,
                 MaterialPageRoute(builder: (_) => const CreateEventScreen()),
               );
-              _loadEvents();
+              print('📝 CreateEventScreen returned: $created');
+              if (created == true) {
+                await _loadEvents();
+              }
             },
           ),
         ],
@@ -85,12 +87,15 @@ class _EventListScreenState extends State<EventListScreen> {
         child: EventListView(
           events: _events,
           onEventTap: (e) async {
-            await Navigator.push(
+            final modified = await Navigator.push<bool>(
               context,
               MaterialPageRoute(
                   builder: (_) => EventDetailScreen(event: e)),
             );
-            _loadEvents();
+            print('✏️ EventDetailScreen returned: $modified');
+            if (modified == true) {
+              await _loadEvents();
+            }
           },
         ),
       ),

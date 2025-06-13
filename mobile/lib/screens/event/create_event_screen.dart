@@ -1,9 +1,7 @@
-// lib/screens/events/create_event_screen.dart
-
 import 'package:flutter/material.dart';
 import '../../models/event_model.dart';
 import '../../services/event_service.dart';
-import 'package:memoire/widgets/event/event_form.dart';
+import '../../widgets/event/event_form.dart';
 
 class CreateEventScreen extends StatelessWidget {
   final DateTime? initialDay;
@@ -23,20 +21,25 @@ class CreateEventScreen extends StatelessWidget {
             titre: '',
             description: '',
             dateDebut: initialDay!,
-            dateFin:   initialDay!.add(const Duration(hours: 1)),
+            dateFin: initialDay!.add(const Duration(hours: 1)),
           ),
           onSubmit: (ev) async {
             final body = ev.toJson();
             print('→ Création événement payload : $body');
             try {
               await EventService().createEvent(ev);
-              Navigator.pop(context);
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Événement créé !')),
+              );
+              Navigator.pop(context, true);
             } catch (e) {
-              print('Erreur création événement : $e');
-              rethrow;
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Erreur création événement : $e')),
+              );
             }
           },
-
         ),
       ),
     );

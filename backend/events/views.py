@@ -11,7 +11,7 @@ from notifications.utils import envoyer_notification
 class CreateEvenementView(generics.CreateAPIView):
     queryset = Evenement.objects.all()
     serializer_class = EvenementSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAdmin | IsEtudiant]
+    permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
         is_admin = self.request.user.is_staff

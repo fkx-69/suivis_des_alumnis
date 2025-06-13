@@ -1,8 +1,7 @@
-// lib/widgets/event/event_card.dart
-
 import 'package:flutter/material.dart';
-import '../../models/event_model.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import '../../models/event_model.dart';
 
 class EventCard extends StatelessWidget {
   final EventModel event;
@@ -16,6 +15,9 @@ class EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final labelDate = event.dateDebutAffiche ??
+        DateFormat.yMMMd().add_Hm().format(event.dateDebut);
+
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -35,11 +37,10 @@ class EventCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              if (event.dateDebutAffiche != null)
-                Text(
-                  event.dateDebutAffiche!,
-                  style: GoogleFonts.poppins(color: Colors.grey[700]),
-                ),
+              Text(
+                labelDate,
+                style: GoogleFonts.poppins(color: Colors.grey[700]),
+              ),
               const SizedBox(height: 8),
               Text(
                 event.description,

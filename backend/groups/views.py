@@ -6,17 +6,42 @@ from .serializers import GroupeSerializer, MessageSerializer
 from .permissions import IsAlumni, IsEtudiant
 from notifications.utils import envoyer_notification
 
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
+
+# === Création d'un groupe ===
 class GroupeCreateView(generics.CreateAPIView):
     queryset = Groupe.objects.all()
     serializer_class = GroupeSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAlumni,IsEtudiant]
+    permission_classes = [permissions.IsAuthenticated, IsAlumni, IsEtudiant]
+
+    @swagger_auto_schema(
+        operation_description="Créer un nouveau groupe. Accessible aux étudiants et aux alumnis authentifiés.",
+        request_body=GroupeSerializer,
+        responses={201: "Groupe créé avec succès."}
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         serializer.save(createur=self.request.user)
 
+
+# === Rejoindre un groupe ===
 class RejoindreGroupeView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_description="Rejoindre un groupe existant.",
+        manual_parameters=[
+            openapi.Parameter('groupe_id', openapi.IN_PATH, description="ID du groupe", type=openapi.TYPE_INTEGER)
+        ],
+        responses={
+            200: "Rejoint avec succès",
+            404: "Groupe non trouvé"
+        }
+    )
     def post(self, request, groupe_id):
         try:
             groupe = Groupe.objects.get(id=groupe_id)
@@ -25,11 +50,22 @@ class RejoindreGroupeView(APIView):
         except Groupe.DoesNotExist:
             return Response({'error': 'Groupe non trouvé.'}, status=status.HTTP_404_NOT_FOUND)
 
+
+# === Quitter un groupe ===
 class QuitterGroupeView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_description="Quitter un groupe.",
+        manual_parameters=[
+            openapi.Parameter('groupe_id', openapi.IN_PATH, description="ID du groupe", type=openapi.TYPE_INTEGER)
+        ],
+        responses={
+            200: "Quitté avec succès",
+            404: "Groupe non trouvé"
+        }
+    )
     def post(self, request, groupe_id):
-
         try:
             groupe = Groupe.objects.get(id=groupe_id)
             groupe.membres.remove(request.user)
@@ -37,9 +73,21 @@ class QuitterGroupeView(APIView):
         except Groupe.DoesNotExist:
             return Response({'error': 'Groupe non trouvé.'}, status=status.HTTP_404_NOT_FOUND)
 
+
+# === Liste des membres d'un groupe ===
 class ListeMembresView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_description="Voir la liste des membres d’un groupe.",
+        manual_parameters=[
+            openapi.Parameter('groupe_id', openapi.IN_PATH, description="ID du groupe", type=openapi.TYPE_INTEGER)
+        ],
+        responses={
+            200: "Liste des membres",
+            404: "Groupe non trouvé"
+        }
+    )
     def get(self, request, groupe_id):
         try:
             groupe = Groupe.objects.get(id=groupe_id)
@@ -48,9 +96,30 @@ class ListeMembresView(APIView):
         except Groupe.DoesNotExist:
             return Response({'error': 'Groupe non trouvé.'}, status=status.HTTP_404_NOT_FOUND)
 
+
+# === Envoyer un message dans un groupe ===
 class EnvoyerMessageView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_description="Envoyer un message dans un groupe (réservé aux membres du groupe).",
+        manual_parameters=[
+            openapi.Parameter('groupe_id', openapi.IN_PATH, description="ID du groupe", type=openapi.TYPE_INTEGER)
+        ],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['contenu'],
+            properties={
+                'contenu': openapi.Schema(type=openapi.TYPE_STRING, description='Contenu du message')
+            }
+        ),
+        responses={
+            201: MessageSerializer,
+            400: "Contenu manquant",
+            403: "Non autorisé",
+            404: "Groupe non trouvé"
+        }
+    )
     def post(self, request, groupe_id):
         try:
             groupe = Groupe.objects.get(id=groupe_id)
@@ -67,7 +136,6 @@ class EnvoyerMessageView(APIView):
                 contenu=contenu
             )
 
-            # Notifier tous les membres du groupe (en temps réel via WebSocket)
             membres_a_notifier = groupe.membres.exclude(id=request.user.id)
             for membre in membres_a_notifier:
                 envoyer_notification(
@@ -78,5 +146,27 @@ class EnvoyerMessageView(APIView):
             serializer = MessageSerializer(message)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+        except Groupe.DoesNotExist:
+            return Response({'error': 'Groupe non trouvé.'}, status=status.HTTP_404_NOT_FOUND)
+# === Liste des messages d'un groupe ===
+class ListeMessagesView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Voir la liste des messages d’un groupe.",
+        manual_parameters=[
+            openapi.Parameter('groupe_id', openapi.IN_PATH, description="ID du groupe", type=openapi.TYPE_INTEGER)
+        ],
+        responses={
+            200: MessageSerializer(many=True),
+            404: "Groupe non trouvé"
+        }
+    )
+    def get(self, request, groupe_id):
+        try:
+            groupe = Groupe.objects.get(id=groupe_id)
+            messages = Message.objects.filter(groupe=groupe).order_by('-date_creation')
+            serializer = MessageSerializer(messages, many=True)
+            return Response(serializer.data)
         except Groupe.DoesNotExist:
             return Response({'error': 'Groupe non trouvé.'}, status=status.HTTP_404_NOT_FOUND)

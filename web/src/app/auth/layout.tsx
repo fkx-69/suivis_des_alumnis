@@ -1,8 +1,6 @@
 "use client";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import SidePanel from "../components/ui/side-panel";
 import { usePathname, useRouter } from "next/navigation";
 import { AuthProvider, useAuth } from "@/lib/api/authContext";
 import { useEffect } from "react";
@@ -27,19 +25,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
-  const showSidePanel =
-    pathname !== "/auth/login" && pathname !== "/auth/signIn";
   return (
-    <html data-theme="emerald" lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <AuthProvider>
-          <AuthGuard>
-            {showSidePanel ? <SidePanel>{children}</SidePanel> : children}
-          </AuthGuard>
-        </AuthProvider>
-      </body>
-    </html>
+    <AuthProvider>
+      <AuthGuard>{children}</AuthGuard>
+    </AuthProvider>
   );
 }
 
@@ -49,8 +38,8 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!loading && !user && pathname !== "/auth/signIn") {
-      router.push("/auth/login");
+    if (user) {
+      router.push("/");
     }
   }, [loading, user, pathname, router]);
 

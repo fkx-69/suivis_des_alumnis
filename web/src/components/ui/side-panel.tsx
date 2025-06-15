@@ -147,9 +147,10 @@ export default function SidePanel({ children }: { children: ReactNode }) {
           </button>
         </div>
       </aside>
-      {showProfile && <PersonalProfile onClose={handleCloseProfile} />}
-
-      <main className="flex-1 overflow-auto">{children}</main>
+      <main className="relative flex-1 overflow-auto">
+        {showProfile && <PersonalProfile onClose={handleCloseProfile} />}
+        {children}
+      </main>
     </div>
   );
 }

@@ -18,7 +18,9 @@ export default function AddEventForm({ onCreated }: AddEventFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
   };
@@ -28,7 +30,7 @@ export default function AddEventForm({ onCreated }: AddEventFormProps) {
     setSubmitting(true);
     setError(null);
     try {
-      const res = await api.post("/events/creer/", form);
+      const res = await api.post("/events/evenements/creer/", form);
       if (res.status >= 200 && res.status < 300) {
         onCreated?.(res.data);
         setForm({ titre: "", description: "", date_debut: "", date_fin: "" });

@@ -65,7 +65,7 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      className="absolute inset-0 z-50 flex items-center justify-center bg-black/40"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <motion.div

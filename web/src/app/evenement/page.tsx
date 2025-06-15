@@ -1,16 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CalendarIcon } from "lucide-react";
 import { api } from "@/lib/api/axios";
 import { ApiEvent } from "@/types/evenement";
 import AddEventForm from "@/components/AddEventForm";
+import EventCard from "@/components/EventCard";
+import EventModal from "@/components/EventModal";
 
 export default function Page() {
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<ApiEvent | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showMyEvents, setShowMyEvents] = useState(false);
 
@@ -81,44 +82,12 @@ export default function Page() {
       )}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {(showMyEvents ? events.filter((e) => e.is_owner) : events).map((ev) => (
-          <div
-            key={ev.id}
-            className={`card card-lg w-96 bg-base-100 ${ev.image ? "" : "card-xl"} shadow-sm`}
-            onClick={() => setExpandedId(expandedId === ev.id ? null : ev.id)}
-          >
-            {ev.image && (
-              <figure>
-                <img
-                  src={ev.image}
-                  alt={ev.titre}
-                  className="h-48 w-full object-cover"
-                />
-              </figure>
-            )}
-            <div className="card-body">
-              <h2 className="card-title">{ev.titre}</h2>
-              <p
-                className={`text-sm opacity-80 cursor-pointer ${
-                  expandedId === ev.id ? "" : "line-clamp-3"
-                }`}
-              >
-                {ev.description}
-              </p>
-              <div className="flex items-center gap-2 mt-2 text-sm">
-                <CalendarIcon size={18} />
-                {new Date(ev.date_debut).toLocaleString(undefined, {
-                  weekday: "short",
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </div>
-            </div>
-          </div>
+          <EventCard key={ev.id} event={ev} onToggle={() => setSelectedEvent(ev)} />
         ))}
       </div>
+      {selectedEvent && (
+        <EventModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+      )}
       <button
         className="btn btn-secondary fixed bottom-4 left-4 w-12 h-12 rounded-full flex items-center justify-center"
         onClick={() => setShowForm((s) => !s)}

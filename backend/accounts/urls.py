@@ -5,7 +5,7 @@ from .views import (
     RegisterEtudiantAPIView, RegisterAlumniAPIView,
     ListEtudiantsAPIView, ListAlumnisAPIView,
     ParcoursAcademiqueViewSet,ParcoursProfessionnelViewSet, ChangePasswordAPIView, ChangeEmailAPIView,UserSearchView
-    , EtudiantSearchView, AlumniSearchView)
+    , EtudiantSearchView, AlumniSearchView,PublicUserRetrieveAPIView)
 
 router = DefaultRouter()
 router.register(r'parcours-academiques', ParcoursAcademiqueViewSet, basename='parcours-academique')
@@ -25,5 +25,6 @@ urlpatterns = [
     path('rechercher-utilisateur/', UserSearchView.as_view(), name='rechercher_utilisateur'),
     path('rechercher-etudiants/', EtudiantSearchView.as_view(), name='rechercher_etudiants'),
     path('rechercher-alumnis/', AlumniSearchView.as_view(), name='rechercher_alumnis'),
+    path('<str:username>/', PublicUserRetrieveAPIView.as_view(), name='public-user-profile'),
     path('', include(router.urls)),
 ] 

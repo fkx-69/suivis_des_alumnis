@@ -137,7 +137,13 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
                   : "flex items-center justify-between gap-2"
               }
             >
-              <span className="whitespace-nowrap font-medium text-center w-full">
+              <span
+                className={
+                  field.label === "Biographie"
+                    ? "whitespace-nowrap font-medium text-center w-full"
+                    : "whitespace-nowrap font-medium"
+                }
+              >
                 {field.label}
               </span>
 

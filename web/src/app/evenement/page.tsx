@@ -68,7 +68,7 @@ export default function Page() {
     <main className="p-4 lg:p-8">
       <div className="mb-4">
         <button
-          className="btn btn-secondary btn-soft"
+          className={`btn btn-secondary ${showMyEvents ? "btn-active" : "btn-soft"}`}
           onClick={() => setShowMyEvents((s) => !s)}
         >
           Mes évènements

@@ -168,37 +168,33 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
             return (
               <div
                 key={field.label}
-                className="grid grid-cols-[auto,1fr] items-center gap-2"
+                className="flex items-center justify-between gap-2"
               >
-                {/* Colonne 1 : label */}
                 <span className="whitespace-nowrap font-medium">
                   {field.label}
                 </span>
 
-                {/* Colonne 2 : valeur alignée à droite */}
-                <div className="flex items-center justify-end gap-1">
-                  {editing === field.label ? (
-                    <input
-                      type="text"
-                      className="input input-sm input-primary w-full max-w-[60%]"
-                      autoFocus
-                      value={field.value}
-                      onChange={(e) =>
-                        handleChange(field.label, e.target.value)
-                      }
-                      onBlur={() => setEditing(null)}
-                      onKeyDown={(e) => handleKeyDown(e, field.label)}
+                {editing === field.label ? (
+                  <input
+                    type="text"
+                    className="input input-sm input-primary w-full max-w-[60%]"
+                    autoFocus
+                    value={field.value}
+                    onChange={(e) =>
+                      handleChange(field.label, e.target.value)
+                    }
+                    onBlur={() => setEditing(null)}
+                    onKeyDown={(e) => handleKeyDown(e, field.label)}
+                  />
+                ) : (
+                  <span className="flex items-center gap-1">
+                    {field.value || "-"}
+                    <Pencil
+                      className="h-4 w-4 cursor-pointer text-gray-400 hover:text-gray-600"
+                      onClick={() => setEditing(field.label)}
                     />
-                  ) : (
-                    <>
-                      <span>{field.value || "-"}</span>
-                      <Pencil
-                        className="h-4 w-4 cursor-pointer text-gray-400 hover:text-gray-600"
-                        onClick={() => setEditing(field.label)}
-                      />
-                    </>
-                  )}
-                </div>
+                  </span>
+                )}
               </div>
             );
           })}

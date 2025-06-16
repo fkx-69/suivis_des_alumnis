@@ -1,4 +1,4 @@
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Edit2 as Pencil, Trash } from "lucide-react";
 
 export interface EventCardProps {
   event: {
@@ -10,14 +10,46 @@ export interface EventCardProps {
   };
   expanded?: boolean;
   onToggle?(): void;
+  showActions?: boolean;
+  onEdit?(): void;
+  onDelete?(): void;
 }
 
-export default function EventCard({ event, expanded, onToggle }: EventCardProps) {
+export default function EventCard({
+  event,
+  expanded,
+  onToggle,
+  showActions,
+  onEdit,
+  onDelete,
+}: EventCardProps) {
   return (
     <div
-      className={`card card-lg w-96 bg-base-100 ${event.image ? "" : "card-xl"} shadow-sm`}
+      className={`relative card card-lg w-96 bg-base-100 ${event.image ? "" : "card-xl"} shadow-sm`}
       onClick={onToggle}
     >
+      {showActions && (
+        <>
+          <button
+            className="btn btn-xs btn-circle absolute top-2 left-2 z-10"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit?.();
+            }}
+          >
+            <Pencil size={12} />
+          </button>
+          <button
+            className="btn btn-xs btn-circle btn-error absolute top-2 right-2 z-10"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete?.();
+            }}
+          >
+            <Trash size={12} />
+          </button>
+        </>
+      )}
       {event.image && (
         <figure>
           <img src={event.image} alt={event.titre} className="h-48 w-full object-cover" />

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api/axios";
 import { ApiEvent } from "@/types/evenement";
-import AddEventForm from "@/components/AddEventForm";
+import AddEventModal from "@/components/AddEventModal";
 import EventCard from "@/components/EventCard";
 import EventModal from "@/components/EventModal";
 
@@ -74,7 +74,9 @@ export default function Page() {
           Mes évènements
         </button>
       </div>
-      {showForm && <AddEventForm onCreated={handleCreated} />}
+      {showForm && (
+        <AddEventModal onCreated={handleCreated} onClose={() => setShowForm(false)} />
+      )}
       {(showMyEvents
         ? events.filter((e) => e.is_owner).length === 0
         : events.length === 0) && (

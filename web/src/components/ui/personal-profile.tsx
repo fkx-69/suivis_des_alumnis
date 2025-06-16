@@ -131,16 +131,20 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
           {fields.map((field) => (
             <div
               key={field.label}
-              className="flex items-center justify-between gap-2"
+              className={
+                field.label === "Biographie"
+                  ? "flex flex-col items-center gap-2"
+                  : "flex items-center justify-between gap-2"
+              }
             >
-              <span className="whitespace-nowrap font-medium">
+              <span className="whitespace-nowrap font-medium text-center w-full">
                 {field.label}
               </span>
 
               {editing === field.label ? (
                 field.label === "Biographie" ? (
                   <textarea
-                    className="textarea textarea-primary w-full max-w-[60%]"
+                    className="textarea textarea-primary w-full"
                     value={field.value}
                     rows={3}
                     autoFocus
@@ -158,6 +162,14 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
                     onKeyDown={(e) => handleKeyDown(e, field.label)}
                   />
                 )
+              ) : field.label === "Biographie" ? (
+                <span className="flex items-center gap-1 w-full">
+                  <span className="flex-1">{field.value || "-"}</span>
+                  <Pencil
+                    className="h-4 w-4 cursor-pointer text-gray-400 hover:text-gray-600"
+                    onClick={() => setEditing(field.label)}
+                  />
+                </span>
               ) : (
                 <span className="flex items-center gap-1">
                   {field.value || "-"}

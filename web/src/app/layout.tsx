@@ -32,7 +32,9 @@ export default function RootLayout({
     pathname !== "/auth/login" && pathname !== "/auth/signIn";
   return (
     <html data-theme="emerald" lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
         <AuthProvider>
           <AuthGuard>
             {showSidePanel ? <SidePanel>{children}</SidePanel> : children}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, ReactNode, useEffect, useRef } from "react";
+import React, { useState, ReactNode, useEffect, useRef, act } from "react";
 import PersonalProfile from "./personal-profile";
 import { useAuth } from "@/lib/api/authContext";
 import { useRouter } from "next/navigation";
@@ -22,13 +22,24 @@ const navItems = [
     href: "/",
     active: true,
   },
-  { label: "Messages", icon: <MessageCircleMore size={20} />, href: "#" },
-  { label: "Events", icon: <CalendarIcon size={20} />, href: "/evenement" },
+  {
+    label: "Messages",
+    icon: <MessageCircleMore size={20} />,
+    href: "#",
+    active: false,
+  },
+  {
+    label: "Events",
+    icon: <CalendarIcon size={20} />,
+    href: "/evenement",
+    active: false,
+  },
 ];
 const profileItems = {
   label: "Profile",
   icon: <UserCircleIcon size={20} />,
   href: "#",
+  active: false,
 };
 
 export default function SidePanel({ children }: { children: ReactNode }) {
@@ -74,9 +85,9 @@ export default function SidePanel({ children }: { children: ReactNode }) {
   }, [showProfile]);
 
   return (
-    <div className="flex flex-auto bg-amber-50 h-screen overflow-hidden">
+    <div className="flex flex-auto h-screen overflow-hidden">
       <aside
-        className={`${panelWidth} bg-base-300 border-r border-base-300 flex flex-col justify-between transition-all duration-300`}
+        className={`${panelWidth} bg-base-200 border-r border-base-200 flex flex-col justify-between transition-all duration-300`}
       >
         <div>
           <div
@@ -141,9 +152,7 @@ export default function SidePanel({ children }: { children: ReactNode }) {
             }`}
           >
             <LogOutIcon size={20} />
-            {!collapsed && (
-              <span className="text-content">Déconnexion</span>
-            )}
+            {!collapsed && <span className="text-content">Déconnexion</span>}
           </button>
         </div>
       </aside>

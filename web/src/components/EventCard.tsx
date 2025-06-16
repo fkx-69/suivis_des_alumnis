@@ -12,7 +12,11 @@ export interface EventCardProps {
   onToggle?(): void;
 }
 
-export default function EventCard({ event, expanded, onToggle }: EventCardProps) {
+export default function EventCard({
+  event,
+  expanded,
+  onToggle,
+}: EventCardProps) {
   return (
     <div
       className={`card card-lg w-96 bg-base-100 ${event.image ? "" : "card-xl"} shadow-sm`}
@@ -20,12 +24,18 @@ export default function EventCard({ event, expanded, onToggle }: EventCardProps)
     >
       {event.image && (
         <figure>
-          <img src={event.image} alt={event.titre} className="h-48 w-full object-cover" />
+          <img
+            src={event.image}
+            alt={event.titre}
+            className="h-48 w-full object-cover"
+          />
         </figure>
       )}
       <div className="card-body">
         <h2 className="card-title">{event.titre || ""}</h2>
-        <p className={`text-sm opacity-80 cursor-pointer ${expanded ? "" : "line-clamp-3"}`}>
+        <p
+          className={`text-sm opacity-80 cursor-pointer ${expanded ? "" : "line-clamp-3"}`}
+        >
           {event.description || ""}
         </p>
         {event.date_debut && (

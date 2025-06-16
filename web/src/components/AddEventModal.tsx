@@ -10,7 +10,10 @@ interface AddEventModalProps {
   onCreated?: (event: ApiEvent) => void;
 }
 
-export default function AddEventModal({ onClose, onCreated }: AddEventModalProps) {
+export default function AddEventModal({
+  onClose,
+  onCreated,
+}: AddEventModalProps) {
   const [form, setForm] = useState({
     titre: "",
     description: "",
@@ -54,10 +57,7 @@ export default function AddEventModal({ onClose, onCreated }: AddEventModalProps
   }, [onClose]);
 
   return (
-    <div
-      className="absolute inset-0 z-50 flex items-center justify-center bg-black/40"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40">
       <motion.form
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}

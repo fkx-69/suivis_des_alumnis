@@ -180,9 +180,7 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
                     className="input input-sm input-primary w-full max-w-[60%]"
                     autoFocus
                     value={field.value}
-                    onChange={(e) =>
-                      handleChange(field.label, e.target.value)
-                    }
+                    onChange={(e) => handleChange(field.label, e.target.value)}
                     onBlur={() => setEditing(null)}
                     onKeyDown={(e) => handleKeyDown(e, field.label)}
                   />

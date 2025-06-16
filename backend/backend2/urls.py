@@ -46,6 +46,7 @@ urlpatterns = [
     path('api/mentorat/', include('mentorat.urls')),
     path('api/notifications/', include('notifications.urls')),
     path('api/statistiques/', include('statistiques.urls')),
+    path('api/messaging/', include('messaging.urls')),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
 

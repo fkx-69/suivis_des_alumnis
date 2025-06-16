@@ -127,60 +127,81 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
         </div>
 
         {/* champs */}
-        <div className="mt-6 space-y-2">
-          {fields.map((field) => (
-            <div
-              key={field.label}
-              className={
-                field.label === "Biographie"
-                  ? "flex flex-col items-center gap-2"
-                  : "flex items-center justify-between gap-2"
-              }
-            >
-              <span className="whitespace-nowrap font-medium text-center w-full">
-                {field.label}
-              </span>
+        {/* --- Champs --- */}
+        <div className="mt-6 space-y-3">
+          {fields.map((field) => {
+            const isBio = field.label === "Biographie";
 
-              {editing === field.label ? (
-                field.label === "Biographie" ? (
-                  <textarea
-                    className="textarea textarea-primary w-full"
-                    value={field.value}
-                    rows={3}
-                    autoFocus
-                    onChange={(e) => handleChange(field.label, e.target.value)}
-                    onBlur={() => setEditing(null)}
-                  />
-                ) : (
-                  <input
-                    type="text"
-                    className="input input-sm input-primary w-full max-w-[60%]"
-                    value={field.value}
-                    autoFocus
-                    onChange={(e) => handleChange(field.label, e.target.value)}
-                    onBlur={() => setEditing(null)}
-                    onKeyDown={(e) => handleKeyDown(e, field.label)}
-                  />
-                )
-              ) : field.label === "Biographie" ? (
-                <span className="flex items-center gap-1 w-full">
-                  <span className="flex-1">{field.value || "-"}</span>
-                  <Pencil
-                    className="h-4 w-4 cursor-pointer text-gray-400 hover:text-gray-600"
-                    onClick={() => setEditing(field.label)}
-                  />
+            if (isBio) {
+              /* --- Cas spécial Biographie --- */
+              return (
+                <div key={field.label} className="flex flex-col gap-2">
+                  <span className="w-full text-center font-medium">
+                    {field.label}
+                  </span>
+
+                  {editing === field.label ? (
+                    <textarea
+                      className="textarea textarea-primary w-full"
+                      rows={3}
+                      autoFocus
+                      value={field.value}
+                      onChange={(e) =>
+                        handleChange(field.label, e.target.value)
+                      }
+                      onBlur={() => setEditing(null)}
+                    />
+                  ) : (
+                    <div className="relative w-full">
+                      <span className="block pr-6">{field.value || "-"}</span>
+                      <Pencil
+                        className="absolute top-1 right-0 h-4 w-4 cursor-pointer text-gray-400 hover:text-gray-600"
+                        onClick={() => setEditing(field.label)}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            /* --- Tous les autres champs (une seule ligne) --- */
+            return (
+              <div
+                key={field.label}
+                className="grid grid-cols-[auto,1fr] items-center gap-2"
+              >
+                {/* Colonne 1 : label */}
+                <span className="whitespace-nowrap font-medium">
+                  {field.label}
                 </span>
-              ) : (
-                <span className="flex items-center gap-1">
-                  {field.value || "-"}
-                  <Pencil
-                    className="h-4 w-4 cursor-pointer text-gray-400 hover:text-gray-600"
-                    onClick={() => setEditing(field.label)}
-                  />
-                </span>
-              )}
-            </div>
-          ))}
+
+                {/* Colonne 2 : valeur alignée à droite */}
+                <div className="flex items-center justify-end gap-1">
+                  {editing === field.label ? (
+                    <input
+                      type="text"
+                      className="input input-sm input-primary w-full max-w-[60%]"
+                      autoFocus
+                      value={field.value}
+                      onChange={(e) =>
+                        handleChange(field.label, e.target.value)
+                      }
+                      onBlur={() => setEditing(null)}
+                      onKeyDown={(e) => handleKeyDown(e, field.label)}
+                    />
+                  ) : (
+                    <>
+                      <span>{field.value || "-"}</span>
+                      <Pencil
+                        className="h-4 w-4 cursor-pointer text-gray-400 hover:text-gray-600"
+                        onClick={() => setEditing(field.label)}
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* bouton */}

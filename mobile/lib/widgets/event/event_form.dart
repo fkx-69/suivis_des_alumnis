@@ -33,12 +33,12 @@ class _EventFormState extends State<EventForm> {
     final init = widget.initial;
     _titreCtl = TextEditingController(text: init?.titre ?? '');
     _descCtl = TextEditingController(text: init?.description ?? '');
+    final now = DateTime.now();
     if (init != null) {
       _date = DateTime(init.dateDebut.year, init.dateDebut.month, init.dateDebut.day);
       _timeStart = TimeOfDay.fromDateTime(init.dateDebut);
       _timeEnd = TimeOfDay.fromDateTime(init.dateFin);
     } else {
-      final now = DateTime.now();
       _date = now;
       _timeStart = TimeOfDay.fromDateTime(now);
       _timeEnd = TimeOfDay.fromDateTime(now.add(const Duration(hours: 1)));
@@ -58,10 +58,18 @@ class _EventFormState extends State<EventForm> {
       initialDate: _date,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: Color(0xFF2196F3), // header
+            onPrimary: Colors.white,     // header text
+            onSurface: Colors.black,     // body text
+          ),
+        ),
+        child: child!,
+      ),
     );
-    if (picked != null) {
-      setState(() => _date = picked);
-    }
+    if (picked != null) setState(() => _date = picked);
   }
 
   Future<void> _pickTimeStart() async {
@@ -69,9 +77,7 @@ class _EventFormState extends State<EventForm> {
       context: context,
       initialTime: _timeStart,
     );
-    if (picked != null) {
-      setState(() => _timeStart = picked);
-    }
+    if (picked != null) setState(() => _timeStart = picked);
   }
 
   Future<void> _pickTimeEnd() async {
@@ -79,9 +85,7 @@ class _EventFormState extends State<EventForm> {
       context: context,
       initialTime: _timeEnd,
     );
-    if (picked != null) {
-      setState(() => _timeEnd = picked);
-    }
+    if (picked != null) setState(() => _timeEnd = picked);
   }
 
   Future<void> _handleSubmit() async {
@@ -95,7 +99,6 @@ class _EventFormState extends State<EventForm> {
       _date.year, _date.month, _date.day,
       _timeEnd.hour, _timeEnd.minute,
     );
-
     if (localFin.isBefore(localDebut)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('La date de fin doit être après la date de début')),
@@ -103,10 +106,8 @@ class _EventFormState extends State<EventForm> {
       return;
     }
 
-    // **Convertir en UTC** pour être sûr que DRF le lira
     final dtDebutUtc = localDebut.toUtc();
     final dtFinUtc   = localFin.toUtc();
-
     final ev = EventModel(
       id: widget.initial?.id ?? 0,
       titre: _titreCtl.text.trim(),
@@ -118,9 +119,6 @@ class _EventFormState extends State<EventForm> {
       createur: widget.initial?.createur,
     );
 
-    // Debug final
-    print("→ Payload final EventModel (UTC) : ${ev.toJson()}");
-
     await widget.onSubmit(ev);
   }
 
@@ -130,57 +128,80 @@ class _EventFormState extends State<EventForm> {
     final fmtStart = _timeStart.format(context);
     final fmtEnd = _timeEnd.format(context);
 
+    InputDecoration _dec(String label, [IconData? icon]) => InputDecoration(
+      labelText: label,
+      prefixIcon: icon != null ? Icon(icon, color: Color(0xFF2196F3)) : null,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      focusedBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+        borderRadius: BorderRadius.circular(8),
+      ),
+    );
+
     return Form(
       key: _formKey,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Titre
           TextFormField(
             controller: _titreCtl,
-            decoration: const InputDecoration(labelText: 'Titre'),
+            decoration: _dec('Titre', Icons.title),
             validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
           ),
           const SizedBox(height: 16),
+
+          // Description
           TextFormField(
             controller: _descCtl,
-            decoration: const InputDecoration(labelText: 'Description'),
+            decoration: _dec('Description', Icons.description),
             minLines: 2,
             maxLines: 4,
             validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
           ),
           const SizedBox(height: 24),
+
+          // Sélecteurs date & heure
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
+                child: OutlinedButton.icon(
                   onPressed: _pickDate,
-                  child: Text('Date : $fmtDate', style: GoogleFonts.poppins()),
+                  icon: const Icon(Icons.calendar_today_outlined),
+                  label: Text(fmtDate, style: GoogleFonts.poppins()),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: OutlinedButton(
+                child: OutlinedButton.icon(
                   onPressed: _pickTimeStart,
-                  child: Text('Début : $fmtStart', style: GoogleFonts.poppins()),
+                  icon: const Icon(Icons.access_time_outlined),
+                  label: Text('Début: $fmtStart', style: GoogleFonts.poppins()),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: OutlinedButton(
+                child: OutlinedButton.icon(
                   onPressed: _pickTimeEnd,
-                  child: Text('Fin   : $fmtEnd', style: GoogleFonts.poppins()),
+                  icon: const Icon(Icons.access_time),
+                  label: Text('Fin: $fmtEnd', style: GoogleFonts.poppins()),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _handleSubmit,
-              child: Text(
-                widget.initial == null ? 'Créer' : 'Enregistrer',
-                style: GoogleFonts.poppins(),
-              ),
+          const SizedBox(height: 32),
+
+          // Bouton envoyer
+          ElevatedButton(
+            onPressed: _handleSubmit,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4CAF50),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(
+              widget.initial == null ? 'Créer' : 'Enregistrer',
+              style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
         ],

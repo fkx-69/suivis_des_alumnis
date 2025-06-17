@@ -14,19 +14,17 @@ class RegisterAlumniScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF2196F3)),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Inscription Alumni',
+          'Inscription',
           style: GoogleFonts.poppins(
-            color: const Color(0xFF2196F3),
-            fontWeight: FontWeight.w600,
-          ),
+              color: const Color(0xFF2196F3), fontWeight: FontWeight.w600),
         ),
       ),
       body: const SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(24.0),
+          padding: EdgeInsets.all(16),
           child: RegisterAlumniForm(),
         ),
       ),

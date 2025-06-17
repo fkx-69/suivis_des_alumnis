@@ -16,21 +16,18 @@ class EventListView extends StatelessWidget {
   Widget build(BuildContext context) {
     if (events.isEmpty) {
       return const Center(
-        child: Text(
-          'Aucun événement',
-          style: TextStyle(fontSize: 16, color: Colors.grey),
-        ),
+        child: Text('Aucun événement', style: TextStyle(fontSize: 16, color: Colors.grey)),
       );
     }
-    return ListView.builder(
-      itemCount: events.length,
-      itemBuilder: (ctx, i) {
-        final ev = events[i];
-        return EventCard(
-          event: ev,
-          onTap: () => onEventTap(ev),
-        );
-      },
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: ListView.builder(
+        itemCount: events.length,
+        itemBuilder: (ctx, i) {
+          final ev = events[i];
+          return EventCard(event: ev, onTap: () => onEventTap(ev));
+        },
+      ),
     );
   }
 }

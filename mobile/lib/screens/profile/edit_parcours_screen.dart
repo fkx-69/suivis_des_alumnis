@@ -35,59 +35,99 @@ class _EditParcoursScreenState extends State<EditParcoursScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
 
     return DefaultTabController(
       length: 2,
       initialIndex: _tabIndex,
       child: Scaffold(
+        backgroundColor: Colors.grey.shade50,
         appBar: AppBar(
-          title: const Text('Mon Parcours'),
+          backgroundColor: Colors.white,
+          elevation: 1,
+          leading: const BackButton(color: Color(0xFF2196F3)),
+          title: Text(
+            'Mon Parcours',
+            style: GoogleFonts.poppins(
+              color: const Color(0xFF2196F3),
+              fontWeight: FontWeight.w600,
+              fontSize: 20,
+            ),
+          ),
           bottom: TabBar(
             onTap: (i) => setState(() => _tabIndex = i),
+            indicatorColor: const Color(0xFF4CAF50),
+            indicatorWeight: 3,
+            labelColor: const Color(0xFF2196F3),
+            unselectedLabelColor: Colors.grey[600],
+            labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
             tabs: const [
               Tab(text: 'Académique'),
               Tab(text: 'Professionnel'),
             ],
           ),
         ),
-        body: TabBarView(
-          children: [
-            // Onglet Académique
-            ParcoursAcademiqueFormSection(
-              items: _acad,
-              onCreate: (data) async {
-                await _service.createParcoursAcademique(data);
-                _loadAll();
-              },
-              onUpdate: (id, data) async {
-                await _service.updateParcoursAcademique(id, data);
-                _loadAll();
-              },
-              onDelete: (id) async {
-                await _service.deleteParcoursAcademique(id);
-                _loadAll();
-              },
-            ),
+        body: SafeArea(
+          child: TabBarView(
+            children: [
+              // Académique
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: ParcoursAcademiqueFormSection(
+                      items: _acad,
+                      onCreate: (data) async {
+                        await _service.createParcoursAcademique(data);
+                        _loadAll();
+                      },
+                      onUpdate: (id, data) async {
+                        await _service.updateParcoursAcademique(id, data);
+                        _loadAll();
+                      },
+                      onDelete: (id) async {
+                        await _service.deleteParcoursAcademique(id);
+                        _loadAll();
+                      },
+                    ),
+                  ),
+                ),
+              ),
 
-            // Onglet Professionnel
-            ParcoursProfessionnelFormSection(
-              items: _prof,
-              onCreate: (data) async {
-                await _service.createParcoursProfessionnel(data);
-                _loadAll();
-              },
-              onUpdate: (id, data) async {
-                await _service.updateParcoursProfessionnel(id, data);
-                _loadAll();
-              },
-              onDelete: (id) async {
-                await _service.deleteParcoursProfessionnel(id);
-                _loadAll();
-              },
-            ),
-          ],
+              // Professionnel
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: ParcoursProfessionnelFormSection(
+                      items: _prof,
+                      onCreate: (data) async {
+                        await _service.createParcoursProfessionnel(data);
+                        _loadAll();
+                      },
+                      onUpdate: (id, data) async {
+                        await _service.updateParcoursProfessionnel(id, data);
+                        _loadAll();
+                      },
+                      onDelete: (id) async {
+                        await _service.deleteParcoursProfessionnel(id);
+                        _loadAll();
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
         bottomNavigationBar: AppBottomNavBar(
           currentIndex: 3,

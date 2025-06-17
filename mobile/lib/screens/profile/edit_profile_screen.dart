@@ -60,21 +60,42 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     if (_isLoading || _user == null) {
       return const Scaffold(
+        backgroundColor: Colors.white,
         body: Center(child: CircularProgressIndicator()),
       );
     }
+
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: const Text('Modifier le profil'),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        leading: const BackButton(color: Color(0xFF2196F3)),
+        title: Text(
+          'Modifier le profil',
+          style: GoogleFonts.poppins(
+            color: const Color(0xFF2196F3),
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: EditProfileForm(
-            user: _user!,
-            onSaved: (updatedUser) {
-              Navigator.pop(context, updatedUser);
-            },
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: Card(
+            shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: EditProfileForm(
+                user: _user!,
+                onSaved: (updatedUser) {
+                  Navigator.pop(context, updatedUser);
+                },
+              ),
+            ),
           ),
         ),
       ),

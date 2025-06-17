@@ -25,38 +25,71 @@ class ParcoursProfessionnelFormSection extends StatelessWidget {
     'CDI', 'CDD', 'Stage', 'Alternance', 'Freelance'
   ];
 
+  InputDecoration _fieldDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: GoogleFonts.poppins(color: Colors.grey[700]),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       children: [
-        ElevatedButton.icon(
-          icon: const Icon(Icons.add),
-          label: const Text('Ajouter Parcours Pro'),
-          onPressed: () => _showForm(context),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4CAF50),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+            icon: const Icon(Icons.add_business),
+            label: Text('Ajouter parcours pro', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600)),
+            onPressed: () => _showForm(context),
+          ),
         ),
         const SizedBox(height: 16),
         for (var item in items)
-          Card(
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            child: ListTile(
-              title: Text(item['poste'] ?? '',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-              subtitle: Text(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 2,
+              child: ListTile(
+                title: Text(
+                  item['poste'] ?? '',
+                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
                   '${item['entreprise']} • ${item['date_debut']} (${item['type_contrat']})',
-                  style: GoogleFonts.poppins(fontSize: 13)),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () => _showForm(context, existing: item),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () => onDelete(item['id']),
-                  ),
-                ],
+                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700]),
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Color(0xFF2196F3)),
+                      onPressed: () => _showForm(context, existing: item),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.redAccent),
+                      onPressed: () => onDelete(item['id']),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -68,83 +101,109 @@ class ParcoursProfessionnelFormSection extends StatelessWidget {
     final formKey = GlobalKey<FormState>();
     final posteCtrl = TextEditingController(text: existing?['poste']);
     final entCtrl = TextEditingController(text: existing?['entreprise']);
-    final dateCtrl =
-    TextEditingController(text: existing?['date_debut']);
+    final dateCtrl = TextEditingController(text: existing?['date_debut']);
     String contrat = existing?['type_contrat'] ?? _contrats.first;
 
     showModalBottomSheet(
       context: ctx,
       isScrollControlled: true,
-      builder: (bottomSheetContext) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(bottomSheetContext).viewInsets.bottom),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: formKey,
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              TextFormField(
-                controller: posteCtrl,
-                decoration: const InputDecoration(labelText: 'Poste *'),
-                validator: (v) =>
-                v == null || v.isEmpty ? 'Champ requis' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: entCtrl,
-                decoration: const InputDecoration(labelText: 'Entreprise *'),
-                validator: (v) =>
-                v == null || v.isEmpty ? 'Champ requis' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: dateCtrl,
-                decoration:
-                const InputDecoration(labelText: 'Date début *'),
-                readOnly: true,
-                onTap: () async {
-                  final d = await showDatePicker(
-                    context: ctx,
-                    initialDate: existing != null
-                        ? DateTime.parse(existing['date_debut'])
-                        : DateTime.now(),
-                    firstDate: DateTime(1970),
-                    lastDate: DateTime.now(),
-                  );
-                  if (d != null) dateCtrl.text = d.toIso8601String().split('T').first;
-                },
-                validator: (v) =>
-                v == null || v.isEmpty ? 'Champ requis' : null,
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: contrat,
-                items: _contrats
-                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                    .toList(),
-                onChanged: (v) => contrat = v!,
-                decoration: const InputDecoration(labelText: 'Type contrat'),
+      backgroundColor: Colors.transparent,
+      builder: (bCtx) => DraggableScrollableSheet(
+        expand: false,
+        builder: (_, controller) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          padding: EdgeInsets.only(
+            left: 16, right: 16, top: 16,
+            bottom: MediaQuery.of(bCtx).viewInsets.bottom + 16,
+          ),
+          child: ListView(
+            controller: controller,
+            shrinkWrap: true,
+            children: [
+              Text(
+                existing != null ? 'Modifier parcours pro' : 'Nouveau parcours pro',
+                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  if (!formKey.currentState!.validate()) return;
-                  final data = {
-                    'poste': posteCtrl.text,
-                    'entreprise': entCtrl.text,
-                    'date_debut': dateCtrl.text,
-                    'type_contrat': contrat,
-                  };
-                  if (existing != null) {
-                    onUpdate(existing['id'], data);
-                  } else {
-                    onCreate(data);
-                  }
-                  Navigator.pop(ctx);
-                },
-                child:
-                Text(existing != null ? 'Modifier' : 'Créer'),
+              Form(
+                key: formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: posteCtrl,
+                      decoration: _fieldDecoration('Poste *'),
+                      validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: entCtrl,
+                      decoration: _fieldDecoration('Entreprise *'),
+                      validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: dateCtrl,
+                      decoration: _fieldDecoration('Date début *'),
+                      readOnly: true,
+                      onTap: () async {
+                        final d = await showDatePicker(
+                          context: bCtx,
+                          initialDate: existing != null
+                              ? DateTime.parse(existing['date_debut'])
+                              : DateTime.now(),
+                          firstDate: DateTime(1970),
+                          lastDate: DateTime.now(),
+                        );
+                        if (d != null) dateCtrl.text = d.toIso8601String().split('T').first;
+                      },
+                      validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      value: contrat,
+                      items: _contrats
+                          .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                          .toList(),
+                      onChanged: (v) => contrat = v!,
+                      decoration: _fieldDecoration('Type de contrat'),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF4CAF50),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        onPressed: () {
+                          if (!formKey.currentState!.validate()) return;
+                          final data = {
+                            'poste': posteCtrl.text,
+                            'entreprise': entCtrl.text,
+                            'date_debut': dateCtrl.text,
+                            'type_contrat': contrat,
+                          };
+                          if (existing != null) {
+                            onUpdate(existing['id'], data);
+                          } else {
+                            onCreate(data);
+                          }
+                          Navigator.pop(ctx);
+                        },
+                        child: Text(
+                          existing != null ? 'Modifier' : 'Créer',
+                          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ]),
+            ],
           ),
         ),
       ),

@@ -11,30 +11,71 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.school, size: 100, color: Color(0xFF2196F3)),
-              const SizedBox(height: 24),
-              Text(
-                'Bienvenue sur AlumniFy',
-                style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF2196F3)),
-                textAlign: TextAlign.center,
+        child: LayoutBuilder(
+          builder: (ctx, constraints) {
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: ConstrainedBox(
+                // Force la hauteur minimale à l'espace dispo
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    // Centre verticalement sans IntrinsicHeight
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Icône ou logo
+                      const Icon(
+                        Icons.school,
+                        size: 100,
+                        color: Color(0xFF2196F3),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Titre
+                      Text(
+                        'Bienvenue sur AlumniFy',
+                        style: GoogleFonts.poppins(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF2196F3),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Sous-titre
+                      Text(
+                        'Connectez-vous avec les anciens étudiants\net partagez vos expériences',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 48),
+
+                      // Bouton Connexion (plein largeur)
+                      SizedBox(
+                        width: double.infinity,
+                        child: LoginButton(),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Bouton Inscription (plein largeur)
+                      SizedBox(
+                        width: double.infinity,
+                        child: RegisterButton(),
+                      ),
+
+                      // Spacer virtuel : pousse vers le centre si écran plus grand
+                      const SizedBox(height: 1),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Connectez-vous avec les anciens étudiants et partagez vos expériences',
-                style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600]),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 48),
-              LoginButton(),
-              const SizedBox(height: 16),
-              RegisterButton(),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

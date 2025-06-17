@@ -5,27 +5,51 @@ import 'package:memoire/screens/profile/edit_profile_screen.dart';
 
 class ProfileHeader extends StatelessWidget {
   final UserModel user;
-
   const ProfileHeader({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.blue.shade50,
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2196F3), Color(0xFF1976D2)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(24),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Ligne avatar + nom / username
           Row(
             children: [
-              CircleAvatar(
-                radius: 36,
-                backgroundImage: user.photoProfil != null
-                    ? NetworkImage(user.photoProfil!)
-                    : const AssetImage('assets/images/default_avatar.png')
-                as ImageProvider,
+              // Avatar avec contour blanc
+              Container(
+                padding: const EdgeInsets.all(2),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: CircleAvatar(
+                  radius: 38,
+                  backgroundImage: user.photoProfil != null
+                      ? NetworkImage(user.photoProfil!)
+                      : const AssetImage('assets/images/default_avatar.png')
+                  as ImageProvider,
+                ),
               ),
               const SizedBox(width: 16),
+              // Nom et username
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,48 +57,62 @@ class ProfileHeader extends StatelessWidget {
                     Text(
                       '${user.prenom} ${user.nom}',
                       style: GoogleFonts.poppins(
-                          fontSize: 20, fontWeight: FontWeight.w600),
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      user.username,
-                      style: GoogleFonts.poppins(color: Colors.grey[600]),
+                      '@${user.username}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: Colors.white70,
+                      ),
                     ),
                   ],
                 ),
               ),
             ],
           ),
+
+          // Biographie
           if (user.biographie != null && user.biographie!.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Text(
               user.biographie!,
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                color: Colors.grey[800],
+                color: Colors.white.withOpacity(0.9),
               ),
             ),
           ],
-          const SizedBox(height: 16),
+
+          const SizedBox(height: 20),
+          // Bouton Modifier
           SizedBox(
             width: double.infinity,
-            child: OutlinedButton(
+            child: ElevatedButton(
               onPressed: () {
-                Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                builder: (_) => const EditProfileScreen(),
-                 ),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const EditProfileScreen()),
                 );
               },
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: Colors.grey.shade400),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4CAF50),
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               child: Text(
                 'Modifier le profil',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),

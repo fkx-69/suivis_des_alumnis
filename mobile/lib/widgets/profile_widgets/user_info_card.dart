@@ -9,50 +9,56 @@ class UserInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isEtudiant = user.role == 'ETUDIANT';
-    final isAlumni = user.role == 'ALUMNI';
+    final isEtudiant = user.role.toUpperCase() == 'ETUDIANT';
+    final iconData   = isEtudiant ? Icons.school_outlined : Icons.person_outline;
+    final bgColor    = isEtudiant ? const Color(0xFF2196F3) : const Color(0xFF4CAF50);
+    final labelText  = isEtudiant ? 'Étudiant' : 'Alumni';
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _buildRow(Icons.email_outlined, user.email),
-            const SizedBox(height: 8),
-            _buildRow(Icons.verified_user_outlined, user.role),
-            if (isEtudiant) ...[
-              const Divider(height: 24),
-              _buildRow(Icons.school, user.filiere ?? '—'),
-              _buildRow(Icons.grade_outlined, user.niveauEtude ?? '—'),
-              _buildRow(Icons.calendar_today, '${user.anneeEntree ?? '—'}'),
-            ],
-            if (isAlumni) ...[
-              const Divider(height: 24),
-              _buildRow(Icons.business_outlined, user.secteurActivite ?? '—'),
-              _buildRow(Icons.badge_outlined, user.posteActuel ?? '—'),
-              _buildRow(Icons.apartment_outlined, user.nomEntreprise ?? '—'),
-            ],
+            // Icône dans un cercle
+            Container(
+              decoration: BoxDecoration(
+                color: bgColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              padding: const EdgeInsets.all(12),
+              child: Icon(iconData, size: 28, color: bgColor),
+            ),
+
+            const SizedBox(width: 16),
+
+            // Texte
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  labelText,
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF2196F3),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  user.role,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.grey[800],
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildRow(IconData icon, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: Colors.grey[700]),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(value, style: GoogleFonts.poppins(fontSize: 14)),
-          ),
-        ],
       ),
     );
   }

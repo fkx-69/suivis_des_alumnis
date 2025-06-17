@@ -8,10 +8,10 @@ import '../auth/home_screen.dart';
 import '../profile/profile_screen.dart';
 import 'create_event_screen.dart';
 import 'event_detail_screen.dart';
+import 'package:memoire/screens/group/group_list_screen.dart';
 
 class EventListScreen extends StatefulWidget {
   const EventListScreen({super.key});
-
   @override
   State<EventListScreen> createState() => _EventListScreenState();
 }
@@ -29,12 +29,12 @@ class _EventListScreenState extends State<EventListScreen> {
   }
 
   Future<void> _loadEvents() async {
-    print('🔄 Début chargement des événements');
     setState(() => _loading = true);
     final fetched = await _service.fetchCalendar();
-    print('🔄 Événements reçus : ${fetched.length}');
+    final now = DateTime.now();
+    final upcoming = fetched.where((e) => e.dateDebut.isAfter(now)).toList();
     setState(() {
-      _events = fetched;
+      _events = upcoming;
       _loading = false;
     });
   }
@@ -43,16 +43,13 @@ class _EventListScreenState extends State<EventListScreen> {
     if (idx == _selectedIndex) return;
     switch (idx) {
       case 0:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+        break;
+      case 1:
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const GroupListScreen()));
         break;
       case 3:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const ProfileScreen()),
-        );
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
         break;
     }
     setState(() => _selectedIndex = idx);
@@ -61,43 +58,39 @@ class _EventListScreenState extends State<EventListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text('Événements'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Créer',
-            onPressed: () async {
-              final created = await Navigator.push<bool>(
-                context,
-                MaterialPageRoute(builder: (_) => const CreateEventScreen()),
-              );
-              print('📝 CreateEventScreen returned: $created');
-              if (created == true) {
-                await _loadEvents();
-              }
-            },
-          ),
-        ],
+        title: Text('Événements', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        iconTheme: const IconThemeData(color: Color(0xFF2196F3)),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
         onRefresh: _loadEvents,
+        color: const Color(0xFF4CAF50),
         child: EventListView(
           events: _events,
           onEventTap: (e) async {
             final modified = await Navigator.push<bool>(
               context,
-              MaterialPageRoute(
-                  builder: (_) => EventDetailScreen(event: e)),
+              MaterialPageRoute(builder: (_) => EventDetailScreen(event: e)),
             );
-            print('✏️ EventDetailScreen returned: $modified');
-            if (modified == true) {
-              await _loadEvents();
-            }
+            if (modified == true) await _loadEvents();
           },
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF4CAF50),
+        onPressed: () async {
+          final created = await Navigator.push<bool>(
+            context,
+            MaterialPageRoute(builder: (_) => const CreateEventScreen()),
+          );
+          if (created == true) await _loadEvents();
+        },
+        child: const Icon(Icons.add),
       ),
       bottomNavigationBar: AppBottomNavBar(
         currentIndex: _selectedIndex,

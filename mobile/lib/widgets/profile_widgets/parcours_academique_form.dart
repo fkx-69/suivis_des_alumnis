@@ -21,39 +21,72 @@ class ParcoursAcademiqueFormSection extends StatelessWidget {
     required this.onDelete,
   });
 
+  InputDecoration _fieldDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: GoogleFonts.poppins(color: Colors.grey[700]),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       children: [
-        ElevatedButton.icon(
-          icon: const Icon(Icons.add),
-          label: const Text('Ajouter Parcours Académique'),
-          onPressed: () => _showForm(context),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4CAF50),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+            icon: const Icon(Icons.add),
+            label: Text('Ajouter parcours académique', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600)),
+            onPressed: () => _showForm(context),
+          ),
         ),
         const SizedBox(height: 16),
         for (var item in items)
-          Card(
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            child: ListTile(
-              title: Text(item['diplome'] ?? '',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-              subtitle: Text(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 2,
+              child: ListTile(
+                title: Text(
+                  item['diplome'] ?? '',
+                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
                   '${item['institution']}, ${item['annee_obtention']}\n${item['mention'] ?? ''}',
-                  style: GoogleFonts.poppins(fontSize: 13)),
-              isThreeLine: true,
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () => _showForm(context, existing: item),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () => onDelete(item['id']),
-                  ),
-                ],
+                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700]),
+                ),
+                isThreeLine: true,
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Color(0xFF2196F3)),
+                      onPressed: () => _showForm(context, existing: item),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.redAccent),
+                      onPressed: () => onDelete(item['id']),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -66,67 +99,95 @@ class ParcoursAcademiqueFormSection extends StatelessWidget {
     final dipCtrl = TextEditingController(text: existing?['diplome']);
     final instCtrl = TextEditingController(text: existing?['institution']);
     final anCtrl = TextEditingController(
-        text: existing != null ? existing['annee_obtention'].toString() : '');
+      text: existing != null ? existing['annee_obtention'].toString() : '',
+    );
     final menCtrl = TextEditingController(text: existing?['mention']);
 
     showModalBottomSheet(
       context: ctx,
       isScrollControlled: true,
-      builder: (bottomSheetContext) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(bottomSheetContext).viewInsets.bottom),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: formKey,
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              TextFormField(
-                controller: dipCtrl,
-                decoration: const InputDecoration(labelText: 'Diplôme *'),
-                validator: (v) =>
-                v == null || v.isEmpty ? 'Champ requis' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: instCtrl,
-                decoration: const InputDecoration(labelText: 'Institution *'),
-                validator: (v) =>
-                v == null || v.isEmpty ? 'Champ requis' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: anCtrl,
-                decoration:
-                const InputDecoration(labelText: 'Année obtention *'),
-                keyboardType: TextInputType.number,
-                validator: (v) =>
-                v == null || int.tryParse(v) == null ? 'Nombre requis' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: menCtrl,
-                decoration: const InputDecoration(labelText: 'Mention'),
+      backgroundColor: Colors.transparent,
+      builder: (bCtx) => DraggableScrollableSheet(
+        expand: false,
+        builder: (_, controller) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          padding: EdgeInsets.only(
+            left: 16, right: 16, top: 16,
+            bottom: MediaQuery.of(bCtx).viewInsets.bottom + 16,
+          ),
+          child: ListView(
+            controller: controller,
+            shrinkWrap: true,
+            children: [
+              Text(
+                existing != null ? 'Modifier parcours' : 'Nouveau parcours',
+                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  if (!formKey.currentState!.validate()) return;
-                  final data = {
-                    'diplome': dipCtrl.text,
-                    'institution': instCtrl.text,
-                    'annee_obtention': int.parse(anCtrl.text),
-                    'mention': menCtrl.text.isEmpty ? null : menCtrl.text,
-                  };
-                  if (existing != null) {
-                    onUpdate(existing['id'], data);
-                  } else {
-                    onCreate(data);
-                  }
-                  Navigator.pop(ctx);
-                },
-                child:
-                Text(existing != null ? 'Modifier' : 'Créer'),
+              Form(
+                key: formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: dipCtrl,
+                      decoration: _fieldDecoration('Diplôme *'),
+                      validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: instCtrl,
+                      decoration: _fieldDecoration('Institution *'),
+                      validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: anCtrl,
+                      decoration: _fieldDecoration('Année obtention *'),
+                      keyboardType: TextInputType.number,
+                      validator: (v) => v == null || int.tryParse(v) == null ? 'Nombre requis' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: menCtrl,
+                      decoration: _fieldDecoration('Mention'),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF4CAF50),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        onPressed: () {
+                          if (!formKey.currentState!.validate()) return;
+                          final data = {
+                            'diplome': dipCtrl.text,
+                            'institution': instCtrl.text,
+                            'annee_obtention': int.parse(anCtrl.text),
+                            'mention': menCtrl.text.isEmpty ? null : menCtrl.text,
+                          };
+                          if (existing != null) {
+                            onUpdate(existing['id'], data);
+                          } else {
+                            onCreate(data);
+                          }
+                          Navigator.pop(ctx);
+                        },
+                        child: Text(
+                          existing != null ? 'Modifier' : 'Créer',
+                          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ]),
+            ],
           ),
         ),
       ),

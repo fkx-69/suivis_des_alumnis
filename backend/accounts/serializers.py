@@ -149,3 +149,15 @@ class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['username', 'nom', 'prenom', 'photo_profil', 'biographie']
+
+# === PROFIL PUBLIC ===
+class UserPublicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = [
+            'username',
+            'nom',
+            'prenom',
+            'photo_profil',
+            'biographie',
+        ]

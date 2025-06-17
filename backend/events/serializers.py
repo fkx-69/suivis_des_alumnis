@@ -7,7 +7,7 @@ class EvenementSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     valide = serializers.BooleanField(read_only=True)
     date_debut_affiche = serializers.SerializerMethodField()
-    date_fin_affiche = serializers.SerializerMethodField()
+    date_fin_affiche   = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
 
     class Meta:
@@ -16,14 +16,22 @@ class EvenementSerializer(serializers.ModelSerializer):
             'id',
             'titre',
             'description',
-            'date_debut',
-            'date_fin',
+            'date_debut',       
+            'date_fin',          
             'date_debut_affiche',
             'date_fin_affiche',
             'valide',
             'createur',
             'createur_id',
-            'is_owner',
+            'is_owner',         
+            'valide',           
+        ]
+        read_only_fields = [
+            'id',
+            'date_debut_affiche',
+            'date_fin_affiche',
+            'createur',
+            'valide',
         ]
 
     def get_date_debut_affiche(self, obj):

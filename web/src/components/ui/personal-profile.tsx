@@ -65,7 +65,7 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      className="absolute inset-0 z-50 flex items-center justify-center bg-black/40"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <motion.div
@@ -127,48 +127,75 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
         </div>
 
         {/* champs */}
-        <div className="mt-6 space-y-2">
-          {fields.map((field) => (
-            <div
-              key={field.label}
-              className="flex items-center justify-between gap-2"
-            >
-              <span className="whitespace-nowrap font-medium">
-                {field.label}
-              </span>
+        {/* --- Champs --- */}
+        <div className="mt-6 space-y-3">
+          {fields.map((field) => {
+            const isBio = field.label === "Biographie";
 
-              {editing === field.label ? (
-                field.label === "Biographie" ? (
-                  <textarea
-                    className="textarea textarea-primary w-full max-w-[60%]"
-                    value={field.value}
-                    rows={3}
-                    autoFocus
-                    onChange={(e) => handleChange(field.label, e.target.value)}
-                    onBlur={() => setEditing(null)}
-                  />
-                ) : (
+            if (isBio) {
+              /* --- Cas spécial Biographie --- */
+              return (
+                <div key={field.label} className="flex flex-col gap-2">
+                  <span className="w-full text-center font-medium">
+                    {field.label}
+                  </span>
+
+                  {editing === field.label ? (
+                    <textarea
+                      className="textarea textarea-primary w-full"
+                      rows={3}
+                      autoFocus
+                      value={field.value}
+                      onChange={(e) =>
+                        handleChange(field.label, e.target.value)
+                      }
+                      onBlur={() => setEditing(null)}
+                    />
+                  ) : (
+                    <div className="relative w-full">
+                      <span className="block pr-6">{field.value || "-"}</span>
+                      <Pencil
+                        className="absolute top-1 right-0 h-4 w-4 cursor-pointer text-gray-400 hover:text-gray-600"
+                        onClick={() => setEditing(field.label)}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            /* --- Tous les autres champs (une seule ligne) --- */
+            return (
+              <div
+                key={field.label}
+                className="flex items-center justify-between gap-2"
+              >
+                <span className="whitespace-nowrap font-medium">
+                  {field.label}
+                </span>
+
+                {editing === field.label ? (
                   <input
                     type="text"
                     className="input input-sm input-primary w-full max-w-[60%]"
-                    value={field.value}
                     autoFocus
+                    value={field.value}
                     onChange={(e) => handleChange(field.label, e.target.value)}
                     onBlur={() => setEditing(null)}
                     onKeyDown={(e) => handleKeyDown(e, field.label)}
                   />
-                )
-              ) : (
-                <span className="flex items-center gap-1">
-                  {field.value || "-"}
-                  <Pencil
-                    className="h-4 w-4 cursor-pointer text-gray-400 hover:text-gray-600"
-                    onClick={() => setEditing(field.label)}
-                  />
-                </span>
-              )}
-            </div>
-          ))}
+                ) : (
+                  <span className="flex items-center gap-1">
+                    {field.value || "-"}
+                    <Pencil
+                      className="h-4 w-4 cursor-pointer text-gray-400 hover:text-gray-600"
+                      onClick={() => setEditing(field.label)}
+                    />
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* bouton */}

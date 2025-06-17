@@ -7,8 +7,9 @@ from .serializers import (
     RegisterEtudiantSerializer, RegisterAlumniSerializer,
     LoginSerializer, EtudiantSerializer, AlumniSerializer,
     UserSerializer, ParcoursAcademiqueSerializer, ParcoursProfessionnelSerializer,
-    ChangePasswordSerializer, ChangeEmailSerializer, UpdateUserSerializer
-)
+    ChangePasswordSerializer, ChangeEmailSerializer, UpdateUserSerializer, UserPublicSerializer
+    )
+from rest_framework.generics import RetrieveAPIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
@@ -151,3 +152,16 @@ class ChangeEmailAPIView(APIView):
         request.user.email = serializer.validated_data['email']
         request.user.save()
         return Response({"message": "Email mis à jour avec succès."})
+
+class PublicUserRetrieveAPIView(RetrieveAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserPublicSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'username'
+
+    @swagger_auto_schema(
+        operation_summary="Afficher le profil public d’un utilisateur",
+        operation_description="Permet de consulter le profil public d’un utilisateur à partir de son username, sans authentification."
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)

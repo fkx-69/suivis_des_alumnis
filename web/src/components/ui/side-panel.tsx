@@ -13,6 +13,7 @@ import {
   SettingsIcon,
   LogOutIcon,
   GripHorizontalIcon,
+  Users,
 } from "lucide-react";
 
 const navItems = [
@@ -23,15 +24,21 @@ const navItems = [
     active: true,
   },
   {
-    label: "Messages",
+    label: "Discussions",
     icon: <MessageCircleMore size={20} />,
-    href: "#",
+    href: "/discussions",
     active: false,
   },
   {
     label: "Events",
     icon: <CalendarIcon size={20} />,
     href: "/evenement",
+    active: false,
+  },
+  {
+    label: "Membres",
+    icon: <Users size={20} />,
+    href: "/usersList",
     active: false,
   },
 ];

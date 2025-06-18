@@ -170,3 +170,15 @@ class ListeMessagesView(APIView):
             return Response(serializer.data)
         except Groupe.DoesNotExist:
             return Response({'error': 'Groupe non trouvé.'}, status=status.HTTP_404_NOT_FOUND)
+# === Liste de tous les groupes ===
+class ListeGroupesView(generics.ListAPIView):
+    queryset = Groupe.objects.all().order_by('-date_creation')
+    serializer_class = GroupeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Obtenir la liste de tous les groupes (accessible aux utilisateurs authentifiés).",
+        responses={200: GroupeSerializer(many=True)}
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)

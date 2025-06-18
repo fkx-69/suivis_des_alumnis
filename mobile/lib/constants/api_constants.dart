@@ -47,10 +47,20 @@ class ApiConstants {
 
   // Événements
   // Endpoints "events"
-  static const String eventsCalendar       = "$baseUrl/events/calendrier/";         // GET
+  static const String eventsCalendar       = "$baseUrl/events/evenements/";         // GET
   static const String eventsCreate         = "$baseUrl/events/creer/";              // POST
   static const String eventsDelete         = "$baseUrl/events/evenements/{id}/supprimer/"; // DELETE
   static const String eventsUpdate         = "$baseUrl/events/{id}/modifier/";       // PUT
   static const String eventsPartial        = "$baseUrl/events/{id}/modifier/";       // PATCH
   static const String eventsValidate       = "$baseUrl/events/{id}/valider/";        // POST
+
+  // Endpoints « Groupes »
+  static const String groupsList = "$baseUrl/groups/mes/";
+  static const String groupsBase          = '$baseUrl/groups/';
+  static const String groupsCreate        = '${groupsBase}creer/';
+  static const String groupsJoin          = '${groupsBase}{groupe_id}/rejoindre/';
+  static const String groupsQuit          = '${groupsBase}{groupe_id}/quitter/';
+  static const String groupsMembers       = '${groupsBase}{groupe_id}/membres/';
+  static const String groupsMessages      = '${groupsBase}{groupe_id}/messages/';
+  static const String groupsSendMessage   = '${groupsBase}{groupe_id}/envoyer-message/';
 }

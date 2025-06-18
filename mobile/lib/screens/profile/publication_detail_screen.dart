@@ -20,15 +20,18 @@ class PublicationDetailScreen extends StatefulWidget {
 }
 
 class _PublicationDetailScreenState extends State<PublicationDetailScreen> {
-  late PageController _pageController;
+  late final PageController _pageController;
   final PublicationService _service = PublicationService();
   final TextEditingController _commentController = TextEditingController();
+  bool _submitting = false;
 
   @override
   void initState() {
     super.initState();
-    _pageController =
-        PageController(initialPage: widget.initialIndex, viewportFraction: 1);
+    _pageController = PageController(
+      initialPage: widget.initialIndex,
+      viewportFraction: 1,
+    );
   }
 
   @override
@@ -41,109 +44,173 @@ class _PublicationDetailScreenState extends State<PublicationDetailScreen> {
   Future<void> _addComment(int pubId) async {
     final text = _commentController.text.trim();
     if (text.isEmpty) return;
-    await _service.commentPublication(pubId, text);
-    setState(() {
-      // Rafraîchir en récupérant de nouveau cette publication
+    setState(() => _submitting = true);
+    try {
+      await _service.commentPublication(pubId, text);
       final idx = _pageController.page!.toInt();
-      widget.publications[idx].commentaires.add(
-        CommentModel(
-          id: -1,
-          publication: pubId,
-          auteurUsername: 'Vous',
-          contenu: text,
-          dateCommentaire: DateTime.now(),
-        ),
-      );
-      _commentController.clear();
-    });
+      setState(() {
+        widget.publications[idx].commentaires.add(
+          CommentModel(
+            id: -1,
+            publication: pubId,
+            auteurUsername: 'Vous',
+            contenu: text,
+            dateCommentaire: DateTime.now(),
+          ),
+        );
+        _commentController.clear();
+      });
+    } finally {
+      setState(() => _submitting = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text('Publication'),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        leading: BackButton(color: const Color(0xFF2196F3)),
+        title: Text(
+          'Publication',
+          style: GoogleFonts.poppins(
+            color: const Color(0xFF2196F3),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
-      body: PageView.builder(
-        controller: _pageController,
-        itemCount: widget.publications.length,
-        itemBuilder: (context, index) {
-          final post = widget.publications[index];
-          return _buildDetail(post);
-        },
+      body: SafeArea(
+        child: PageView.builder(
+          controller: _pageController,
+          itemCount: widget.publications.length,
+          itemBuilder: (context, index) {
+            return _buildDetail(context, widget.publications[index]);
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildDetail(PublicationModel post) {
-    return SafeArea(
-      child: Column(
-        children: [
-          // Contenu multimédia
-          if (post.photo != null)
-            Image.network(post.photo!, width: double.infinity, fit: BoxFit.cover),
-          if (post.video != null)
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Center(
-                child: Text(
-                  'Vidéo: ${post.video}',
-                  style: GoogleFonts.poppins(color: Colors.blue),
-                ),
-              ),
-            ),
-          if (post.texte != null && post.texte!.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Text(post.texte!, style: GoogleFonts.poppins()),
-            ),
-
-          const Divider(),
-
-          // Liste des commentaires
-          Expanded(
-            child: ListView.builder(
-              itemCount: post.commentaires.length,
-              itemBuilder: (context, i) {
-                final c = post.commentaires[i];
-                return ListTile(
-                  title: Text(c.auteurUsername,
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                  subtitle: Text(c.contenu, style: GoogleFonts.poppins()),
-                  trailing: Text(
-                    "${c.dateCommentaire.hour}:${c.dateCommentaire.minute.toString().padLeft(2, '0')}",
-                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
-                  ),
-                );
-              },
+  Widget _buildDetail(BuildContext context, PublicationModel post) {
+    final mediaQuery = MediaQuery.of(context);
+    final keyboardInset = mediaQuery.viewInsets.bottom;
+    return Column(
+      children: [
+        // Media (photo or video placeholder)
+        if (post.photo != null)
+          Image.network(
+            post.photo!,
+            width: double.infinity,
+            height: 250,
+            fit: BoxFit.cover,
+          )
+        else if (post.video != null)
+          Container(
+            width: double.infinity,
+            height: 250,
+            color: Colors.black12,
+            child: Center(
+              child: Icon(Icons.videocam, size: 64, color: Colors.grey[700]),
             ),
           ),
 
-          const Divider(height: 1),
-
-          // Nouveau commentaire
+        // Texte de la publication
+        if (post.texte != null && post.texte!.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              children: [
-                Expanded(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              post.texte!,
+              style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[900]),
+            ),
+          ),
+
+        const Divider(height: 1),
+
+        // Commentaires
+        Expanded(
+          child: post.commentaires.isEmpty
+              ? Center(
+            child: Text(
+              'Pas encore de commentaires',
+              style: GoogleFonts.poppins(color: Colors.grey[600]),
+            ),
+          )
+              : ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: post.commentaires.length,
+            itemBuilder: (ctx, i) {
+              final c = post.commentaires[i];
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Colors.grey.shade300,
+                  child: Text(
+                    c.auteurUsername[0].toUpperCase(),
+                    style: GoogleFonts.poppins(color: Colors.grey[800]),
+                  ),
+                ),
+                title: Text(
+                  c.auteurUsername,
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(c.contenu, style: GoogleFonts.poppins()),
+                trailing: Text(
+                  "${c.dateCommentaire.hour.toString().padLeft(2, '0')}:${c.dateCommentaire.minute.toString().padLeft(2, '0')}",
+                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+                ),
+              );
+            },
+          ),
+        ),
+
+        const Divider(height: 1),
+
+        // Champ de saisie + bouton
+        Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 8,
+            bottom: keyboardInset > 0 ? keyboardInset : 16,
+            top: 8,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
                   child: TextField(
                     controller: _commentController,
-                    decoration: const InputDecoration(
-                      hintText: 'Ajouter un commentaire...',
+                    decoration: InputDecoration(
+                      hintText: 'Ajouter un commentaire…',
+                      hintStyle: GoogleFonts.poppins(color: Colors.grey[500]),
                       border: InputBorder.none,
                     ),
+                    style: GoogleFonts.poppins(fontSize: 14),
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  onPressed: () => _addComment(post.id),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 8),
+              _submitting
+                  ? const SizedBox(
+                width: 36,
+                height: 36,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+                  : IconButton(
+                icon: const Icon(Icons.send, color: Color(0xFF2196F3)),
+                onPressed: () => _addComment(post.id),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

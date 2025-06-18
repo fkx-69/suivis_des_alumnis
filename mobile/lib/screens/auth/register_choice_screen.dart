@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'register_student_screen.dart';
-import 'register_alumni_screen.dart';
+import 'package:memoire/screens/auth/register_student_screen.dart';
+import 'package:memoire/screens/auth/register_alumni_screen.dart';
 import 'package:memoire/widgets/auth_widgets/choice_card.dart';
 
 class RegisterChoiceScreen extends StatelessWidget {
@@ -13,46 +13,73 @@ class RegisterChoiceScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.asset('assets/images/logo.png', height: 120),
-              const SizedBox(height: 32),
+              // Titre
               Text(
-                'Choisissez votre profil',
+                'Créer un compte',
                 style: GoogleFonts.poppins(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
                   color: const Color(0xFF2196F3),
                 ),
               ),
+              const SizedBox(height: 8),
+              Text(
+                'Sélectionnez votre profil pour commencer',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: Colors.grey[700],
+                ),
+              ),
+
               const SizedBox(height: 32),
+
+              // Carte Étudiant
               ChoiceCard(
                 title: 'Étudiant',
-                description: 'Je suis actuellement étudiant et je cherche un mentor',
+                description: 'Inscrivez-vous comme étudiant pour suivre votre parcours académique.',
                 icon: Icons.school_outlined,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const RegisterEtudiantScreen()),
-                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RegisterEtudiantScreen()),
+                  );
+                },
               ),
-              const SizedBox(height: 16),
+
+              const SizedBox(height: 24),
+
+              // Carte Alumni
               ChoiceCard(
                 title: 'Alumni',
-                description: 'Je suis diplômé et je souhaite partager mon expérience',
-                icon: Icons.work_outline,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const RegisterAlumniScreen()),
-                ),
+                description: 'Inscrivez-vous comme alumni pour partager votre expérience professionnelle.',
+                icon: Icons.person_outline,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RegisterAlumniScreen()),
+                  );
+                },
               ),
-              const SizedBox(height: 32),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'Retour',
-                  style: GoogleFonts.poppins(fontSize: 16, color: const Color(0xFF2196F3)),
+
+              const Spacer(),
+
+              // Bouton retour
+              Center(
+                child: TextButton.icon(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.arrow_back, color: Color(0xFF2196F3)),
+                  label: Text(
+                    'Retour',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF2196F3),
+                    ),
+                  ),
                 ),
               ),
             ],

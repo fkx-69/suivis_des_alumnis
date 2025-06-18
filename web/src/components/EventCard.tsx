@@ -25,7 +25,7 @@ export default function EventCard({
 }: EventCardProps) {
   return (
     <div
-      className={`relative card card-lg w-96 bg-base-100 ${event.image ? "" : "card-xl"} shadow-sm`}
+      className={`relative card card-lg w-full bg-base-100 ${event.image ? "" : "card-xl"} shadow-sm`}
       onClick={onToggle}
     >
       {showActions && (
@@ -52,12 +52,18 @@ export default function EventCard({
       )}
       {event.image && (
         <figure>
-          <img src={event.image} alt={event.titre} className="h-48 w-full object-cover" />
+          <img
+            src={event.image}
+            alt={event.titre}
+            className="h-48 w-full object-cover"
+          />
         </figure>
       )}
       <div className="card-body">
         <h2 className="card-title">{event.titre || ""}</h2>
-        <p className={`text-sm opacity-80 cursor-pointer ${expanded ? "" : "line-clamp-3"}`}>
+        <p
+          className={`text-sm opacity-80 cursor-pointer ${expanded ? "" : "line-clamp-3"}`}
+        >
           {event.description || ""}
         </p>
         {event.date_debut && (

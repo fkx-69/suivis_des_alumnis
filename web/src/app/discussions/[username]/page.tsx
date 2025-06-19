@@ -11,6 +11,7 @@ export default function ConversationPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [content, setContent] = useState("");
   const wsRef = useRef<WebSocket | null>(null);
+  const [socketOpen, setSocketOpen] = useState(false);
 
   useEffect(() => {
     if (!username) return;
@@ -21,6 +22,7 @@ export default function ConversationPage() {
     });
     return () => {
       wsRef.current?.close();
+      setSocketOpen(false);
     };
   }, [username]);
 
@@ -28,6 +30,7 @@ export default function ConversationPage() {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
     const ws = new WebSocket(`${protocol}://${window.location.host}/ws/chat/${userId}/`);
     wsRef.current = ws;
+    ws.onopen = () => setSocketOpen(true);
     ws.onmessage = (event) => {
       const msg: Message = JSON.parse(event.data);
       setMessages((prev) => [...prev, msg]);
@@ -35,7 +38,9 @@ export default function ConversationPage() {
   }
 
   function sendMessage() {
-    if (!wsRef.current || !content.trim()) return;
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN || !content.trim()) {
+      return;
+    }
     wsRef.current.send(JSON.stringify({ message: content }));
     setContent("");
   }
@@ -70,7 +75,11 @@ export default function ConversationPage() {
           value={content}
           onChange={(e) => setContent(e.target.value)}
         />
-        <button className="btn btn-primary" onClick={sendMessage}>
+        <button
+          className="btn btn-primary"
+          onClick={sendMessage}
+          disabled={!socketOpen || !content.trim()}
+        >
           Envoyer
         </button>
       </div>

@@ -1,5 +1,52 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
+from django import forms
+from django.shortcuts import render, redirect
+from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
+from messaging.models import MessagePrive
+
+
+class SendMessageForm(forms.Form):
+    """Simple form used to write the content of a private message."""
+
+    _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
+    contenu = forms.CharField(label="Message", widget=forms.Textarea)
+
+
+def envoyer_message_prive(modeladmin, request, queryset):
+    """Admin action to send a private message to selected users."""
+
+    if "apply" in request.POST:
+        form = SendMessageForm(request.POST)
+        if form.is_valid():
+            contenu = form.cleaned_data["contenu"]
+            for user in queryset:
+                MessagePrive.objects.create(
+                    expediteur=request.user,
+                    destinataire=user,
+                    contenu=contenu,
+                )
+            modeladmin.message_user(
+                request,
+                f"Message envoyé à {queryset.count()} utilisateur(s).",
+                messages.SUCCESS,
+            )
+            return redirect(request.get_full_path())
+    else:
+        form = SendMessageForm(
+            initial={"_selected_action": request.POST.getlist(ACTION_CHECKBOX_NAME)}
+        )
+
+    return render(
+        request,
+        "admin/envoyer_message.html",
+        {"users": queryset, "form": form, "title": "Envoyer un message"},
+    )
+
+
+envoyer_message_prive.short_description = (
+    "Envoyer un message privé aux utilisateurs sélectionnés"
+)
 from .models import (
     CustomUser, Etudiant, Alumni,
     ParcoursAcademique, ParcoursProfessionnel
@@ -34,6 +81,7 @@ class CustomUserAdmin(UserAdmin):
     )
     search_fields = ('email', 'username', 'nom', 'prenom')
     ordering = ('email',)
+    actions = [envoyer_message_prive]
 
 # Admin pour Etudiant
 class EtudiantAdmin(admin.ModelAdmin):

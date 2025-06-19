@@ -8,7 +8,6 @@ class MessagePriveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MessagePrive
-<<<<<<< HEAD
         fields = [
             'id',
             'expediteur',
@@ -18,10 +17,7 @@ class MessagePriveSerializer(serializers.ModelSerializer):
             'contenu',
             'date_envoi'
         ]
-        read_only_fields = ['expediteur', 'date_envoi', 'destinataire']
-        extra_kwargs = {
-            'destinataire': {'read_only': True},
-        }
+        read_only_fields = ['expediteur', 'destinataire', 'date_envoi']
 
     def create(self, validated_data):
         destinataire_username = validated_data.pop('destinataire_username')
@@ -35,7 +31,3 @@ class MessagePriveSerializer(serializers.ModelSerializer):
             destinataire=destinataire,
             **validated_data
         )
-=======
-        fields = '__all__'
-        read_only_fields = ['expediteur', 'destinataire', 'date_envoi']
->>>>>>> 2d8f4d8d0f6435e56c2187f78094138eea718139

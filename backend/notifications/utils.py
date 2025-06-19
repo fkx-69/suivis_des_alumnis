@@ -8,6 +8,10 @@ def envoyer_notification(destinataire, message):
 
     # Envoi temps réel via WebSocket
     channel_layer = get_channel_layer()
+    if channel_layer is None:
+        # In environments without Channels configured, just store the notification
+        return
+
     group_name = f"user_{destinataire.id}"
     serializer = NotificationSerializer(notification)
     async_to_sync(channel_layer.group_send)(

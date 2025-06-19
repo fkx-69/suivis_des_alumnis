@@ -1,4 +1,4 @@
-from rest_framework import generics, status, serializers
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import MessagePrive
@@ -35,18 +35,10 @@ class EnvoyerMessagePriveView(generics.CreateAPIView):
         return super().post(request, *args, **kwargs)
 
     def perform_create(self, serializer):
-        destinataire_username = self.request.data.get('destinataire_username')
-        try:
-            destinataire = CustomUser.objects.get(username=destinataire_username)
-        except CustomUser.DoesNotExist:
-            raise serializers.ValidationError("Destinataire introuvable.")
-
-        message = serializer.save(expediteur=self.request.user, destinataire=destinataire)
-
-        # 🔔 Notification en temps réel via WebSocket
+        message = serializer.save()
         envoyer_notification(
-            destinataire=destinataire,
-            message=f"Nouveau message privé de {self.request.user.username}."
+            destinataire=message.destinataire,
+            message=f"Nouveau message privé de {message.expediteur.username}."
         )
 
 

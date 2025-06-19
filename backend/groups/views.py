@@ -14,7 +14,7 @@ from drf_yasg import openapi
 class GroupeCreateView(generics.CreateAPIView):
     queryset = Groupe.objects.all()
     serializer_class = GroupeSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAlumni, IsEtudiant]
+    permission_classes = [permissions.IsAuthenticated]
 
     @swagger_auto_schema(
         operation_description="Créer un nouveau groupe. Accessible aux étudiants et aux alumnis authentifiés.",

@@ -73,7 +73,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+    
 }
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
@@ -104,14 +104,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware'
+    
     ]
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # pour React
 
-]
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'backend2.urls'
 
@@ -131,6 +127,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend2.wsgi.application'
+
+ASGI_APPLICATION = 'backend2.asgi.application'
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 
 # Database

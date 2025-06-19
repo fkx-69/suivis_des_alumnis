@@ -21,6 +21,7 @@ class DemandeMentoratSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             'etudiant',
+            'mentor',
             'statut',
             'motif_refus',
             'date_demande',

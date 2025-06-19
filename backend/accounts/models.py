@@ -2,6 +2,7 @@ from django.db import models
 from filiere.models import Filiere
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
+
 POSTES_PAR_SECTEUR = [
     ("Marketing et Ventes", [
         ("chef_produit", "Chef de produit"),
@@ -46,11 +47,15 @@ POSTES_PAR_SECTEUR = [
         ("coordinateur_supply_chain", "Coordinateur supply chain"),
     ]),
     ("Informatique, Réseaux et Télécommunications", [
-        ("admin_sys_reseaux", "Administrateur systèmes et réseaux"),
+        ("admin_systeme_reseaux", "Administrateur systèmes et réseaux"),
         ("ingenieur_telecoms", "Ingénieur télécoms"),
         ("developpeur_logiciel", "Développeur logiciel"),
         ("ingenieur_cybersecurite", "Ingénieur cybersécurité"),
         ("architecte_cloud", "Architecte cloud"),
+        ('data_analyst', 'Data Analyst'),
+        ('developpeur_web', 'Développeur Web'),
+        ('ingenieur_data', 'Ingénieur Data'),
+        ('chef_de_projet', 'Chef de projet'),
     ]),
     ("Relations Internationales & Diplomatie", [
         ("attache_diplomatique", "Attaché diplomatique"),

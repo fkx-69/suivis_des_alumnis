@@ -4,10 +4,19 @@ from .models import CustomUser, Etudiant, Alumni, ParcoursAcademique, ParcoursPr
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
+
+class AbsoluteMediaUrlField(serializers.FileField):
+    def to_representation(self, value):
+        request = self.context.get('request')
+        if not value:
+            return None
+        if request:
+            return request.build_absolute_uri(value.url)
+        return value.url
 # === USER SERIALIZER ===
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-
+    photo_profil = AbsoluteMediaUrlField()
     class Meta:
         model = CustomUser
         fields = ['id', 'email', 'username', 'nom', 'prenom', 'role', 'photo_profil', 'biographie', 'password']

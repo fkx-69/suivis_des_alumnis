@@ -8,7 +8,6 @@ class MessagePriveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MessagePrive
-<<<<<<< HEAD
         fields = [
             'id',
             'expediteur',
@@ -18,24 +17,18 @@ class MessagePriveSerializer(serializers.ModelSerializer):
             'contenu',
             'date_envoi'
         ]
-        read_only_fields = ['expediteur', 'date_envoi', 'destinataire']
-        extra_kwargs = {
-            'destinataire': {'read_only': True},
-        }
+        read_only_fields = ['expediteur', 'date_envoi', 'expediteur_username', 'destinataire']
+
+    def validate_destinataire_username(self, value):
+        try:
+            return CustomUser.objects.get(username=value)
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError("Destinataire introuvable.")
 
     def create(self, validated_data):
-        destinataire_username = validated_data.pop('destinataire_username')
-        try:
-            destinataire = CustomUser.objects.get(username=destinataire_username)
-        except CustomUser.DoesNotExist:
-            raise serializers.ValidationError({'destinataire_username': 'Utilisateur introuvable.'})
-
+        destinataire = validated_data.pop('destinataire_username')
         return MessagePrive.objects.create(
             expediteur=self.context['request'].user,
             destinataire=destinataire,
             **validated_data
         )
-=======
-        fields = '__all__'
-        read_only_fields = ['expediteur', 'destinataire', 'date_envoi']
->>>>>>> 2d8f4d8d0f6435e56c2187f78094138eea718139

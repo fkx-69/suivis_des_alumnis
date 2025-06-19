@@ -95,7 +95,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     prenom = models.CharField(max_length=50)
     role = models.CharField(max_length=10, choices=Role.choices,blank=True, null=True)
     photo_profil = models.ImageField(upload_to='photos/', null=True, blank=True)
-    biographie = models.TextField (max_length=45,blank=True,null=True)
+    biographie = models.TextField (max_length=200,blank=True,null=True)
     is_banned = models.BooleanField(default=False)
 
 

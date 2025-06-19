@@ -99,12 +99,12 @@ class RegisterAlumniAPIView(APIView):
 class ListEtudiantsAPIView(generics.ListAPIView):
     queryset = Etudiant.objects.all()
     serializer_class = EtudiantSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated]
 
 class ListAlumnisAPIView(generics.ListAPIView):
     queryset = Alumni.objects.all()
     serializer_class = AlumniSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated]
 
 # === PERMISSION PERSONNALISÉE ===
 class IsOwnerAlumni(permissions.BasePermission):

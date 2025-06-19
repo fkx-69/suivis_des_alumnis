@@ -37,9 +37,15 @@ class EnvoyerMessagePriveView(generics.CreateAPIView):
         return super().post(request, *args, **kwargs)
 
     def perform_create(self, serializer):
-        destinataire_username = self.request.data.get('destinataire_username')
+        raw_dest = self.request.data.get('destinataire_username') or self.request.data.get('destinataire')
+        if not raw_dest:
+            raise serializers.ValidationError("Destinataire introuvable.")
+
         try:
-            destinataire = CustomUser.objects.get(username=destinataire_username)
+            if str(raw_dest).isdigit():
+                destinataire = CustomUser.objects.get(id=int(raw_dest))
+            else:
+                destinataire = CustomUser.objects.get(username=raw_dest)
         except CustomUser.DoesNotExist:
             raise serializers.ValidationError("Destinataire introuvable.")
 

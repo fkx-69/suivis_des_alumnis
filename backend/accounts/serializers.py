@@ -89,7 +89,7 @@ class LoginSerializer(serializers.Serializer):
         return {
             'refresh': str(refresh),
             'access': str(refresh.access_token),
-            'user': UserSerializer(user).data
+            'user': UserSerializer(user, context=self.context).data
         }
 
 # === ÉTUDIANT READ SERIALIZER ===

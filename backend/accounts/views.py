@@ -60,20 +60,20 @@ class AlumniSearchView(generics.ListAPIView):
 # === AUTHENTIFICATION ===
 class LoginAPIView(APIView):
     def post(self, request):
-        serializer = LoginSerializer(data=request.data)
+        serializer = LoginSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         return Response(serializer.validated_data)
 
 class MeAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        return Response(UserSerializer(request.user).data)
+        return Response(UserSerializer(request.user, context={'request': request}).data)
 
 # === PROFIL ===
 class UpdateProfileAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def put(self, request):
-        serializer = UpdateUserSerializer(request.user, data=request.data, partial=True)
+        serializer = UpdateUserSerializer(request.user, data=request.data, partial=True, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)

@@ -8,6 +8,7 @@ class MessagePriveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MessagePrive
+<<<<<<< HEAD
         fields = [
             'id',
             'expediteur',
@@ -34,3 +35,7 @@ class MessagePriveSerializer(serializers.ModelSerializer):
             destinataire=destinataire,
             **validated_data
         )
+=======
+        fields = '__all__'
+        read_only_fields = ['expediteur', 'destinataire', 'date_envoi']
+>>>>>>> 2d8f4d8d0f6435e56c2187f78094138eea718139

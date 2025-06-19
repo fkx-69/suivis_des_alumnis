@@ -1,6 +1,8 @@
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.db.models import Q
 from .models import MessagePrive
 from .serializers import MessagePriveSerializer
 from accounts.models import CustomUser
@@ -35,7 +37,25 @@ class EnvoyerMessagePriveView(generics.CreateAPIView):
         return super().post(request, *args, **kwargs)
 
     def perform_create(self, serializer):
+<<<<<<< HEAD
         message = serializer.save()
+=======
+        raw_dest = self.request.data.get('destinataire_username') or self.request.data.get('destinataire')
+        if not raw_dest:
+            raise serializers.ValidationError("Destinataire introuvable.")
+
+        try:
+            if str(raw_dest).isdigit():
+                destinataire = CustomUser.objects.get(id=int(raw_dest))
+            else:
+                destinataire = CustomUser.objects.get(username=raw_dest)
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError("Destinataire introuvable.")
+
+        message = serializer.save(expediteur=self.request.user, destinataire=destinataire)
+
+        # 🔔 Notification en temps réel via WebSocket
+>>>>>>> 2d8f4d8d0f6435e56c2187f78094138eea718139
         envoyer_notification(
             destinataire=message.destinataire,
             message=f"Nouveau message privé de {message.expediteur.username}."
@@ -72,3 +92,67 @@ class MessagesEnvoyesView(generics.ListAPIView):
 
     def get_queryset(self):
         return MessagePrive.objects.filter(expediteur=self.request.user).order_by('-date_envoi')
+
+
+# === Lister les conversations ===
+class ConversationsListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        messages = (
+            MessagePrive.objects
+            .filter(Q(expediteur=user) | Q(destinataire=user))
+            .select_related('expediteur', 'destinataire')
+            .order_by('-date_envoi')
+        )
+
+        convo_map = {}
+        for msg in messages:
+            other = msg.destinataire if msg.expediteur == user else msg.expediteur
+            if other.id not in convo_map:
+                convo_map[other.id] = msg
+
+        data = []
+        for other_id, last_msg in convo_map.items():
+            other = last_msg.destinataire if last_msg.expediteur == user else last_msg.expediteur
+            data.append({
+                'id': other.id,
+                'username': other.username,
+                'prenom': other.prenom,
+                'nom': other.nom,
+                'photo_profil': other.photo_profil.url if other.photo_profil else None,
+                'last_message': MessagePriveSerializer(last_msg).data,
+            })
+
+        return Response(data)
+
+
+# === Voir les messages d'une conversation ===
+class MessagesWithUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, username):
+        try:
+            other = CustomUser.objects.get(username=username)
+        except CustomUser.DoesNotExist:
+            return Response({'detail': 'Utilisateur introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+
+        messages = (
+            MessagePrive.objects
+            .filter(
+                Q(expediteur=request.user, destinataire=other) |
+                Q(expediteur=other, destinataire=request.user)
+            )
+            .order_by('date_envoi')
+        )
+
+        serialized = MessagePriveSerializer(messages, many=True).data
+        user_data = {
+            'id': other.id,
+            'username': other.username,
+            'prenom': other.prenom,
+            'nom': other.nom,
+            'photo_profil': other.photo_profil.url if other.photo_profil else None,
+        }
+        return Response({'user': user_data, 'messages': serialized})

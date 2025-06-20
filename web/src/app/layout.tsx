@@ -31,7 +31,7 @@ export default function RootLayout({
   const showSidePanel =
     pathname !== "/auth/login" && pathname !== "/auth/signIn";
   return (
-    <html data-theme="emerald" lang="en" suppressHydrationWarning>
+    <html data-theme="emerald" lang="fr" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

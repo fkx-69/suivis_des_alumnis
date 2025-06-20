@@ -15,6 +15,9 @@ import type {
 } from "@/types/auth";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import PersonalInfoForm, { MessageError } from "@/components/auth/PersonalInfoForm";
+import AlumniForm from "@/components/auth/AlumniForm";
+import StudentForm from "@/components/auth/StudentForm";
 
 export default function SignIn() {
   const { login } = useAuth();
@@ -23,6 +26,7 @@ export default function SignIn() {
   const [userType, setUserType] = useState<"student" | "alumni">("alumni");
   const [isPasswordEqual, setIsPasswordEqual] = useState(true);
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [step, setStep] = useState(1);
 
   const currentYear = new Date().getFullYear();
   const years = [];
@@ -253,7 +257,6 @@ export default function SignIn() {
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Type d'utilisateur */}
           <div className="form-control">
             <label className="block mb-1 text-base-content">
               Type d'utilisateur
@@ -270,279 +273,60 @@ export default function SignIn() {
             </select>
           </div>
 
-          {/* Bloc infos personnelles */}
-          <fieldset className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block mb-1 text-base-content">Nom</label>
-                <input
-                  type="text"
-                  name="nom"
-                  value={user.nom}
-                  onChange={handleUserChange}
-                  required
-                  className="input input-primary"
-                />
-                {messageError.nom &&
-                  messageError.nom.map((msg) => (
-                    <p className="text-error">{msg}</p>
-                  ))}
-              </div>
-              <div>
-                <label className="block mb-1 text-base-content">Prénom</label>
-                <input
-                  type="text"
-                  name="prenom"
-                  value={user.prenom}
-                  onChange={handleUserChange}
-                  required
-                  className="input input-primary"
-                />
-                {messageError.prenom &&
-                  messageError.prenom.map((msg) => (
-                    <p className="text-error">{msg}</p>
-                  ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block mb-1 text-base-content">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={user.email}
-                  onChange={handleUserChange}
-                  required
-                  className="input input-primary"
-                />
-                {messageError.email &&
-                  messageError.email.map((msg) => (
-                    <p className="text-error">{msg}</p>
-                  ))}
-              </div>
-              <div>
-                <label className="block mb-1 text-base-content">
-                  Nom d'utilisateur
-                </label>
-                <input
-                  type="text"
-                  name="username"
-                  value={user.username}
-                  onChange={handleUserChange}
-                  required
-                  className="input input-primary"
-                />
-                {messageError.username &&
-                  messageError.username.map((msg) => (
-                    <p className="text-error">{msg}</p>
-                  ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block mb-1 text-base-content">
-                  Mot de passe
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={user.password}
-                  onChange={handleUserChange}
-                  required
-                  className={`input ${
-                    isPasswordEqual ? "input-primary" : "input-error"
-                  }`}
-                />
-              </div>
-              <div>
-                <label className="block mb-1 text-base-content">
-                  Confirmer le mot de passe
-                </label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  onChange={handleConfirmPasswordChange}
-                  required
-                  className={`input ${
-                    isPasswordEqual ? "input-primary" : "input-error"
-                  }`}
-                />
-              </div>
-            </div>
-            {!isPasswordEqual && (
-              <p className="text-red-500 text-sm">
-                Les mots de passe ne correspondent pas.
-              </p>
-            )}
-          </fieldset>
-
-          {/* Bloc spécifique ALUMNI */}
-          {userType === "alumni" ? (
-            <fieldset className="space-y-4">
-              {/* Filière + Situation */}
-              <div className="grid grid-cols-2 gap-4">
-                {/* Sélection du secteur (label « Filière » dans la maquette) – TOUJOURS actif */}
-                <div>
-                  <label className="block mb-1 text-base-content">
-                    Filière
-                  </label>
-                  <select
-                    className="select select-primary"
-                    name="filiere"
-                    value={alumniData.filiere}
-                    onChange={handleAlumniChange}
-                  >
-                    {filieres.map((filiere) => (
-                      <option key={filiere.code} value={filiere.code}>
-                        {filiere.nom_complet}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Situation pro – met à jour isJobSeeking */}
-                <div>
-                  <label className="block mb-1 text-base-content">
-                    Situation professionnelle
-                  </label>
-                  <select
-                    name="situation_pro"
-                    className="select select-primary"
-                    value={alumniData.situation_pro}
-                    onChange={handleSituationChange}
-                  >
-                    <option value="chomage">En recherche d'emploi</option>
-                    <option value="stage">En stage</option>
-                    <option value="emploi">En emploi</option>
-                    <option value="formation">En formation</option>
-                    <option value="autre">Autre</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Secteur + Poste – désactivés si isJobSeeking */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block mb-1 text-base-content">
-                    Secteur d'activité
-                  </label>
-                  <select
-                    className="select select-primary"
-                    name="secteur_activite"
-                    value={alumniData.secteur_activite}
-                    onChange={handleAlumniChange}
-                    disabled={isJobSeeking}
-                  >
-                    {Object.keys(jobBySector).map((key) => (
-                      <option key={key} value={key}>
-                        {key}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block mb-1 text-base-content">
-                    Poste actuel
-                  </label>
-                  <select
-                    className="select select-primary"
-                    name="poste_actuel"
-                    value={alumniData.poste_actuel}
-                    onChange={handleAlumniChange}
-                    disabled={isJobSeeking}
-                  >
-                    {(
-                      jobBySector[alumniData.secteur_activite as SectorKey] ??
-                      []
-                    ).map((poste) => (
-                      <option key={poste} value={poste}>
-                        {poste}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Nom entreprise – désactivé si isJobSeeking */}
-              <div>
-                <label className="block mb-1 text-base-content">
-                  Nom de l'entreprise
-                </label>
-                <input
-                  type="text"
-                  name="nom_entreprise"
-                  value={alumniData.nom_entreprise}
-                  onChange={handleAlumniChange}
-                  className="input input-primary"
-                  disabled={isJobSeeking}
-                />
-              </div>
-            </fieldset>
-          ) : (
-            /* Bloc spécifique ÉTUDIANT */
-            <fieldset className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block mb-1 text-base-content">
-                    Filière
-                  </label>
-                  <select
-                    name="filiere"
-                    value={studentData.filiere}
-                    onChange={handleStudentChange}
-                    required
-                    className="select select-primary"
-                  >
-                    {filieres.map((filiere) => (
-                      <option key={filiere.code} value={filiere.code}>
-                        {filiere.nom_complet}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block mb-1 text-base-content">
-                    Niveau d'étude
-                  </label>
-                  <select
-                    name="niveau_etude"
-                    value={studentData.niveau_etude}
-                    onChange={handleStudentChange}
-                    className="select select-primary"
-                  >
-                    {niveau_etude.map((niv) => (
-                      <option key={niv} value={niv}>
-                        {niv}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="block mb-1 text-base-content">
-                  Année d'entrée
-                </label>
-                <select
-                  className="select select-primary"
-                  onChange={handleStudentChange}
-                  name="annee_entree"
-                  value={studentData.annee_entree}
-                >
-                  {years.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </fieldset>
+          {step === 1 && (
+            <PersonalInfoForm
+              user={user}
+              confirmPassword={confirmPassword}
+              isPasswordEqual={isPasswordEqual}
+              messageError={messageError}
+              onUserChange={handleUserChange}
+              onConfirmPasswordChange={handleConfirmPasswordChange}
+            />
           )}
 
-          <button type="submit" className="w-full btn btn-primary">
-            S'inscrire
-          </button>
+          {step === 2 && (
+            userType === "alumni" ? (
+              <AlumniForm
+                filieres={filieres}
+                alumniData={alumniData}
+                isJobSeeking={isJobSeeking}
+                jobBySector={jobBySector}
+                onAlumniChange={handleAlumniChange}
+                onSituationChange={handleSituationChange}
+              />
+            ) : (
+              <StudentForm
+                filieres={filieres}
+                studentData={studentData}
+                years={years}
+                niveaux={niveau_etude}
+                onStudentChange={handleStudentChange}
+              />
+            )
+          )}
+
+          {step === 1 ? (
+            <button
+              type="button"
+              onClick={() => setStep(2)}
+              className="w-full btn btn-primary"
+            >
+              Suivant
+            </button>
+          ) : (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="btn btn-secondary flex-1"
+              >
+                Précédent
+              </button>
+              <button type="submit" className="btn btn-primary flex-1">
+                S'inscrire
+              </button>
+            </div>
+          )}
         </form>
 
         <div className="mt-4 text-sm text-center text-gray-500">

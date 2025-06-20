@@ -1,100 +1,95 @@
 "use client";
 
-import React, { useState, ReactNode, useEffect, useRef, act } from "react";
+import React, { useState, ReactNode, useEffect, useRef } from "react";
 import PersonalProfile from "./personal-profile";
 import { useAuth } from "@/lib/api/authContext";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 import {
   HomeIcon,
   MessageCircleMore,
   CalendarIcon,
   UserCircleIcon,
-  SettingsIcon,
   LogOutIcon,
   GripHorizontalIcon,
   Users,
+  NewspaperIcon,
+  BellIcon,
+  BarChart2Icon,
+  FileWarningIcon,
+  MapIcon,
+  FileTextIcon,
 } from "lucide-react";
 
 const navItems = [
   {
-    label: "Updates",
-    icon: <HomeIcon size={20} />,
+    label: "Actualités",
+    icon: <NewspaperIcon size={20} />,
     href: "/",
-    active: true,
   },
   {
     label: "Discussions",
     icon: <MessageCircleMore size={20} />,
     href: "/discussions",
-    active: false,
   },
   {
-    label: "Events",
+    label: "Évènements",
     icon: <CalendarIcon size={20} />,
     href: "/evenement",
-    active: false,
   },
   {
     label: "Mentorat",
     icon: <Users size={20} />,
     href: "/mentorat",
-    active: false,
   },
   {
-    label: "Filieres",
+    label: "Filières",
     icon: <Users size={20} />,
     href: "/filiere",
-    active: false,
   },
   {
     label: "Publications",
-    icon: <HomeIcon size={20} />,
+    icon: <FileTextIcon size={20} />,
     href: "/publications",
-    active: false,
   },
   {
     label: "Notifications",
-    icon: <HomeIcon size={20} />,
+    icon: <BellIcon size={20} />,
     href: "/notifications",
-    active: false,
   },
   {
     label: "Statistiques",
-    icon: <HomeIcon size={20} />,
+    icon: <BarChart2Icon size={20} />,
     href: "/statistiques",
-    active: false,
   },
   {
-    label: "Reports",
-    icon: <HomeIcon size={20} />,
+    label: "Rapports",
+    icon: <FileWarningIcon size={20} />,
     href: "/reports",
-    active: false,
   },
   {
     label: "Parcours",
-    icon: <HomeIcon size={20} />,
+    icon: <MapIcon size={20} />,
     href: "/parcours",
-    active: false,
   },
   {
     label: "Membres",
     icon: <Users size={20} />,
     href: "/usersList",
-    active: false,
   },
 ];
 const profileItems = {
-  label: "Profile",
+  label: "Profil",
   icon: <UserCircleIcon size={20} />,
   href: "#",
-  active: false,
 };
 
 export default function SidePanel({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const panelWidth = collapsed ? "w-16" : "w-50";
+
+  const pathname = usePathname();
 
   const { logout } = useAuth();
   const router = useRouter();
@@ -157,7 +152,7 @@ export default function SidePanel({ children }: { children: ReactNode }) {
               <li
                 key={item.label}
                 className={
-                  item.active
+                  pathname === item.href
                     ? "bg-primary text-primary-content rounded-md"
                     : "hover:bg-base-300 rounded-md"
                 }
@@ -188,7 +183,7 @@ export default function SidePanel({ children }: { children: ReactNode }) {
                 aria-expanded={showProfile}
               >
                 {profileItems.icon}
-                {!collapsed && <span className="text-content">Profile</span>}
+                {!collapsed && <span className="text-content">Profil</span>}
               </button>
             </li>
           </ul>

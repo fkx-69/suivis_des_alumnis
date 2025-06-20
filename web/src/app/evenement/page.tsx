@@ -7,6 +7,7 @@ import AddEventModal from "@/components/AddEventModal";
 import EditEventModal from "@/components/EditEventModal";
 import EventCard from "@/components/EventCard";
 import EventModal from "@/components/EventModal";
+import ConfirmModal from "@/components/ConfirmModal";
 
 export default function Page() {
   const [events, setEvents] = useState<ApiEvent[]>([]);
@@ -16,6 +17,7 @@ export default function Page() {
   const [showForm, setShowForm] = useState(false);
   const [showMyEvents, setShowMyEvents] = useState(false);
   const [editingEvent, setEditingEvent] = useState<ApiEvent | null>(null);
+  const [eventToDelete, setEventToDelete] = useState<ApiEvent | null>(null);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -55,15 +57,23 @@ export default function Page() {
     setEditingEvent(null);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Supprimer cet événement ?")) return;
+  const requestDelete = (ev: ApiEvent) => {
+    setEventToDelete(ev);
+  };
+
+  const confirmDelete = async () => {
+    if (!eventToDelete) return;
     try {
-      const res = await api.delete(`/events/evenements/${id}/supprimer/`);
+      const res = await api.delete(
+        `/events/evenements/${eventToDelete.id}/supprimer/`
+      );
       if (res.status >= 200 && res.status < 300) {
-        setEvents((prev) => prev.filter((e) => e.id !== id));
+        setEvents((prev) => prev.filter((e) => e.id !== eventToDelete.id));
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setEventToDelete(null);
     }
   };
 
@@ -118,7 +128,7 @@ export default function Page() {
             onToggle={() => setSelectedEvent(ev)}
             showActions={showMyEvents}
             onEdit={() => setEditingEvent(ev)}
-            onDelete={() => handleDelete(ev.id)}
+            onDelete={() => requestDelete(ev)}
           />
         ))}
       </div>
@@ -126,6 +136,16 @@ export default function Page() {
         <EventModal
           event={selectedEvent}
           onClose={() => setSelectedEvent(null)}
+        />
+      )}
+      {eventToDelete && (
+        <ConfirmModal
+          title="Supprimer l\'évènement"
+          message={`Supprimer "${eventToDelete.titre}" ?`}
+          confirmText="Supprimer"
+          cancelText="Annuler"
+          onConfirm={confirmDelete}
+          onCancel={() => setEventToDelete(null)}
         />
       )}
       <button

@@ -42,6 +42,42 @@ const navItems = [
     active: false,
   },
   {
+    label: "Filieres",
+    icon: <Users size={20} />,
+    href: "/filiere",
+    active: false,
+  },
+  {
+    label: "Publications",
+    icon: <HomeIcon size={20} />,
+    href: "/publications",
+    active: false,
+  },
+  {
+    label: "Notifications",
+    icon: <HomeIcon size={20} />,
+    href: "/notifications",
+    active: false,
+  },
+  {
+    label: "Statistiques",
+    icon: <HomeIcon size={20} />,
+    href: "/statistiques",
+    active: false,
+  },
+  {
+    label: "Reports",
+    icon: <HomeIcon size={20} />,
+    href: "/reports",
+    active: false,
+  },
+  {
+    label: "Parcours",
+    icon: <HomeIcon size={20} />,
+    href: "/parcours",
+    active: false,
+  },
+  {
     label: "Membres",
     icon: <Users size={20} />,
     href: "/usersList",

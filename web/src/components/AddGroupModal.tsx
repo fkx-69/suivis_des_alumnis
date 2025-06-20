@@ -1,5 +1,6 @@
 "use client";
 import { XIcon } from "lucide-react";
+import { Input } from "@/components/ui/Input";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { createGroup } from "@/lib/api/group";
@@ -56,13 +57,13 @@ export default function AddGroupModal({ onClose, onCreated }: AddGroupModalProps
           <XIcon size={18} />
         </button>
         {error && <div className="alert alert-error">{error}</div>}
-        <input
+        <Input
           name="nom_groupe"
           value={form.nom_groupe}
           onChange={handleChange}
           placeholder="Nom du groupe"
           required
-          className="input input-ghost w-full"
+          className="input-ghost"
         />
         <textarea
           name="description"

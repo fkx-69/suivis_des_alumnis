@@ -9,6 +9,9 @@ from .serializers import (
     UserSerializer, ParcoursAcademiqueSerializer, ParcoursProfessionnelSerializer,
     ChangePasswordSerializer, ChangeEmailSerializer, UpdateUserSerializer, UserPublicSerializer
     )
+from django.db.models import Q
+from random import sample
+
 from rest_framework.generics import RetrieveAPIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -20,41 +23,54 @@ search_param = openapi.Parameter(
     type=openapi.TYPE_STRING
 )
 
-class UserSearchView(generics.ListAPIView):
-    queryset = CustomUser.objects.all()
-    serializer_class = UserSerializer
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['nom', 'prenom', 'username']
+class SearchUserView(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = UserPublicSerializer
 
-    @swagger_auto_schema(manual_parameters=[search_param])
+    @swagger_auto_schema(
+        operation_description="Rechercher des utilisateurs par nom, prénom, username ou email (accessible sans authentification).",
+        manual_parameters=[
+            openapi.Parameter(
+                'q',
+                openapi.IN_QUERY,
+                description="Terme de recherche (nom, prénom, username ou email)",
+                type=openapi.TYPE_STRING,
+                required=False
+            )
+        ],
+        responses={200: UserPublicSerializer(many=True)}
+    )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
-
-
-class EtudiantSearchView(generics.ListAPIView):
-    serializer_class = UserSerializer
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['nom', 'prenom', 'username']
 
     def get_queryset(self):
-        return CustomUser.objects.filter(role='ETUDIANT')
+        query = self.request.GET.get('q', '')
+        return CustomUser.objects.filter(
+            Q(username__icontains=query) |
+            Q(nom__icontains=query) |
+            Q(prenom__icontains=query) |
+            Q(email__icontains=query),
+            is_active=True
+        )
 
-    @swagger_auto_schema(manual_parameters=[search_param])
+
+class SuggestionsView(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = UserPublicSerializer
+
+    @swagger_auto_schema(
+        operation_description="Afficher 10 profils d'utilisateurs à découvrir aléatoirement. Accessible même sans connexion.",
+        responses={200: UserPublicSerializer(many=True)}
+    )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
-
-
-class AlumniSearchView(generics.ListAPIView):
-    serializer_class = UserSerializer
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['nom', 'prenom', 'username']
 
     def get_queryset(self):
-        return CustomUser.objects.filter(role='ALUMNI')
+        users = list(CustomUser.objects.filter(is_active=True))
+        if self.request.user.is_authenticated:
+            users = [u for u in users if u.id != self.request.user.id]
+        return sample(users, min(10, len(users)))
 
-    @swagger_auto_schema(manual_parameters=[search_param])
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
 
 
 # === AUTHENTIFICATION ===

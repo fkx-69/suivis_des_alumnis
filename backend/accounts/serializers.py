@@ -169,4 +169,6 @@ class UserPublicSerializer(serializers.ModelSerializer):
             'prenom',
             'photo_profil',
             'biographie',
+            'filiere',
+            'situation_pro',
         ]

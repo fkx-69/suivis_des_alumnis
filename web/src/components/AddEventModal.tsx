@@ -1,5 +1,6 @@
 "use client";
 import { CalendarIcon, XIcon } from "lucide-react";
+import { Input } from "@/components/ui/Input";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api/axios";
@@ -74,13 +75,13 @@ export default function AddEventModal({
           <XIcon size={18} />
         </button>
         {error && <div className="alert alert-error">{error}</div>}
-        <input
+        <Input
           name="titre"
           value={form.titre}
           onChange={handleChange}
           placeholder="Titre"
           required
-          className="input input-ghost text-2xl font-bold w-full"
+          className="input-ghost text-2xl font-bold"
         />
         <textarea
           name="description"
@@ -93,24 +94,24 @@ export default function AddEventModal({
         <div className="flex justify-between items-center text-sm gap-4 flex-wrap">
           <div className="flex items-center gap-2 flex-1 min-w-[10rem]">
             <CalendarIcon size={18} />
-            <input
+            <Input
               type="datetime-local"
               name="date_debut"
               value={form.date_debut}
               onChange={handleChange}
               required
-              className="input input-ghost w-full"
+              className="input-ghost"
             />
           </div>
           <div className="flex items-center gap-2 flex-1 min-w-[10rem]">
             <CalendarIcon size={18} />
-            <input
+            <Input
               type="datetime-local"
               name="date_fin"
               value={form.date_fin}
               onChange={handleChange}
               required
-              className="input input-ghost w-full"
+              className="input-ghost"
             />
           </div>
         </div>

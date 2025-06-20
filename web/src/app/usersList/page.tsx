@@ -33,7 +33,7 @@ export default function UsersListPage() {
   }, [search]);
 
   return (
-    <main className="p-4 space-y-4">
+    <main className="mx-auto max-w-7xl px-4 py-4 space-y-4">
       <div className="max-w-md">
         <Input
           placeholder="Rechercher..."

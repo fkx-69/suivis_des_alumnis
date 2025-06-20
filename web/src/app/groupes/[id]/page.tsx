@@ -35,7 +35,7 @@ export default function GroupeDetailPage() {
   }
 
   return (
-    <main className="flex flex-col h-screen p-4">
+    <main className="flex flex-col h-screen mx-auto max-w-7xl px-4 py-4">
       <h1 className="text-xl font-semibold mb-4">{group.nom_groupe}</h1>
       <div className="flex-1 overflow-y-auto space-y-2">
         {messages.map((m) => (

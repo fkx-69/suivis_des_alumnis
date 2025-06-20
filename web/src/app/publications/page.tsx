@@ -32,7 +32,7 @@ export default function PublicationsPage() {
   };
 
   return (
-    <main className="p-4 space-y-4">
+    <main className="mx-auto max-w-7xl px-4 py-4 space-y-4">
       <h1 className="text-2xl font-semibold">Publications</h1>
       <div className="flex gap-2">
         <Input

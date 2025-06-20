@@ -54,7 +54,7 @@ export default function ConversationPage() {
   }
 
   return (
-    <main className="flex flex-col h-screen p-4">
+    <main className="flex flex-col h-screen mx-auto max-w-7xl px-4 py-4">
       <h2 className="text-xl font-semibold mb-4">
         Conversation avec {conversation.user.prenom} {conversation.user.nom}
       </h2>

@@ -11,7 +11,7 @@ export default function StatistiquesPage() {
   }, []);
 
   return (
-    <main className="p-4 space-y-2">
+    <main className="mx-auto max-w-7xl px-4 py-4 space-y-2">
       <h1 className="text-2xl font-semibold">Statistiques</h1>
       <ul className="space-y-1">
         {stats.map((s) => (

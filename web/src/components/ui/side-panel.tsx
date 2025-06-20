@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, ReactNode, useEffect, useRef } from "react";
+import Link from "next/link";
 import PersonalProfile from "./personal-profile";
 import { useAuth } from "@/lib/api/authContext";
 import { useRouter, usePathname } from "next/navigation";
@@ -165,14 +166,14 @@ export default function SidePanel({ children }: { children: ReactNode }) {
                       : "hover:bg-base-300 rounded-md"
                   }
                 >
-                  <a
+                  <Link
                     href={item.href}
                     className={`flex items-center p-2 w-full btn-primary ${collapsed ? "justify-center" : "gap-3"}`}
                     onClick={() => showProfile && setShowProfile(false)}
                   >
                     {item.icon}
                     {!collapsed && <span className="text-content">{item.label}</span>}
-                  </a>
+                  </Link>
                 </li>
               ))}
               <li>

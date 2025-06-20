@@ -36,6 +36,12 @@ const navItems = [
     active: false,
   },
   {
+    label: "Mentorat",
+    icon: <Users size={20} />,
+    href: "/mentorat",
+    active: false,
+  },
+  {
     label: "Membres",
     icon: <Users size={20} />,
     href: "/usersList",

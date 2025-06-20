@@ -14,6 +14,7 @@ import type {
   UserForm,
 } from "@/types/auth";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import axios from "axios";
 import PersonalInfoForm, { MessageError } from "@/components/auth/PersonalInfoForm";
 import AlumniForm from "@/components/auth/AlumniForm";
@@ -331,9 +332,9 @@ export default function SignIn() {
 
         <div className="mt-4 text-sm text-center text-gray-500">
           Vous avez déjà un compte ?{" "}
-          <a href="/auth/login" className="text-blue-600 hover:underline">
+          <Link href="/auth/login" className="text-blue-600 hover:underline">
             Connectez-vous
-          </a>
+          </Link>
         </div>
       </div>
     </div>

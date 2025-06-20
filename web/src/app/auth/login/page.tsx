@@ -5,6 +5,7 @@ import { z } from "zod";
 import { login as loginApi } from "@/lib/api/auth";
 import { useAuth } from "@/lib/api/authContext";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Input } from "@/components/ui/Input";
 import { toast } from "@/components/ui/toast";
 import "@/app/globals.css";
@@ -67,9 +68,9 @@ export default function LoginPage() {
         </form>
         <div className="mt-4 text-sm text-center text-gray-500">
           Vous n'avez pas de compte ?{" "}
-          <a href="signIn" className="text-blue-600 hover:underline">
+          <Link href="signIn" className="text-blue-600 hover:underline">
             Inscrivez-vous
-          </a>
+          </Link>
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@
 import { CalendarIcon, XIcon } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api/axios";
 import { ApiEvent } from "@/types/evenement";
 
@@ -23,6 +23,7 @@ export default function AddEventModal({
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const firstFieldRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -57,9 +58,16 @@ export default function AddEventModal({
     return () => window.removeEventListener("keydown", esc);
   }, [onClose]);
 
+  useEffect(() => {
+    firstFieldRef.current?.focus();
+  }, []);
+
   return (
     <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40">
       <motion.form
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-event-modal-title"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.25 }}
@@ -74,6 +82,9 @@ export default function AddEventModal({
         >
           <XIcon size={18} />
         </button>
+        <h2 id="add-event-modal-title" className="sr-only">
+          Créer un évènement
+        </h2>
         {error && <div className="alert alert-error">{error}</div>}
         <Input
           name="titre"
@@ -82,6 +93,7 @@ export default function AddEventModal({
           placeholder="Titre"
           required
           className="input-ghost text-2xl font-bold"
+          ref={firstFieldRef}
         />
         <textarea
           name="description"

@@ -4,6 +4,7 @@ import React, { useState, ReactNode, useEffect, useRef } from "react";
 import PersonalProfile from "./personal-profile";
 import { useAuth } from "@/lib/api/authContext";
 import { useRouter, usePathname } from "next/navigation";
+import ThemeToggle from "./theme-toggle";
 
 import {
   HomeIcon,
@@ -188,7 +189,8 @@ export default function SidePanel({ children }: { children: ReactNode }) {
             </li>
           </ul>
         </div>
-        <div className="p-2">
+        <div className="p-2 flex flex-col gap-2">
+          <ThemeToggle />
           <button
             onClick={handleLogout}
             className={`flex items-center p-2 w-full hover:bg-base-300 rounded-md ${

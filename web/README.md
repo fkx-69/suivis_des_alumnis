@@ -34,3 +34,9 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Theme Switching
+
+This project uses [`next-themes`](https://github.com/pacocoursey/next-themes) with
+DaisyUI. Use the button in the sidebar to toggle between the `light` and `dark`
+themes. The selected theme is stored on the client and applied on page load.

@@ -47,7 +47,7 @@ export default function GroupesPage() {
   }
 
   return (
-    <main className="p-4 space-y-4">
+    <main className="mx-auto max-w-7xl px-4 py-4 space-y-4">
       <h1 className="text-2xl font-semibold">Groupes</h1>
       <button className="btn btn-primary" onClick={() => setShowForm(true)}>
         Créer un groupe

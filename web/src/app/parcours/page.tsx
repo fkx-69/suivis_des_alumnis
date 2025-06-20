@@ -16,7 +16,7 @@ export default function ParcoursPage() {
   }, []);
 
   return (
-    <main className="p-4 space-y-4">
+    <main className="mx-auto max-w-7xl px-4 py-4 space-y-4">
       <h1 className="text-2xl font-semibold">Mon Parcours</h1>
       <div>
         <h2 className="text-xl font-semibold mb-2">Académique</h2>

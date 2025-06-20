@@ -248,7 +248,7 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-dvh flex w-full items-center justify-center bg-base-200">
+    <div className="min-h-dvh flex w-full items-center justify-center bg-base-200 mx-auto max-w-7xl px-4">
       <div
         className={`p-8 rounded-2xl shadow-xl w-full bg-base-100 transition-all duration-500 ease-in-out max-w-max max-h-max`}
       >

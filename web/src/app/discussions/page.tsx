@@ -23,7 +23,7 @@ export default function DiscussionsPage() {
   }
 
   return (
-    <main className="p-4 space-y-4">
+    <main className="mx-auto max-w-7xl px-4 py-4 space-y-4">
       <h1 className="text-2xl font-semibold">Discussions</h1>
       <ul className="space-y-2">
         {conversations.map((conv) => (

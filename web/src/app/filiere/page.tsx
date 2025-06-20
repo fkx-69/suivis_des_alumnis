@@ -26,7 +26,7 @@ export default function FilierePage() {
   };
 
   return (
-    <main className="p-4 space-y-4">
+    <main className="mx-auto max-w-7xl px-4 py-4 space-y-4">
       <h1 className="text-2xl font-semibold">Filières</h1>
       <div className="flex gap-2 max-w-md">
         <Input placeholder="Code" value={code} onChange={(e) => setCode(e.target.value)} />

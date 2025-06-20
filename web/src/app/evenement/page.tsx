@@ -84,7 +84,7 @@ export default function Page() {
   }
 
   return (
-    <main className="p-4 lg:p-8">
+    <main className="mx-auto max-w-7xl px-4 py-4 lg:py-8">
       <div className="mb-4">
         <button
           className={`btn btn-secondary ${showMyEvents ? "btn-active" : "btn-soft"}`}

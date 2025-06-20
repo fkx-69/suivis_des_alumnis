@@ -1,4 +1,5 @@
 import axios, { AxiosRequestHeaders } from "axios";
+import { toast } from "@/components/ui/toast";
 
 // Création d’une instance pré‑configurée
 export const api = axios.create({
@@ -21,7 +22,21 @@ api.interceptors.request.use((config) => {
 });
 
 // Intercepteur de réponse : refresh token ou déconnexion automatique
-api.interceptors.response.use((response) => {
-  console.log("Réponse de l'API :", response.data);
-  return response;
-});
+api.interceptors.response.use(
+  (response) => {
+    console.log("Réponse de l'API :", response.data);
+    return response;
+  },
+  (error) => {
+    const message =
+      error.response?.data?.detail ||
+      error.response?.data?.message ||
+      error.message ||
+      "Une erreur est survenue";
+    if (typeof window !== "undefined") {
+      toast.error(message);
+    }
+    console.error("Erreur API :", error);
+    return Promise.reject(error);
+  }
+);

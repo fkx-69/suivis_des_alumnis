@@ -6,6 +6,7 @@ from .serializers import MessagePriveSerializer
 from accounts.models import CustomUser
 from rest_framework.views import APIView
 from django.db import models
+from django.db.models import Q
 from .serializers import UtilisateurConverseSerializer
 from django.shortcuts import get_object_or_404
 from notifications.utils import envoyer_notification
@@ -102,17 +103,17 @@ class ConversationsListView(APIView):
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        operation_description="Lister les utilisateurs avec qui l'utilisateur connecté a déjà échangé des messages.",
+        operation_description="Lister les utilisateurs avec qui l'utilisateur connecté a déjà échangé des messages, avec le dernier message.",
         responses={200: UtilisateurConverseSerializer(many=True)}
     )
     def get(self, request):
         utilisateur = request.user
 
+        # Obtenir tous les IDs des utilisateurs avec qui j’ai échangé
         ids_utilisateurs = MessagePrive.objects.filter(
-            models.Q(expediteur=utilisateur) | models.Q(destinataire=utilisateur)
+            Q(expediteur=utilisateur) | Q(destinataire=utilisateur)
         ).values_list('expediteur', 'destinataire')
 
-        # Extraire les IDs uniques (sauf soi-même)
         ids_uniques = set()
         for exp_id, dest_id in ids_utilisateurs:
             if exp_id != utilisateur.id:
@@ -121,7 +122,5 @@ class ConversationsListView(APIView):
                 ids_uniques.add(dest_id)
 
         utilisateurs = CustomUser.objects.filter(id__in=ids_uniques)
-        serializer = UtilisateurConverseSerializer(utilisateurs, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    
+        serializer = UtilisateurConverseSerializer(utilisateurs, many=True, context={'request': request})
+        return Response(serializer.data)

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import MessagePrive
 from accounts.models import CustomUser
+from django.db import models
 
 class MessagePriveSerializer(serializers.ModelSerializer):
     expediteur_username = serializers.CharField(source='expediteur.username', read_only=True)
@@ -35,6 +36,20 @@ class MessagePriveSerializer(serializers.ModelSerializer):
             **validated_data
         )
 class UtilisateurConverseSerializer(serializers.ModelSerializer):
+    last_message = serializers.SerializerMethodField()
+
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'prenom', 'nom', 'photo_profil']
+        fields = ['id', 'username', 'prenom', 'nom', 'photo_profil', 'last_message']
+
+    def get_last_message(self, user):
+        utilisateur_connecte = self.context['request'].user
+
+        dernier_message = MessagePrive.objects.filter(
+            (models.Q(expediteur=utilisateur_connecte, destinataire=user) |
+             models.Q(expediteur=user, destinataire=utilisateur_connecte))
+        ).order_by('-date_envoi').first()
+
+        if dernier_message:
+            return dernier_message.contenu
+        return None

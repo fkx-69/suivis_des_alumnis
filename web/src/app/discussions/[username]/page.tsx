@@ -1,13 +1,13 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
-import { fetchMessages, fetchConversations } from "@/lib/api/messaging";
-import { Conversation, Message } from "@/types/messaging";
+import { fetchConversation } from "@/lib/api/messaging";
+import { ConversationDetail, Message } from "@/types/messaging";
 import { Input } from "@/components/ui/Input";
 
 export default function ConversationPage() {
   const { username } = useParams<{ username: string }>();
-  const [conversation, setConversation] = useState<Conversation | null>(null);
+  const [conversation, setConversation] = useState<ConversationDetail | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [content, setContent] = useState("");
   const wsRef = useRef<WebSocket | null>(null);
@@ -15,19 +15,11 @@ export default function ConversationPage() {
 
   useEffect(() => {
     if (!username) return;
-
-    fetchMessages(username).then((msgs) => {
-      setMessages(msgs);
+    fetchConversation(username).then((data) => {
+      setConversation(data);
+      setMessages(data.messages);
+      openSocket(data.user.id);
     });
-
-    fetchConversations().then((convs) => {
-      const conv = convs.find((c) => c.username === username) || null;
-      setConversation(conv);
-      if (conv) {
-        openSocket(conv.id);
-      }
-    });
-
     return () => {
       wsRef.current?.close();
       setSocketOpen(false);
@@ -64,13 +56,13 @@ export default function ConversationPage() {
   return (
     <main className="flex flex-col h-screen mx-auto max-w-7xl px-4 py-4">
       <h2 className="text-xl font-semibold mb-4">
-        Conversation avec {conversation.prenom} {conversation.nom}
+        Conversation avec {conversation.user.prenom} {conversation.user.nom}
       </h2>
       <div className="flex-1 overflow-y-auto space-y-2">
         {messages.map((m) => (
           <div
             key={m.id}
-            className={`chat ${m.expediteur_username === conversation.username ? "chat-start" : "chat-end"}`}
+            className={`chat ${m.expediteur_username === conversation.user.username ? "chat-start" : "chat-end"}`}
           >
             <div className="chat-bubble">{m.contenu}</div>
           </div>

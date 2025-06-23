@@ -34,3 +34,7 @@ class MessagePriveSerializer(serializers.ModelSerializer):
             destinataire=destinataire,
             **validated_data
         )
+class UtilisateurConverseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username', 'prenom', 'nom', 'photo_profil']

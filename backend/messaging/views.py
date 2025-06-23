@@ -4,6 +4,9 @@ from rest_framework.response import Response
 from .models import MessagePrive
 from .serializers import MessagePriveSerializer
 from accounts.models import CustomUser
+from rest_framework.views import APIView
+from django.db import models
+from django.shortcuts import get_object_or_404
 from notifications.utils import envoyer_notification
 
 from drf_yasg.utils import swagger_auto_schema
@@ -72,3 +75,23 @@ class MessagesEnvoyesView(generics.ListAPIView):
 
     def get_queryset(self):
         return MessagePrive.objects.filter(expediteur=self.request.user).order_by('-date_envoi')
+
+# === Voir les messages échangés avec un utilisateur ===
+class MessagesAvecUtilisateurView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Lister les messages entre l'utilisateur connecté et un autre utilisateur.",
+        responses={200: MessagePriveSerializer(many=True)}
+    )
+    def get(self, request, username):
+        autre_utilisateur = get_object_or_404(CustomUser, username=username)
+        utilisateur_connecte = request.user
+
+        messages = MessagePrive.objects.filter(
+            (models.Q(expediteur=utilisateur_connecte) & models.Q(destinataire=autre_utilisateur)) |
+            (models.Q(expediteur=autre_utilisateur) & models.Q(destinataire=utilisateur_connecte))
+        ).order_by('date_envoi')
+
+        serializer = MessagePriveSerializer(messages, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

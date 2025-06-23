@@ -6,6 +6,7 @@ import SidePanel from "../components/ui/side-panel";
 import { usePathname, useRouter } from "next/navigation";
 import { AuthProvider, useAuth } from "@/lib/api/authContext";
 import { useEffect } from "react";
+import { ThemeProvider } from "next-themes";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,15 +32,17 @@ export default function RootLayout({
   const showSidePanel =
     pathname !== "/auth/login" && pathname !== "/auth/signIn";
   return (
-    <html data-theme="emerald" lang="en" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <AuthGuard>
-            {showSidePanel ? <SidePanel>{children}</SidePanel> : children}
-          </AuthGuard>
-        </AuthProvider>
+        <ThemeProvider attribute="data-theme" defaultTheme="light" enableSystem={false}>
+          <AuthProvider>
+            <AuthGuard>
+              {showSidePanel ? <SidePanel>{children}</SidePanel> : children}
+            </AuthGuard>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

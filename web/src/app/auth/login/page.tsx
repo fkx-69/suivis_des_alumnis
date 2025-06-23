@@ -5,6 +5,7 @@ import { z } from "zod";
 import { login as loginApi } from "@/lib/api/auth";
 import { useAuth } from "@/lib/api/authContext";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Input } from "@/components/ui/Input";
 import { toast } from "@/components/ui/toast";
 import "@/app/globals.css";
@@ -38,7 +39,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-base-200">
+    <div className="min-h-dvh flex items-center justify-center bg-base-200 mx-auto max-w-7xl px-4">
       <div className="bg-s p-8 rounded-2xl shadow-xl w-full max-w-md bg-base-100">
         <h2 className="text-2xl font-bold mb-6 text-center">Connexion</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -67,9 +68,9 @@ export default function LoginPage() {
         </form>
         <div className="mt-4 text-sm text-center text-gray-500">
           Vous n'avez pas de compte ?{" "}
-          <a href="signIn" className="text-blue-600 hover:underline">
+          <Link href="signIn" className="text-blue-600 hover:underline">
             Inscrivez-vous
-          </a>
+          </Link>
         </div>
       </div>
     </div>

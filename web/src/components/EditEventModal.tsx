@@ -1,7 +1,8 @@
 "use client";
 import { CalendarIcon, XIcon } from "lucide-react";
+import { Input } from "@/components/ui/Input";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api/axios";
 import { ApiEvent } from "@/types/evenement";
 
@@ -20,6 +21,7 @@ export default function EditEventModal({ event, onClose, onUpdated }: EditEventM
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const firstFieldRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -56,12 +58,19 @@ export default function EditEventModal({ event, onClose, onUpdated }: EditEventM
     return () => window.removeEventListener("keydown", esc);
   }, [onClose]);
 
+  useEffect(() => {
+    firstFieldRef.current?.focus();
+  }, []);
+
   return (
     <div
       className="absolute inset-0 z-50 flex items-center justify-center bg-black/40"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <motion.form
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-event-modal-title"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.25 }}
@@ -76,14 +85,18 @@ export default function EditEventModal({ event, onClose, onUpdated }: EditEventM
         >
           <XIcon size={18} />
         </button>
+        <h2 id="edit-event-modal-title" className="sr-only">
+          Modifier l'évènement
+        </h2>
         {error && <div className="alert alert-error">{error}</div>}
-        <input
+        <Input
           name="titre"
           value={form.titre}
           onChange={handleChange}
           placeholder="Titre"
           required
-          className="input input-ghost text-2xl font-bold w-full"
+          className="input-ghost text-2xl font-bold"
+          ref={firstFieldRef}
         />
         <textarea
           name="description"
@@ -96,24 +109,24 @@ export default function EditEventModal({ event, onClose, onUpdated }: EditEventM
         <div className="flex justify-between items-center text-sm gap-4 flex-wrap">
           <div className="flex items-center gap-2 flex-1 min-w-[10rem]">
             <CalendarIcon size={18} />
-            <input
+            <Input
               type="datetime-local"
               name="date_debut"
               value={form.date_debut}
               onChange={handleChange}
               required
-              className="input input-ghost w-full"
+              className="input-ghost"
             />
           </div>
           <div className="flex items-center gap-2 flex-1 min-w-[10rem]">
             <CalendarIcon size={18} />
-            <input
+            <Input
               type="datetime-local"
               name="date_fin"
               value={form.date_fin}
               onChange={handleChange}
               required
-              className="input input-ghost w-full"
+              className="input-ghost"
             />
           </div>
         </div>

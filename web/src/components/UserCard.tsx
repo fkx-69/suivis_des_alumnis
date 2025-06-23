@@ -1,11 +1,31 @@
 "use client";
+import { useState } from "react";
 import { User } from "@/types/auth";
+import { useAuth } from "@/lib/api/authContext";
+import { envoyerDemande } from "@/lib/api/mentorat";
+import { toast } from "@/components/ui/toast";
 
 interface UserCardProps {
   user: User;
 }
 
 export default function UserCard({ user }: UserCardProps) {
+  const { user: currentUser } = useAuth();
+  const [sent, setSent] = useState(false);
+
+  const canRequest =
+    currentUser?.role === "ETUDIANT" && user.role === "ALUMNI";
+
+  const sendRequest = async () => {
+    try {
+      await envoyerDemande(user.username);
+      setSent(true);
+      toast.success("Demande envoyée");
+    } catch {
+      toast.error("Erreur lors de l'envoi");
+    }
+  };
+
   return (
     <div className="card bg-base-100 shadow-sm">
       <div className="card-body flex items-center gap-4">
@@ -29,6 +49,15 @@ export default function UserCard({ user }: UserCardProps) {
             @{user.username} - {user.role}
           </p>
         </div>
+        {canRequest && (
+          <button
+            className="btn btn-sm ml-auto"
+            onClick={sendRequest}
+            disabled={sent}
+          >
+            {sent ? "Envoyée" : "Demander"}
+          </button>
+        )}
       </div>
     </div>
   );

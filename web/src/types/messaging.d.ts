@@ -14,7 +14,7 @@ export interface Conversation {
   prenom: string;
   nom: string;
   photo_profil: string | null;
-  last_message: Message;
+  last_message: string | null;
 }
 
 export interface ConversationDetail {

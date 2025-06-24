@@ -36,7 +36,9 @@ export default function ConversationPage() {
 
   function openSocket(userId: number) {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-    const ws = new WebSocket(`${protocol}://${window.location.host}/ws/chat/${userId}/`);
+    const ws = new WebSocket(
+      `${protocol}://${window.location.host}/ws/notifications/`
+    );
     wsRef.current = ws;
     ws.onopen = () => setSocketOpen(true);
     ws.onmessage = (event) => {

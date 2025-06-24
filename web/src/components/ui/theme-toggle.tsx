@@ -12,7 +12,7 @@ export default function ThemeToggle() {
 
   if (!mounted) return null;
 
-  const toggle = () => setTheme(theme === "dark" ? "light" : "dark");
+  const toggle = () => setTheme(theme === "dark" ? "emerald" : "dark");
 
   return (
     <button

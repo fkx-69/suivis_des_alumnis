@@ -18,12 +18,17 @@ export default function ConversationPage() {
 
     fetchMessages(username).then((msgs) => {
       setMessages(msgs);
+      if (!wsRef.current && msgs.length > 0) {
+        const first = msgs[0];
+        const id = first.expediteur_username === username ? first.expediteur : first.destinataire;
+        openSocket(id);
+      }
     });
 
     fetchConversations().then((convs) => {
       const conv = convs.find((c) => c.username === username) || null;
       setConversation(conv);
-      if (conv) {
+      if (conv && !wsRef.current) {
         openSocket(conv.id);
       }
     });

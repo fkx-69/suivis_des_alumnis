@@ -1,7 +1,11 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
-import { fetchMessages, fetchConversations } from "@/lib/api/messaging";
+import {
+  fetchMessages,
+  fetchConversations,
+  sendMessage as sendMessageApi,
+} from "@/lib/api/messaging";
 import { Conversation, Message } from "@/types/messaging";
 import { Input } from "@/components/ui/Input";
 
@@ -47,11 +51,10 @@ export default function ConversationPage() {
     };
   }
 
-  function sendMessage() {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN || !content.trim()) {
-      return;
-    }
-    wsRef.current.send(JSON.stringify({ message: content }));
+  async function sendMessage() {
+    if (!content.trim()) return;
+    const msg = await sendMessageApi(username, content);
+    setMessages((prev) => [...prev, msg]);
     setContent("");
   }
 
@@ -88,7 +91,7 @@ export default function ConversationPage() {
         <button
           className="btn btn-primary"
           onClick={sendMessage}
-          disabled={!socketOpen || !content.trim()}
+          disabled={!content.trim()}
         >
           Envoyer
         </button>

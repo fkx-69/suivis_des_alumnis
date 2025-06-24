@@ -7,6 +7,7 @@ import {
 } from "@/lib/api/publication";
 import { Publication } from "@/types/publication";
 import { Input } from "@/components/ui/Input";
+import PublicationCard from "@/components/PublicationCard";
 
 export default function PublicationsPage() {
   const [publications, setPublications] = useState<Publication[]>([]);
@@ -45,48 +46,16 @@ export default function PublicationsPage() {
           Publier
         </button>
       </div>
-      <ul className="space-y-4">
+      <ul className="divide-y divide-base-300">
         {publications.map((p) => (
-          <li key={p.id} className="p-3 bg-base-200 rounded-md space-y-2">
-            <p className="font-semibold">{p.auteur_username}</p>
-            {p.texte && <p>{p.texte}</p>}
-            <div className="space-y-1">
-              {p.commentaires.map((c) => (
-                <div key={c.id} className="pl-2 border-l border-base-300">
-                  <p className="text-sm">
-                    <span className="font-semibold">{c.auteur_username}</span> {" "}
-                    {c.contenu}
-                  </p>
-                </div>
-              ))}
-              <CommentForm onAdd={(v) => handleComment(p.id, v)} />
-            </div>
+          <li key={p.id}>
+            <PublicationCard
+              publication={p}
+              onComment={(v) => handleComment(p.id, v)}
+            />
           </li>
         ))}
       </ul>
     </main>
-  );
-}
-
-function CommentForm({ onAdd }: { onAdd: (value: string) => void }) {
-  const [value, setValue] = useState("");
-  return (
-    <div className="flex gap-2 mt-2">
-      <Input
-        className="flex-1"
-        placeholder="Commenter..."
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-      />
-      <button
-        className="btn btn-sm"
-        onClick={() => {
-          onAdd(value);
-          setValue("");
-        }}
-      >
-        Envoyer
-      </button>
-    </div>
   );
 }

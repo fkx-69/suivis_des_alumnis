@@ -83,7 +83,7 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
               {user?.photo_profil ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={user.photo_profil}
+                  src={"http://127.0.0.1:8000/" + user.photo_profil}
                   alt="Profile"
                   className="object-cover w-full h-full"
                 />

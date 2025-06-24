@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from accounts.serializers import AbsoluteMediaUrlField
 from .models import Publication, Commentaire
 
 class CommentaireSerializer(serializers.ModelSerializer):
@@ -17,6 +18,7 @@ class PublicationSerializer(serializers.ModelSerializer):
     auteur_username = serializers.ReadOnlyField(source='auteur.username')
     auteur_photo_profil = serializers.ImageField(source='auteur.photo_profil', read_only=True)
     commentaires = CommentaireSerializer(many=True, read_only=True)
+    photo = AbsoluteMediaUrlField(required=False)
 
     class Meta:
         model = Publication

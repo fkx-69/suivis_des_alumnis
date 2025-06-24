@@ -49,7 +49,7 @@ export default function DiscussionsPage() {
                   {conv.prenom} {conv.nom}
                 </p>
                 <p className="text-sm opacity-70 truncate max-w-xs">
-                  {conv.last_message}
+                  {conv.last_message.contenu}
                 </p>
               </div>
             </Link>

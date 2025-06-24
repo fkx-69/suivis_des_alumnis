@@ -3,6 +3,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from .models import Publication, Commentaire
 from .serializers import PublicationSerializer, CommentaireSerializer
+from django.shortcuts import get_object_or_404
 from notifications.utils import envoyer_notification
 
 from drf_yasg.utils import swagger_auto_schema
@@ -106,3 +107,19 @@ class CommentaireDeleteView(generics.DestroyAPIView):
         if instance.auteur != user and publication.auteur != user:
             raise PermissionDenied("Vous ne pouvez supprimer que vos propres commentaires ou ceux sur vos publications.")
         instance.delete()
+class PublicationsParUtilisateurView(generics.ListAPIView):
+    serializer_class = PublicationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Lister les publications d’un utilisateur donné (par son username).",
+        responses={200: PublicationSerializer(many=True)}
+    )
+    def get(self, request, username, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        from accounts.models import CustomUser
+        username = self.kwargs.get('username')
+        utilisateur = get_object_or_404(CustomUser, username=username)
+        return Publication.objects.filter(auteur=utilisateur).order_by('-date_publication')

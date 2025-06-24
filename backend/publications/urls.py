@@ -4,7 +4,8 @@ from .views import (
     PublicationListView,
     PublicationDeleteView,
     CommentaireCreateView,
-    CommentaireDeleteView
+    CommentaireDeleteView,
+    PublicationsParUtilisateurView
 )
 
 urlpatterns = [
@@ -13,4 +14,6 @@ urlpatterns = [
     path('<int:pk>/supprimer/', PublicationDeleteView.as_view(), name='supprimer-publication'),
     path('commenter/', CommentaireCreateView.as_view(), name='commenter-publication'),
     path('commentaire/<int:pk>/supprimer/', CommentaireDeleteView.as_view(), name='supprimer-commentaire'),
+    path('utilisateur/<str:username>/', PublicationsParUtilisateurView.as_view(), name='publications-par-utilisateur'),
+
 ]

@@ -1,14 +1,13 @@
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .models import MessagePrive
-from .serializers import MessagePriveSerializer
-from accounts.models import CustomUser
 from rest_framework.views import APIView
-from django.db import models
 from django.db.models import Q
-from .serializers import UtilisateurConverseSerializer
 from django.shortcuts import get_object_or_404
+
+from .models import MessagePrive
+from .serializers import MessagePriveSerializer, UtilisateurConverseSerializer
+from accounts.models import CustomUser
 from notifications.utils import envoyer_notification
 
 from drf_yasg.utils import swagger_auto_schema
@@ -37,14 +36,16 @@ class EnvoyerMessagePriveView(generics.CreateAPIView):
         }
     )
     def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
-
-    def perform_create(self, serializer):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         message = serializer.save()
+
         envoyer_notification(
             destinataire=message.destinataire,
             message=f"Nouveau message privé de {message.expediteur.username}."
         )
+
+        return Response(self.get_serializer(message).data, status=status.HTTP_201_CREATED)
 
 
 # === Voir les messages reçus ===
@@ -78,6 +79,7 @@ class MessagesEnvoyesView(generics.ListAPIView):
     def get_queryset(self):
         return MessagePrive.objects.filter(expediteur=self.request.user).order_by('-date_envoi')
 
+
 # === Voir les messages échangés avec un utilisateur ===
 class MessagesAvecUtilisateurView(APIView):
     permission_classes = [IsAuthenticated]
@@ -91,13 +93,14 @@ class MessagesAvecUtilisateurView(APIView):
         utilisateur_connecte = request.user
 
         messages = MessagePrive.objects.filter(
-            (models.Q(expediteur=utilisateur_connecte) & models.Q(destinataire=autre_utilisateur)) |
-            (models.Q(expediteur=autre_utilisateur) & models.Q(destinataire=utilisateur_connecte))
+            Q(expediteur=utilisateur_connecte, destinataire=autre_utilisateur) |
+            Q(expediteur=autre_utilisateur, destinataire=utilisateur_connecte)
         ).order_by('date_envoi')
 
         serializer = MessagePriveSerializer(messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
+
 # === Liste des utilisateurs avec qui j'ai discuté ===
 class ConversationsListView(APIView):
     permission_classes = [IsAuthenticated]
@@ -109,7 +112,6 @@ class ConversationsListView(APIView):
     def get(self, request):
         utilisateur = request.user
 
-        # Obtenir tous les IDs des utilisateurs avec qui j’ai échangé
         ids_utilisateurs = MessagePrive.objects.filter(
             Q(expediteur=utilisateur) | Q(destinataire=utilisateur)
         ).values_list('expediteur', 'destinataire')

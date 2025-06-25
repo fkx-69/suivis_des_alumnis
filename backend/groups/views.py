@@ -165,11 +165,12 @@ class ListeMessagesView(APIView):
     def get(self, request, groupe_id):
         try:
             groupe = Groupe.objects.get(id=groupe_id)
-            messages = Message.objects.filter(groupe=groupe).order_by('-date_creation')
+            messages = Message.objects.filter(groupe=groupe).order_by('-date_envoi')  
             serializer = MessageSerializer(messages, many=True)
             return Response(serializer.data)
         except Groupe.DoesNotExist:
             return Response({'error': 'Groupe non trouvé.'}, status=status.HTTP_404_NOT_FOUND)
+
 # === Liste de tous les groupes ===
 class ListeGroupesView(generics.ListAPIView):
     queryset = Groupe.objects.all().order_by('-date_creation')

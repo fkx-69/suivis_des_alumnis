@@ -16,12 +16,13 @@ class AbsoluteMediaUrlField(serializers.FileField):
 # === USER SERIALIZER ===
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-    photo_profil = AbsoluteMediaUrlField()
+    photo_profil = AbsoluteMediaUrlField(required=False, allow_null=True)
     class Meta:
         model = CustomUser
         fields = ['id', 'email', 'username', 'nom', 'prenom', 'role', 'photo_profil', 'biographie', 'password']
         extra_kwargs = {
-            'password': {'write_only': True}
+            'password': {'write_only': True},
+            'biographie': {'required': False, 'allow_blank': True},
         }
     def get_filiere(self, user):
         try:

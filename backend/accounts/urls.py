@@ -5,7 +5,7 @@ from .views import (
     RegisterEtudiantAPIView, RegisterAlumniAPIView,
     ListEtudiantsAPIView, ListAlumnisAPIView,
     ParcoursAcademiqueViewSet,ParcoursProfessionnelViewSet, ChangePasswordAPIView, ChangeEmailAPIView,SearchUserView
-    ,SuggestionsView,PublicUserRetrieveAPIView)
+    ,SuggestionsView,PublicUserRetrieveAPIView, PublicAlumniProfileAPIView)
 
 router = DefaultRouter()
 router.register(r'parcours-academiques', ParcoursAcademiqueViewSet, basename='parcours-academique')
@@ -13,7 +13,7 @@ router.register(r'parcours-professionnels', ParcoursProfessionnelViewSet, basena
 
 
 urlpatterns = [
-    path('login/', LoginAPIView.as_view(), name='login'),
+     path('login/', LoginAPIView.as_view(), name='login'),
     path('me/', MeAPIView.as_view(), name='me'),
     path('me/update/', UpdateProfileAPIView.as_view(), name='update-profile'),
     path('change-password/', ChangePasswordAPIView.as_view(), name='change-password'),
@@ -24,6 +24,8 @@ urlpatterns = [
     path('alumnis/', ListAlumnisAPIView.as_view(), name='list-alumnis'),
     path('search/', SearchUserView.as_view(), name='search-users'),
     path('suggestions/', SuggestionsView.as_view(), name='suggestions-users'),
-    path('<str:username>/', PublicUserRetrieveAPIView.as_view(), name='public-user-profile'),
     path('', include(router.urls)),
+    path('<str:username>/', PublicUserRetrieveAPIView.as_view(), name='public-user-profile'),
+    path('alumni/public/<int:id>/', PublicAlumniProfileAPIView.as_view(), name='public_alumni_profile'),
+
 ] 

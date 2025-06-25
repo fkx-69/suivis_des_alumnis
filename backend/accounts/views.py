@@ -7,7 +7,7 @@ from .serializers import (
     RegisterEtudiantSerializer, RegisterAlumniSerializer,
     LoginSerializer, EtudiantSerializer, AlumniSerializer,
     UserSerializer, ParcoursAcademiqueSerializer, ParcoursProfessionnelSerializer,
-    ChangePasswordSerializer, ChangeEmailSerializer, UpdateUserSerializer, UserPublicSerializer
+    ChangePasswordSerializer, ChangeEmailSerializer, UpdateUserSerializer, UserPublicSerializer,PublicAlumniProfileSerializer
     )
 from django.db.models import Q
 from random import sample
@@ -178,6 +178,19 @@ class PublicUserRetrieveAPIView(RetrieveAPIView):
     @swagger_auto_schema(
         operation_summary="Afficher le profil public d’un utilisateur",
         operation_description="Permet de consulter le profil public d’un utilisateur à partir de son username, sans authentification."
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+    
+class PublicAlumniProfileAPIView(RetrieveAPIView):
+    queryset = Alumni.objects.all()
+    serializer_class = PublicAlumniProfileSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'id' 
+
+    @swagger_auto_schema(
+        operation_summary="Profil public complet d’un alumni",
+        operation_description="Récupère le profil public d’un alumni à partir de son nom d'utilisateur, incluant les parcours académiques et professionnels."
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)

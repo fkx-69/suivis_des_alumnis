@@ -57,12 +57,20 @@ export default function PublicationCardDaisy({
     <div className="card w-full bg-base-100 shadow-md border border-base-300/50 mb-6">
       <div className="card-body p-5">
         <div className="flex items-center gap-4 mb-3">
-          <div className="avatar placeholder">
-            {/* MODIFICATION: Classes flex ajoutées pour centrer la lettre */}
-            <div className="bg-neutral text-neutral-content rounded-full w-12 flex items-center justify-center">
-              <span className="text-xl font-bold">
-                {publication.auteur_username.charAt(0).toUpperCase()}
-              </span>
+          <div className="avatar">
+            <div className="w-12 rounded-full bg-neutral overflow-hidden flex items-center justify-center text-neutral-content">
+              {publication.auteur_photo_profil ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={publication.auteur_photo_profil}
+                  alt={publication.auteur_username}
+                  className="object-cover w-full h-full"
+                />
+              ) : (
+                <span className="text-xl font-bold">
+                  {publication.auteur_username.charAt(0).toUpperCase()}
+                </span>
+              )}
             </div>
           </div>
           <div>
@@ -82,21 +90,46 @@ export default function PublicationCardDaisy({
           </p>
         )}
 
+        {publication.photo && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={publication.photo}
+            alt="Publication"
+            className="mt-4 rounded-lg max-h-[500px] w-full object-cover"
+          />
+        )}
+
+        {publication.video && (
+          <video
+            src={publication.video}
+            controls
+            className="mt-4 rounded-lg max-h-[500px] w-full"
+          />
+        )}
+
         <div className="divider my-1"></div>
 
         <div className="space-y-3">
           <h3 className="font-semibold text-sm">
-            Commentaires ({publication.commentaires.length})
+            Commentaires ({publication.nombres_commentaires ?? publication.commentaires.length})
           </h3>
           {publication.commentaires.length > 0 ? (
             publication.commentaires.map((c) => (
               <div key={c.id} className="flex items-start gap-2 text-sm">
-                <div className="avatar placeholder">
-                  {/* MODIFICATION: Classes flex ajoutées pour centrer la lettre */}
-                  <div className="bg-base-300 text-base-content rounded-full w-6 flex items-center justify-center">
-                    <span className="text-xs font-semibold">
-                      {c.auteur_username.charAt(0).toUpperCase()}
-                    </span>
+                <div className="avatar">
+                  <div className="w-6 rounded-full bg-base-300 overflow-hidden flex items-center justify-center text-base-content">
+                    {c.auteur_photo_profil ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={c.auteur_photo_profil}
+                        alt={c.auteur_username}
+                        className="object-cover w-full h-full"
+                      />
+                    ) : (
+                      <span className="text-xs font-semibold">
+                        {c.auteur_username.charAt(0).toUpperCase()}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="bg-base-200/60 rounded-lg px-3 py-2 w-full">

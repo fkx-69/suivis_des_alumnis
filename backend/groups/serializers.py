@@ -5,14 +5,14 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class GroupeSerializer(serializers.ModelSerializer):
-    createur = serializers.ReadOnlyField(source='createur.username')
+    createur = serializers.ReadOnlyField(source='createur.id')
     membres = serializers.SlugRelatedField(
         many=True,
         slug_field='username',
         read_only=True
     )
     est_membre = serializers.SerializerMethodField()
-    role = serializers.SerializerMethodField()  # 👈 nouveau champ
+    role = serializers.SerializerMethodField() 
 
     class Meta:
         model = Groupe

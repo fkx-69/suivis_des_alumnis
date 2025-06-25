@@ -166,4 +166,7 @@ class MesEvenementsNonValidésView(generics.ListAPIView):
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
-        return Evenement.objects.filter(createur=self.request)
+        return Evenement.objects.filter(createur=self.request.user, valide=False).order_by('-date_creation')
+
+    def get_serializer_context(self):
+        return {'request': self.request}

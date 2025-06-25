@@ -193,3 +193,21 @@ class ListeGroupesView(generics.ListAPIView):
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+class MesGroupesView(generics.ListAPIView):
+    serializer_class = GroupeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return self.request.user.groupes_rejoints.all().order_by('-date_creation')
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+    @swagger_auto_schema(
+        operation_description="Lister les groupes rejoints par l’utilisateur connecté.",
+        responses={200: GroupeSerializer(many=True)}
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)

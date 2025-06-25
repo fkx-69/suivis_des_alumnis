@@ -176,9 +176,20 @@ class ListeGroupesView(generics.ListAPIView):
     serializer_class = GroupeSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
     @swagger_auto_schema(
-        operation_description="Obtenir la liste de tous les groupes (accessible aux utilisateurs authentifiés).",
-        responses={200: GroupeSerializer(many=True)}
+        operation_description="Obtenir la liste de tous les groupes existants. "
+                              "Le champ `est_membre` indique si l'utilisateur connecté est membre du groupe.",
+        responses={
+            200: openapi.Response(
+                description="Liste des groupes",
+                schema=GroupeSerializer(many=True)
+            )
+        }
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)

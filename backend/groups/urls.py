@@ -6,12 +6,14 @@ from .views import (
     ListeMembresView,
     EnvoyerMessageView,
     ListeMessagesView,
-    ListeGroupesView
+    ListeGroupesView,
+    MesGroupesView
 )
 
 urlpatterns = [
     path('creer/', GroupeCreateView.as_view(), name='creer-groupe'),
     path('listes/', ListeGroupesView.as_view(), name='liste-groupes'),
+    path('mes-groupes/', MesGroupesView.as_view(), name='mes-groupes'),
     path('<int:groupe_id>/rejoindre/', RejoindreGroupeView.as_view(), name='rejoindre-groupe'),
     path('<int:groupe_id>/quitter/', QuitterGroupeView.as_view(), name='quitter-groupe'),
     path('<int:groupe_id>/membres/', ListeMembresView.as_view(), name='liste-membres'),

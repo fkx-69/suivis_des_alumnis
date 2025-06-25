@@ -11,10 +11,17 @@ class GroupeSerializer(serializers.ModelSerializer):
         slug_field='username',
         read_only=True
     )
+    est_membre = serializers.SerializerMethodField()
 
     class Meta:
         model = Groupe
-        fields = ['id', 'nom_groupe', 'description', 'createur', 'membres', 'date_creation']
+        fields = ['id', 'nom_groupe', 'description', 'createur', 'membres', 'date_creation', 'est_membre']
+
+    def get_est_membre(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.membres.filter(id=request.user.id).exists()
+        return False
 
 class MessageSerializer(serializers.ModelSerializer):
     auteur = serializers.ReadOnlyField(source='auteur.username')

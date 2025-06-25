@@ -153,3 +153,17 @@ class MesEvenementsView(generics.ListAPIView):
     )
     def get_queryset(self):
         return Evenement.objects.filter(createur=self.request.user).order_by('-date_debut')
+
+class MesEvenementsNonValidésView(generics.ListAPIView):
+    serializer_class = EvenementSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Récupérer la liste des événements créés par l'utilisateur mais qui ne sont pas encore validés par l'administration.",
+        responses={200: openapi.Response("Liste des événements non validés", EvenementSerializer(many=True))}
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return Evenement.objects.filter(createur=self.request)

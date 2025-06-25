@@ -6,6 +6,7 @@ from .views import (
     SupprimerEvenementView,
     ListeEvenementsVisiblesView,
     MesEvenementsView,
+    MesEvenementsNonValidésView
 )
 
 urlpatterns = [
@@ -15,6 +16,7 @@ urlpatterns = [
     path('evenements/<int:pk>/valider/', ValiderEvenementView.as_view(), name='valider-evenement'),
     path('evenements/', ListeEvenementsVisiblesView.as_view(), name='evenements-visibles'),
     path('evenements/mes/', MesEvenementsView.as_view(), name='mes-evenements'),
+    path('mes-evenements-en-attente/', MesEvenementsNonValidésView.as_view(), name='mes-evenements-en-attente'),
 ]
 
 

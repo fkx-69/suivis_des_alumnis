@@ -171,3 +171,21 @@ class UserPublicSerializer(serializers.ModelSerializer):
             'photo_profil',
             'biographie',
         ]
+
+class PublicAlumniProfileSerializer(serializers.ModelSerializer):
+    user = UserPublicSerializer()
+    parcours_academiques = ParcoursAcademiqueSerializer(many=True, source='parcoursacademique_set', read_only=True)
+    parcours_professionnels = ParcoursProfessionnelSerializer(many=True, source='parcoursprofessionnel_set', read_only=True)
+
+    class Meta:
+        model = Alumni
+        fields = [
+            'user',
+            'filiere',
+            'secteur_activite',
+            'situation_pro',
+            'poste_actuel',
+            'nom_entreprise',
+            'parcours_academiques',
+            'parcours_professionnels',
+        ]

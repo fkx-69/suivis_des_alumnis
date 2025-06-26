@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { AuthProvider, useAuth } from "@/lib/api/authContext";
 import { useEffect } from "react";
 import { ThemeProvider } from "next-themes";
+import { ProfileModalProvider } from '@/contexts/ProfileModalContext';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,9 +39,11 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="data-theme" defaultTheme="light" enableSystem={false}>
           <AuthProvider>
-            <AuthGuard>
-              {showSidePanel ? <SidePanel>{children}</SidePanel> : children}
-            </AuthGuard>
+            <ProfileModalProvider>
+              <AuthGuard>
+                {showSidePanel ? <SidePanel>{children}</SidePanel> : children}
+              </AuthGuard>
+            </ProfileModalProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

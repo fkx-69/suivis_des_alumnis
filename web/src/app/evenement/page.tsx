@@ -1,13 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api/axios";
+
 import { ApiEvent } from "@/types/evenement";
 import AddEventModal from "@/components/AddEventModal";
 import EditEventModal from "@/components/EditEventModal";
 import EventCard from "@/components/EventCard";
 import EventModal from "@/components/EventModal";
 import ConfirmModal from "@/components/ConfirmModal";
+import {
+  fetchAllEvents,
+  fetchPendingEvents,
+  deleteEvent,
+} from "@/lib/api/evenement";
+
 
 export default function Page() {
   const [events, setEvents] = useState<ApiEvent[]>([]);
@@ -16,27 +22,18 @@ export default function Page() {
   const [selectedEvent, setSelectedEvent] = useState<ApiEvent | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showMyEvents, setShowMyEvents] = useState(false);
+  const [showPendingEvents, setShowPendingEvents] = useState(false);
   const [editingEvent, setEditingEvent] = useState<ApiEvent | null>(null);
   const [eventToDelete, setEventToDelete] = useState<ApiEvent | null>(null);
 
   useEffect(() => {
     async function fetchEvents() {
+      setLoading(true);
       try {
-        const res = await api.get<ApiEvent[]>("/events/evenements/");
-        if (res.status < 200 || res.status >= 300) {
-          throw new Error("Impossible de récupérer les événements");
-        }
-
-        const futurs = res.data
-          .filter((e) => new Date(e.date_debut).getTime() > Date.now())
-          .sort(
-            (a, b) =>
-              new Date(a.date_debut).getTime() -
-              new Date(b.date_debut).getTime()
-          );
-
-        // On garde les mêmes clés que ton composant attend :
-        setEvents(futurs);
+        const data = showPendingEvents
+          ? await fetchPendingEvents()
+          : await fetchAllEvents();
+        setEvents(data);
       } catch (err: any) {
         setError(err.message ?? "Erreur inconnue");
       } finally {
@@ -45,7 +42,7 @@ export default function Page() {
     }
 
     fetchEvents();
-  }, []);
+  }, [showPendingEvents]);
 
   const handleCreated = (ev: ApiEvent) => {
     setEvents((prev) => [...prev, ev]);
@@ -64,12 +61,8 @@ export default function Page() {
   const confirmDelete = async () => {
     if (!eventToDelete) return;
     try {
-      const res = await api.delete(
-        `/events/evenements/${eventToDelete.id}/supprimer/`
-      );
-      if (res.status >= 200 && res.status < 300) {
-        setEvents((prev) => prev.filter((e) => e.id !== eventToDelete.id));
-      }
+      await deleteEvent(eventToDelete.id);
+      setEvents((prev) => prev.filter((e) => e.id !== eventToDelete.id));
     } catch (err) {
       console.error(err);
     } finally {
@@ -95,12 +88,24 @@ export default function Page() {
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-4 lg:py-8">
-      <div className="mb-4">
+      <div className="mb-4 flex gap-2">
+        <button
+          className={`btn btn-secondary ${!showMyEvents && !showPendingEvents ? "btn-active" : "btn-soft"}`}
+          onClick={() => {setShowMyEvents(false); setShowPendingEvents(false)}}
+        >
+          Tous les évènements
+        </button>
         <button
           className={`btn btn-secondary ${showMyEvents ? "btn-active" : "btn-soft"}`}
-          onClick={() => setShowMyEvents((s) => !s)}
+          onClick={() => {setShowMyEvents(true); setShowPendingEvents(false)}}
         >
           Mes évènements
+        </button>
+        <button
+          className={`btn btn-secondary ${showPendingEvents ? "btn-active" : "btn-soft"}`}
+          onClick={() => {setShowMyEvents(false); setShowPendingEvents(true)}}
+        >
+          En attente
         </button>
       </div>
       {showForm && (
@@ -113,20 +118,20 @@ export default function Page() {
           onClose={() => setEditingEvent(null)}
         />
       )}
-      {(showMyEvents
+      {((showMyEvents
         ? events.filter((e) => e.is_owner).length === 0
-        : events.length === 0) && (
+        : events.length === 0) || (showPendingEvents && events.length === 0)) && (
         <div className="alert alert-info max-w-lg mx-auto mt-10">
           <span>Aucun événement futur pour le moment.</span>
         </div>
       )}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {(showMyEvents ? events.filter((e) => e.is_owner) : events).map((ev) => (
+        {(showMyEvents ? events.filter((e) => e.is_owner) : showPendingEvents ? events : events).map((ev) => (
           <EventCard
             key={ev.id}
             event={ev}
             onToggle={() => setSelectedEvent(ev)}
-            showActions={showMyEvents}
+            showActions={showMyEvents || showPendingEvents}
             onEdit={() => setEditingEvent(ev)}
             onDelete={() => requestDelete(ev)}
           />

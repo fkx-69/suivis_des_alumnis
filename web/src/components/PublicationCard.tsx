@@ -1,35 +1,24 @@
-// src/components/PublicationCardDaisy.tsx
-
+import { useAuth } from "@/lib/api/authContext";
+import { useProfileModal } from "@/contexts/ProfileModalContext";
 import { Publication } from "@/types/publication";
+import { MessageCircle } from "lucide-react";
 import { useState } from "react";
 
-// Helper function pour formater la date de publication
 function formatTimeAgo(dateString: string): string {
   const now = new Date();
   const date = new Date(dateString);
   const secondsPast = (now.getTime() - date.getTime()) / 1000;
 
-  if (secondsPast < 60) {
-    return "à l'instant";
-  }
-  if (secondsPast < 3600) {
-    const minutes = Math.floor(secondsPast / 60);
-    return `il y a ${minutes} min`;
-  }
-  if (secondsPast <= 86400) {
-    const hours = Math.floor(secondsPast / 3600);
-    return `il y a ${hours} h`;
-  }
-  if (secondsPast <= 604800) {
-    const days = Math.floor(secondsPast / 86400);
-    if (days === 1) {
-      return "hier";
-    }
-    return `il y a ${days} j`;
-  }
+  if (secondsPast < 60) return "à l'instant";
+  if (secondsPast < 3600) return `${Math.floor(secondsPast / 60)} min`;
+  if (secondsPast <= 86400) return `${Math.floor(secondsPast / 3600)} h`;
+  const days = Math.floor(secondsPast / 86400);
+  if (days === 1) return "hier";
+  if (days <= 7) return `${days} j`;
+
   return new Intl.DateTimeFormat("fr-FR", {
-    day: "numeric",
-    month: "long",
+    day: "2-digit",
+    month: "2-digit",
     year: "numeric",
   }).format(date);
 }
@@ -39,129 +28,154 @@ interface PublicationCardProps {
   onComment: (value: string) => void;
 }
 
-export default function PublicationCardDaisy({
-  publication,
-  onComment,
-}: PublicationCardProps) {
-  const [value, setValue] = useState("");
+export default function PublicationCard({ publication, onComment }: PublicationCardProps) {
+  const { user } = useAuth();
+  const { showProfile } = useProfileModal();
+  const [showComments, setShowComments] = useState(false);
+  const [commentValue, setCommentValue] = useState("");
+  const commentCount = publication.nombres_commentaires ?? 0;
+
+  // --- DEBUG --- 
+  console.log(`Publication by ${publication.auteur_username}:`, { 
+    isUserLoggedIn: !!user,
+    loggedInUsername: user?.username,
+    isDifferentUser: user ? publication.auteur_username !== user.username : 'N/A',
+    isClickable: !!user && publication.auteur_username !== user.username
+  });
+  // --- FIN DEBUG ---
+
+  const handleProfileClick = () => {
+    if (user && publication.auteur_username !== user.username) {
+      showProfile(publication.auteur_username);
+    }
+  };
 
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (value.trim()) {
-      onComment(value);
-      setValue("");
+    if (commentValue.trim()) {
+      onComment(commentValue);
+      setCommentValue("");
     }
   };
 
   return (
-    <div className="card w-full bg-base-100 shadow-md border border-base-300/50 mb-6">
-      <div className="card-body p-5">
-        <div className="flex items-center gap-4 mb-3">
-          <div className="avatar">
-            <div className="w-12 rounded-full bg-neutral overflow-hidden flex items-center justify-center text-neutral-content">
-              {publication.auteur_photo_profil ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={publication.auteur_photo_profil}
-                  alt={publication.auteur_username}
-                  className="object-cover w-full h-full"
-                />
-              ) : (
-                <span className="text-xl font-bold">
-                  {publication.auteur_username.charAt(0).toUpperCase()}
-                </span>
-              )}
-            </div>
+    <article className="bg-base-100 border border-base-300/50 rounded-xl p-4 sm:p-5 mb-4 shadow-md">
+      <div className="flex items-start gap-3">
+        <div className="avatar">
+          <div className="w-11 rounded-full bg-base-300 overflow-hidden">
+            {publication.auteur_photo_profil ? (
+              <img
+                src={publication.auteur_photo_profil}
+                alt={publication.auteur_username}
+                className="object-cover w-full h-full"
+              />
+            ) : (
+              <span className="flex items-center justify-center h-full text-lg font-semibold">
+                {publication.auteur_username.charAt(0).toUpperCase()}
+              </span>
+            )}
           </div>
-          <div>
-            <h2 className="card-title text-base font-bold">
+        </div>
+
+        <div className="flex-1">
+          <div className="flex justify-between items-center">
+            <p 
+              className={`font-semibold text-base-content ${user && publication.auteur_username !== user.username ? 'cursor-pointer hover:underline' : ''}`}
+              onClick={handleProfileClick}
+            >
               {publication.auteur_username}
-            </h2>
-            {/* MODIFICATION: Utilisation de la fonction formatTimeAgo avec la date de la publication */}
+            </p>
             <p className="text-xs text-base-content/60">
               {formatTimeAgo(publication.date_publication)}
             </p>
           </div>
-        </div>
 
-        {publication.texte && (
-          <p className="whitespace-pre-wrap text-base-content/90">
-            {publication.texte}
-          </p>
-        )}
-
-        {publication.photo && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={publication.photo}
-            alt="Publication"
-            className="mt-4 rounded-lg max-h-[500px] w-full object-cover"
-          />
-        )}
-
-        {publication.video && (
-          <video
-            src={publication.video}
-            controls
-            className="mt-4 rounded-lg max-h-[500px] w-full"
-          />
-        )}
-
-        <div className="divider my-1"></div>
-
-        <div className="space-y-3">
-          <h3 className="font-semibold text-sm">
-            Commentaires ({publication.nombres_commentaires ?? publication.commentaires.length})
-          </h3>
-          {publication.commentaires.length > 0 ? (
-            publication.commentaires.map((c) => (
-              <div key={c.id} className="flex items-start gap-2 text-sm">
-                <div className="avatar">
-                  <div className="w-6 rounded-full bg-base-300 overflow-hidden flex items-center justify-center text-base-content">
-                    {c.auteur_photo_profil ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={c.auteur_photo_profil}
-                        alt={c.auteur_username}
-                        className="object-cover w-full h-full"
-                      />
-                    ) : (
-                      <span className="text-xs font-semibold">
-                        {c.auteur_username.charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="bg-base-200/60 rounded-lg px-3 py-2 w-full">
-                  <span className="font-bold mr-2">{c.auteur_username}</span>
-                  <span>{c.contenu}</span>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-base-content/50 italic">
-              Soyez le premier à commenter !
+          {publication.texte && (
+            <p className="mt-1 text-base-content/90 whitespace-pre-wrap">
+              {publication.texte}
             </p>
           )}
-        </div>
 
-        <form onSubmit={handleCommentSubmit} className="flex gap-2 mt-4">
-          <input
-            type="text"
-            placeholder="Ajouter un commentaire..."
-            className="input input-bordered w-full"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-          />
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={!value.trim()}
-          >
-            Envoyer
-          </button>
-        </form>
+          {publication.photo && (
+            <img
+              src={publication.photo}
+              alt="Contenu de la publication"
+              className="mt-3 rounded-lg border border-base-300/20 max-h-[600px] w-full object-cover"
+            />
+          )}
+
+          {publication.video && (
+            <video
+              src={publication.video}
+              controls
+              className="mt-3 rounded-lg border border-base-300/20 max-h-[600px] w-full"
+            />
+          )}
+
+          <div className="mt-4">
+            <button
+              onClick={() => setShowComments(!showComments)}
+              className="flex items-center gap-2 text-base-content/70 hover:text-primary transition-colors"
+            >
+              <MessageCircle size={20} />
+              <span className="text-sm font-medium">{commentCount}</span>
+            </button>
+          </div>
+
+          {showComments && (
+            <div className="mt-4 pt-4 border-t border-base-300/20">
+              <form onSubmit={handleCommentSubmit} className="flex gap-2 mb-4">
+                <input
+                  type="text"
+                  placeholder="Ajouter un commentaire..."
+                  className="input input-bordered input-sm w-full"
+                  value={commentValue}
+                  onChange={(e) => setCommentValue(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-sm"
+                  disabled={!commentValue.trim()}
+                >
+                  Envoyer
+                </button>
+              </form>
+
+              <div className="space-y-3">
+                {publication.commentaires.length > 0 ? (
+                  publication.commentaires.map((c) => (
+                    <div key={c.id} className="flex items-start gap-2 text-sm">
+                      <div className="avatar">
+                        <div className="w-8 rounded-full bg-base-200 overflow-hidden flex items-center justify-center">
+                          {c.auteur_photo_profil ? (
+                            <img
+                              src={c.auteur_photo_profil}
+                              alt={c.auteur_username}
+                              className="object-cover w-full h-full"
+                            />
+                          ) : (
+                            <span className="text-xs font-semibold">
+                              {c.auteur_username.charAt(0).toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="bg-base-200/60 rounded-lg px-3 py-2 w-full">
+                        <span className="font-bold mr-2">{c.auteur_username}</span>
+                        <span>{c.contenu}</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-base-content/50 italic">
+                    Aucun commentaire pour le moment.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </article>
   );
 }

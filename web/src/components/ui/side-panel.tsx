@@ -45,11 +45,7 @@ const navItems = [
     icon: <Users size={20} />,
     href: "/mentorat",
   },
-  {
-    label: "Filières",
-    icon: <Users size={20} />,
-    href: "/filiere",
-  },
+
   {
     label: "Publications",
     icon: <FileTextIcon size={20} />,
@@ -65,21 +61,13 @@ const navItems = [
     icon: <BarChart2Icon size={20} />,
     href: "/statistiques",
   },
-  {
-    label: "Rapports",
-    icon: <FileWarningIcon size={20} />,
-    href: "/reports",
-  },
+
   {
     label: "Parcours",
     icon: <MapIcon size={20} />,
     href: "/parcours",
   },
-  {
-    label: "Membres",
-    icon: <Users size={20} />,
-    href: "/usersList",
-  },
+
 ];
 const profileItems = {
   label: "Profil",
@@ -134,13 +122,13 @@ export default function SidePanel({ children }: { children: ReactNode }) {
   return (
     <div className="drawer md:drawer-open h-screen">
       <input id="side-panel-drawer" type="checkbox" className="drawer-toggle" />
-      <div className="drawer-content flex flex-col">
+      <div className="drawer-content flex flex-col overflow-hidden">
         <header className="navbar bg-base-200 md:hidden">
           <label htmlFor="side-panel-drawer" className="btn btn-ghost btn-square">
             <Menu size={20} />
           </label>
         </header>
-        <main className="relative flex-1 overflow-auto">
+        <main className="relative flex-1 overflow-y-auto">
           {showProfile && <PersonalProfile onClose={handleCloseProfile} />}
           {children}
         </main>
@@ -159,7 +147,7 @@ export default function SidePanel({ children }: { children: ReactNode }) {
             <ul className="menu p-2 space-y-1">
               {navItems.map((item) => (
                 <li
-                  key={item.label}
+                  key={item.href}
                   className={
                     pathname === item.href
                       ? "bg-primary text-primary-content rounded-md"

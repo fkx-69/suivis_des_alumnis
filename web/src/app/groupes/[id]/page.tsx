@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { fetchGroups, fetchGroupMessages, sendGroupMessage } from "@/lib/api/group";
 import { Group, GroupMessage } from "@/types/group";
 import { Input } from "@/components/ui/Input";
+import { useAuth } from "@/lib/api/authContext";
 
 export default function GroupeDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [group, setGroup] = useState<Group | null>(null);
   const [messages, setMessages] = useState<GroupMessage[]>([]);
   const [content, setContent] = useState("");
@@ -16,7 +18,9 @@ export default function GroupeDetailPage() {
     fetchGroups().then((gs) => {
       setGroup(gs.find((g) => g.id === Number(id)) || null);
     });
-    fetchGroupMessages(Number(id)).then(setMessages);
+    fetchGroupMessages(Number(id)).then((msgs) => {
+      setMessages(msgs.sort((a, b) => a.id - b.id));
+    });
   }, [id]);
 
   const handleSend = async () => {
@@ -26,7 +30,7 @@ export default function GroupeDetailPage() {
     setContent("");
   };
 
-  if (!group) {
+  if (!group || !user) {
     return (
       <div className="flex justify-center p-4">
         <span className="loading loading-spinner" />
@@ -38,13 +42,19 @@ export default function GroupeDetailPage() {
     <main className="flex flex-col h-screen mx-auto max-w-7xl px-4 py-4">
       <h1 className="text-xl font-semibold mb-4">{group.nom_groupe}</h1>
       <div className="flex-1 overflow-y-auto space-y-2">
-        {messages.map((m) => (
-          <div key={m.id} className="chat chat-start">
-            <div className="chat-bubble">
-              <strong>{m.auteur}:</strong> {m.contenu}
+        {messages.map((m) => {
+          const isCurrentUser = user.username === m.auteur;
+          return (
+            <div
+              key={m.id}
+              className={`chat ${isCurrentUser ? "chat-end" : "chat-start"}`}
+            >
+              <div className="chat-bubble">
+                <strong>{m.auteur}:</strong> {m.contenu}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       <div className="mt-2 flex gap-2">
         <Input

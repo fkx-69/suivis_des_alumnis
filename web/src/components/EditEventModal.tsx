@@ -3,7 +3,7 @@ import { CalendarIcon, XIcon } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { api } from "@/lib/api/axios";
+import { updateEvent } from "@/lib/api/evenement";
 import { ApiEvent } from "@/types/evenement";
 
 interface EditEventModalProps {
@@ -35,16 +35,9 @@ export default function EditEventModal({ event, onClose, onUpdated }: EditEventM
     setSubmitting(true);
     setError(null);
     try {
-      const res = await api.put<ApiEvent>(
-        `/events/evenements/${event.id}/modifier/`,
-        form
-      );
-      if (res.status >= 200 && res.status < 300) {
-        onUpdated?.(res.data);
-        onClose();
-      } else {
-        setError("Erreur lors de la modification.");
-      }
+      const updatedEvent = await updateEvent(event.id, form);
+      onUpdated?.(updatedEvent);
+      onClose();
     } catch (err: any) {
       setError(err.message);
     } finally {

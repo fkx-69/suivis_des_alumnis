@@ -3,7 +3,7 @@ import { CalendarIcon, XIcon } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { api } from "@/lib/api/axios";
+import { createEvent } from "@/lib/api/evenement";
 import { ApiEvent } from "@/types/evenement";
 
 interface AddEventModalProps {
@@ -37,14 +37,10 @@ export default function AddEventModal({
     setSubmitting(true);
     setError(null);
     try {
-      const res = await api.post<ApiEvent>("/events/evenements/creer/", form);
-      if (res.status >= 200 && res.status < 300) {
-        onCreated?.(res.data);
-        setForm({ titre: "", description: "", date_debut: "", date_fin: "" });
-        onClose();
-      } else {
-        setError("Erreur lors de la création.");
-      }
+      const newEvent = await createEvent(form);
+      onCreated?.(newEvent);
+      setForm({ titre: "", description: "", date_debut: "", date_fin: "" });
+      onClose();
     } catch (err: any) {
       setError(err.message);
     } finally {

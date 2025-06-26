@@ -21,8 +21,13 @@ class ParcoursProfessionnelFormSection extends StatelessWidget {
     required this.onDelete,
   });
 
-  static const List<String> _contrats = [
-    'CDI', 'CDD', 'Stage', 'Alternance', 'Freelance'
+  // Liste des contrats : 'value' = code envoyé au backend, 'label' = texte affiché
+  static const List<Map<String, String>> _contrats = [
+    {'value': 'CDI',       'label': 'CDI'},
+    {'value': 'CDD',       'label': 'CDD'},
+    {'value': 'stage',     'label': 'Stage'},
+    {'value': 'freelance', 'label': 'Freelance'},
+    {'value': 'autre',     'label': 'Autre'},
   ];
 
   InputDecoration _fieldDecoration(String label) {
@@ -57,7 +62,10 @@ class ParcoursProfessionnelFormSection extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
             icon: const Icon(Icons.add_business),
-            label: Text('Ajouter parcours pro', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600)),
+            label: Text(
+              'Ajouter parcours pro',
+              style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
             onPressed: () => _showForm(context),
           ),
         ),
@@ -102,7 +110,8 @@ class ParcoursProfessionnelFormSection extends StatelessWidget {
     final posteCtrl = TextEditingController(text: existing?['poste']);
     final entCtrl = TextEditingController(text: existing?['entreprise']);
     final dateCtrl = TextEditingController(text: existing?['date_debut']);
-    String contrat = existing?['type_contrat'] ?? _contrats.first;
+    // selectedType contient le code (ex. 'stage'), pas le label
+    String selectedType = existing?['type_contrat'] ?? _contrats.first['value']!;
 
     showModalBottomSheet(
       context: ctx,
@@ -157,18 +166,24 @@ class ParcoursProfessionnelFormSection extends StatelessWidget {
                           firstDate: DateTime(1970),
                           lastDate: DateTime.now(),
                         );
-                        if (d != null) dateCtrl.text = d.toIso8601String().split('T').first;
+                        if (d != null) {
+                          dateCtrl.text = d.toIso8601String().split('T').first;
+                        }
                       },
                       validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: contrat,
-                      items: _contrats
-                          .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                          .toList(),
-                      onChanged: (v) => contrat = v!,
-                      decoration: _fieldDecoration('Type de contrat'),
+                      value: selectedType,
+                      decoration: _fieldDecoration('Type de contrat *'),
+                      items: _contrats.map((c) {
+                        return DropdownMenuItem(
+                          value: c['value'],
+                          child: Text(c['label']!),
+                        );
+                      }).toList(),
+                      onChanged: (v) => selectedType = v!,
+                      validator: (v) => v == null ? 'Champ requis' : null,
                     ),
                     const SizedBox(height: 24),
                     SizedBox(
@@ -182,10 +197,10 @@ class ParcoursProfessionnelFormSection extends StatelessWidget {
                         onPressed: () {
                           if (!formKey.currentState!.validate()) return;
                           final data = {
-                            'poste': posteCtrl.text,
-                            'entreprise': entCtrl.text,
-                            'date_debut': dateCtrl.text,
-                            'type_contrat': contrat,
+                            'poste'       : posteCtrl.text,
+                            'entreprise'  : entCtrl.text,
+                            'date_debut'  : dateCtrl.text,       // "YYYY-MM-DD"
+                            'type_contrat': selectedType,         // code, ex. 'stage'
                           };
                           if (existing != null) {
                             onUpdate(existing['id'], data);

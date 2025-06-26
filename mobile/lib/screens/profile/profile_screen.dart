@@ -48,7 +48,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       const BottomNavigationBarItem(icon: Icon(Icons.home),    label: 'Accueil'),
       const BottomNavigationBarItem(icon: Icon(Icons.event),   label: 'Évènements'),
       const BottomNavigationBarItem(icon: Icon(Icons.message), label: 'Messages'),
-      if (isAlumni) const BottomNavigationBarItem(icon: Icon(Icons.timeline), label: 'Parcours'),
       const BottomNavigationBarItem(icon: Icon(Icons.person),  label: 'Profil'),
     ];
     _navActions = [
@@ -67,11 +66,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     setState(() {
-      _user       = user;
-      _parcoursA  = acad.where((p) => p['auteur'] == user.username).toList();
-      _parcoursP  = prof.where((p) => p['auteur'] == user.username).toList();
-      _isLoading  = false;
+      _user      = user;
+      _parcoursA = acad;   // plus de filtre
+      _parcoursP = prof;   // plus de filtre
+      _isLoading = false;
     });
+
   }
 
   @override
@@ -154,9 +154,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ParcoursSection(
                   parcoursAcademiques:   _parcoursA,
                   parcoursProfessionnels: _parcoursP,
-                  onAdd:  () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EditParcoursScreen()),),
-                  onEdit: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EditParcoursScreen()),),
+                  onAdd:  () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EditParcoursScreen())),
+                  onEdit: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EditParcoursScreen())),
                 ),
+
             ],
 
             const SizedBox(height: 32),

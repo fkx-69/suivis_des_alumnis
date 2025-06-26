@@ -27,11 +27,21 @@ class ParcoursService {
   }
 
   Future<Map<String, dynamic>> createParcoursAcademique(Map<String, dynamic> data) async {
+    print('📤 createParcoursAcademique payload: $data');
     try {
-      final resp = await _dio.post(ApiConstants.parcoursAcademiquesCreate, data: data);
+      final resp = await _dio.post(
+        ApiConstants.parcoursAcademiquesCreate,
+        data: data,
+        options: Options(
+          contentType: Headers.jsonContentType,
+        ),
+      );
+      print('✅ createParcoursAcademique response: ${resp.data}');
       return resp.data;
     } on DioException catch (e) {
-      throw Exception(e.response?.data['detail'] ?? 'Erreur création parcours académique');
+      print('❌ createParcoursAcademique error status: ${e.response?.statusCode}');
+      print('❌ createParcoursAcademique error body: ${e.response?.data}');
+      throw Exception(e.response?.data ?? 'Erreur création parcours académique');
     }
   }
 
@@ -86,14 +96,23 @@ class ParcoursService {
   }
 
   Future<Map<String, dynamic>> createParcoursProfessionnel(Map<String, dynamic> data) async {
+    print('📤 createParcoursProfessionnel payload: $data');
     try {
-      final resp = await _dio.post(ApiConstants.parcoursProfessionnelsCreate, data: data);
+      final resp = await _dio.post(
+        ApiConstants.parcoursProfessionnelsCreate,
+        data: data,
+        options: Options(
+          contentType: Headers.jsonContentType, // assure JSON utf-8
+        ),
+      );
+      print('✅ createParcoursProfessionnel response: ${resp.data}');
       return resp.data;
     } on DioException catch (e) {
-      throw Exception(e.response?.data['detail'] ?? 'Erreur création parcours professionnel');
+      print('❌ createParcoursProfessionnel error status: ${e.response?.statusCode}');
+      print('❌ createParcoursProfessionnel error body: ${e.response?.data}');
+      throw Exception(e.response?.data ?? 'Erreur création parcours professionnel');
     }
   }
-
   Future<Map<String, dynamic>> updateParcoursProfessionnel(int id, Map<String, dynamic> data) async {
     final url = ApiConstants.parcoursProfessionnelsUpdate.replaceFirst('{id}', '$id');
     try {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:memoire/widgets/auth_widgets/register_student_form.dart';
+import 'package:memoire/widgets/auth_widgets/login_link.dart'; // Assure-toi que ce fichier existe
 
 class RegisterEtudiantScreen extends StatelessWidget {
   const RegisterEtudiantScreen({super.key});
@@ -24,10 +25,21 @@ class RegisterEtudiantScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: const SafeArea(
+      body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(24.0),
-          child: RegisterStudentForm(),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const RegisterStudentForm(),
+              const SizedBox(height: 16),
+              LoginLink(
+                onTap: () {
+                  // TODO: Naviguer vers la page d'inscription
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

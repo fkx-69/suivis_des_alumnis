@@ -1,5 +1,4 @@
 // lib/screens/group/group_detail_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -15,38 +14,48 @@ class GroupDetailScreen extends StatefulWidget {
 }
 
 class _GroupDetailScreenState extends State<GroupDetailScreen> {
-  final _service = GroupeService();
+  final _svc = GroupeService();
   final _msgCtl = TextEditingController();
-  List<GroupMessageModel> _messages = [];
+  List<GroupMessageModel> _msgs = [];
   bool _loading = true;
+  bool _isMember = false;
 
   @override
   void initState() {
     super.initState();
-    _loadMessages();
+    _checkMembershipAndLoad();
   }
 
-  Future<void> _loadMessages() async {
+  Future<void> _checkMembershipAndLoad() async {
+    // assume that si premier fetchMessages 403 = pas membre
+    try {
+      _msgs = await _svc.fetchMessages(widget.group.id);
+      _isMember = true;
+    } catch (e) {
+      _isMember = false;
+    }
+    setState(() => _loading = false);
+  }
+
+  Future<void> _join() async {
+    await _svc.joinGroup(widget.group.id);
     setState(() => _loading = true);
-    final msgs = await _service.getMessages(widget.group.id);
-    setState(() {
-      _messages = msgs;
-      _loading = false;
-    });
+    await _checkMembershipAndLoad();
   }
 
   Future<void> _send() async {
     final txt = _msgCtl.text.trim();
     if (txt.isEmpty) return;
-    await _service.sendMessage(groupeId: widget.group.id, contenu: txt);
+    await _svc.sendMessage(id: widget.group.id, contenu: txt);
     _msgCtl.clear();
-    _loadMessages();
+    _msgs = await _svc.fetchMessages(widget.group.id);
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Gradient header + titre + bouton rejoindre/quitter
+      // header
       body: Column(
         children: [
           Container(
@@ -59,11 +68,10 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                 end: Alignment.bottomRight,
               ),
             ),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
+            child: SafeArea(
+              child: Column(
+                children: [
+                  Row(
                     children: [
                       IconButton(
                         icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -78,87 +86,115 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                       const Spacer(flex: 2),
                     ],
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(widget.group.description,
-                      style: GoogleFonts.poppins(color: Colors.white70)),
-                ),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(widget.group.description,
+                        style: GoogleFonts.poppins(color: Colors.white70)),
+                  ),
+                  if (!_loading && !_isMember)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: ElevatedButton(
+                        onPressed: _join,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Color(0xFF2196F3),
+                        ),
+                        child: const Text('Rejoindre'),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
 
           const SizedBox(height: 8),
 
-          // Messages
-          Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFF4CAF50)))
-                : ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _messages.length,
-              itemBuilder: (ctx, i) {
-                final m = _messages[i];
-                final time = DateFormat.Hm().format(m.dateEnvoi);
-                final isMine = m.auteurUsername == 'Vous';
-                return Align(
-                  alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    padding: const EdgeInsets.all(12),
-                    constraints:
-                    BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
-                    decoration: BoxDecoration(
-                      color: isMine ? const Color(0xFF4CAF50).withOpacity(0.1) : Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(12),
+          // messages / joining
+          if (_loading)
+            const Expanded(child: Center(child: CircularProgressIndicator()))
+          else if (!_isMember)
+            Expanded(
+              child: Center(
+                child: Text(
+                  'Vous devez rejoindre le groupe pour lire les messages',
+                  style: GoogleFonts.poppins(color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            )
+          else
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                itemCount: _msgs.length,
+                itemBuilder: (ctx, i) {
+                  final m = _msgs[i];
+                  final isMine = m.auteurUsername.toLowerCase() == 'vous';
+                  final time = DateFormat.Hm().format(m.dateEnvoi);
+                  return Align(
+                    alignment:
+                    isMine ? Alignment.centerRight : Alignment.centerLeft,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      padding: const EdgeInsets.all(12),
+                      constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width * .7),
+                      decoration: BoxDecoration(
+                        color: isMine
+                            ? const Color(0xFF4CAF50).withOpacity(.1)
+                            : Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: isMine
+                            ? CrossAxisAlignment.end
+                            : CrossAxisAlignment.start,
+                        children: [
+                          Text(m.auteurUsername,
+                              style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w600, fontSize: 13)),
+                          const SizedBox(height: 4),
+                          Text(m.message, style: GoogleFonts.poppins()),
+                          const SizedBox(height: 4),
+                          Text(time,
+                              style: GoogleFonts.poppins(
+                                  fontSize: 11, color: Colors.grey[600])),
+                        ],
+                      ),
                     ),
-                    child: Column(
-                      crossAxisAlignment:
-                      isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                      children: [
-                        Text(m.auteurUsername,
-                            style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w600, fontSize: 13)),
-                        const SizedBox(height: 4),
-                        Text(m.message, style: GoogleFonts.poppins(fontSize: 14)),
-                        const SizedBox(height: 4),
-                        Text(time,
-                            style: GoogleFonts.poppins(
-                                fontSize: 11, color: Colors.grey[600])),
-                      ],
-                    ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
 
-          // Input pour nouveau message
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: Colors.grey.shade300)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _msgCtl,
-                    decoration: InputDecoration(
-                      hintText: 'Écrire un message…',
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          // input
+          if (!_loading && _isMember)
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                  border: Border(top: BorderSide(color: Colors.grey.shade300))),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _msgCtl,
+                      decoration: InputDecoration(
+                        hintText: 'Écrire un message…',
+                        contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 12),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.send, color: Color(0xFF2196F3)),
-                  onPressed: _send,
-                ),
-              ],
+                  IconButton(
+                    icon: const Icon(Icons.send, color: Color(0xFF2196F3)),
+                    onPressed: _send,
+                  ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );

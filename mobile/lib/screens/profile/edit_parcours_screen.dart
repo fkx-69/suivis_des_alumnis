@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/parcours_service.dart';
-import '../../widgets/app_bottom_nav_bar.dart';
 import 'package:memoire/widgets/profile_widgets/parcours_academique_form.dart';
 import 'package:memoire/widgets/profile_widgets/parcours_professionnel_form.dart';
 
@@ -73,66 +72,62 @@ class _EditParcoursScreenState extends State<EditParcoursScreen> {
         body: SafeArea(
           child: TabBarView(
             children: [
-              // Académique
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: ParcoursAcademiqueFormSection(
-                      items: _acad,
-                      onCreate: (data) async {
-                        await _service.createParcoursAcademique(data);
-                        _loadAll();
-                      },
-                      onUpdate: (id, data) async {
-                        await _service.updateParcoursAcademique(id, data);
-                        _loadAll();
-                      },
-                      onDelete: (id) async {
-                        await _service.deleteParcoursAcademique(id);
-                        _loadAll();
-                      },
-                    ),
-                  ),
-                ),
+              ParcoursAcademiqueFormSection(
+                items: _acad,
+                onCreate: (data) async {
+                  try {
+                    print('✨ UI onCreate called with: $data');
+                    final created = await _service.createParcoursAcademique(data);
+                    print('✨ Parcours créé: $created');
+                    await _loadAll();
+                  } catch (err) {
+                    print('🚨 Erreur création parcours depuis UI: $err');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Erreur à la création : ${err.toString()}')),
+                    );
+                  }
+                },
+                onUpdate: (id, data) async {
+                  // idem si vous voulez logger les updates
+                  await _service.updateParcoursAcademique(id, data);
+                  await _loadAll();
+                },
+                onDelete: (id) async {
+                  await _service.deleteParcoursAcademique(id);
+                  await _loadAll();
+                },
               ),
 
+
               // Professionnel
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: ParcoursProfessionnelFormSection(
-                      items: _prof,
-                      onCreate: (data) async {
-                        await _service.createParcoursProfessionnel(data);
-                        _loadAll();
-                      },
-                      onUpdate: (id, data) async {
-                        await _service.updateParcoursProfessionnel(id, data);
-                        _loadAll();
-                      },
-                      onDelete: (id) async {
-                        await _service.deleteParcoursProfessionnel(id);
-                        _loadAll();
-                      },
-                    ),
-                  ),
-                ),
+              ParcoursProfessionnelFormSection(
+                items: _prof,
+                onCreate: (data) async {
+                  try {
+                    print('✨ UI onCreate PRO payload: $data');
+                    final created = await _service.createParcoursProfessionnel(data);
+                    print('✨ Parcours PRO créé: $created');
+                    await _loadAll();
+                  } catch (err) {
+                    print('🚨 Erreur création parcours PRO depuis UI: $err');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Erreur création parcours pro : ${err.toString()}')),
+                    );
+                  }
+                },
+                onUpdate: (id, data) async {
+                  await _service.updateParcoursProfessionnel(id, data);
+                  await _loadAll();
+                },
+                onDelete: (id) async {
+                  await _service.deleteParcoursProfessionnel(id);
+                  await _loadAll();
+                },
               ),
             ],
           ),
         ),
-        bottomNavigationBar: AppBottomNavBar(
-          currentIndex: 3,
-          onTap: (_) {},
-        ),
+
       ),
     );
   }

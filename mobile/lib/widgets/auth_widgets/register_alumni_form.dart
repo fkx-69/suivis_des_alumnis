@@ -373,16 +373,7 @@ class _RegisterAlumniFormState extends State<RegisterAlumniForm> {
           const SizedBox(height: 16),
 
           // Lien "Connectez-vous"
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Vous avez déjà un compte ?', style: GoogleFonts.poppins()),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('Connectez-vous', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-              ),
-            ],
-          ),
+
         ],
       ),
     );

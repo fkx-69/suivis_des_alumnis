@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:memoire/widgets/auth_widgets/register_alumni_form.dart';
+import 'package:memoire/widgets/auth_widgets/login_link.dart'; // Assure-toi que ce fichier existe
 
 class RegisterAlumniScreen extends StatelessWidget {
   const RegisterAlumniScreen({super.key});
@@ -17,15 +18,28 @@ class RegisterAlumniScreen extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Inscription',
+          'Inscription Alumni',
           style: GoogleFonts.poppins(
-              color: const Color(0xFF2196F3), fontWeight: FontWeight.w600),
+            color: const Color(0xFF2196F3),
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
-      body: const SafeArea(
+      body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(16),
-          child: RegisterAlumniForm(),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const RegisterAlumniForm(),
+              const SizedBox(height: 16),
+              LoginLink(
+                onTap: () {
+                  // TODO: Naviguer vers la page d'inscription
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

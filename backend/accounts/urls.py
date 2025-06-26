@@ -26,6 +26,13 @@ urlpatterns = [
     path('suggestions/', SuggestionsView.as_view(), name='suggestions-users'),
     path('', include(router.urls)),
     path('<str:username>/', PublicUserRetrieveAPIView.as_view(), name='public-user-profile'),
+<<<<<<< Updated upstream
     path('alumni/public/<int:id>/', PublicAlumniProfileAPIView.as_view(), name='public_alumni_profile'),
 
 ] 
+=======
+
+    
+]
+
+>>>>>>> Stashed changes

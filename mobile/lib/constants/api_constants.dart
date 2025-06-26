@@ -13,22 +13,34 @@ class ApiConstants {
   static const String verifyPassword = '$baseUrl/accounts/verify-password/';
   static const String getProfile = '$baseUrl/accounts/profile_widgets';
 
+  // Profil public
+  static const String accountRead = '$baseUrl/accounts/{username}/';
+
+  // Messagerie
+  static const String messagingSend = '$baseUrl/messaging/envoyer/';
+
+  // Mentorat
+  static const String mentoratSend = '$baseUrl/mentorat/envoyer/';
+
+  // Signalement
+  static const String reportsReport = '$baseUrl/reports/report/';
+
   // Parcours
   // 🎓 Parcours Académiques
-  static const String parcoursAcademiquesList        = "$baseUrl/accounts/parcours-academiques/";
-  static const String parcoursAcademiquesCreate      = "$baseUrl/accounts/parcours-academiques/";
-  static const String parcoursAcademiquesRead        = "$baseUrl/accounts/parcours-academiques/{id}/";
-  static const String parcoursAcademiquesUpdate      = "$baseUrl/accounts/parcours-academiques/{id}/";
-  static const String parcoursAcademiquesPartial     = "$baseUrl/accounts/parcours-academiques/{id}/";
-  static const String parcoursAcademiquesDelete      = "$baseUrl/accounts/parcours-academiques/{id}/";
+  static const String parcoursAcademiquesList = "$baseUrl/accounts/parcours-academiques/";
+  static const String parcoursAcademiquesCreate = "$baseUrl/accounts/parcours-academiques/";
+  static const String parcoursAcademiquesRead = "$baseUrl/accounts/parcours-academiques/{id}/";
+  static const String parcoursAcademiquesUpdate = "$baseUrl/accounts/parcours-academiques/{id}/";
+  static const String parcoursAcademiquesPartial = "$baseUrl/accounts/parcours-academiques/{id}/";
+  static const String parcoursAcademiquesDelete = "$baseUrl/accounts/parcours-academiques/{id}/";
 
   // 💼 Parcours Professionnels
-  static const String parcoursProfessionnelsList     = "$baseUrl/accounts/parcours-professionnels/";
-  static const String parcoursProfessionnelsCreate   = "$baseUrl/accounts/parcours-professionnels/";
-  static const String parcoursProfessionnelsRead     = "$baseUrl/accounts/parcours-professionnels/{id}/";
-  static const String parcoursProfessionnelsUpdate   = "$baseUrl/accounts/parcours-professionnels/{id}/";
-  static const String parcoursProfessionnelsPartial  = "$baseUrl/accounts/parcours-professionnels/{id}/";
-  static const String parcoursProfessionnelsDelete   = "$baseUrl/accounts/parcours-professionnels/{id}/";
+  static const String parcoursProfessionnelsList = "$baseUrl/accounts/parcours-professionnels/";
+  static const String parcoursProfessionnelsCreate = "$baseUrl/accounts/parcours-professionnels/";
+  static const String parcoursProfessionnelsRead = "$baseUrl/accounts/parcours-professionnels/{id}/";
+  static const String parcoursProfessionnelsUpdate = "$baseUrl/accounts/parcours-professionnels/{id}/";
+  static const String parcoursProfessionnelsPartial = "$baseUrl/accounts/parcours-professionnels/{id}/";
+  static const String parcoursProfessionnelsDelete = "$baseUrl/accounts/parcours-professionnels/{id}/";
 
   // Filières
   static const String filieres = '$baseUrl/filiere/';
@@ -47,20 +59,20 @@ class ApiConstants {
 
   // Événements
   // Endpoints "events"
-  static const String eventsCalendar       = "$baseUrl/events/evenements/";         // GET
-  static const String eventsCreate         = "$baseUrl/events/creer/";              // POST
-  static const String eventsDelete         = "$baseUrl/events/evenements/{id}/supprimer/"; // DELETE
-  static const String eventsUpdate         = "$baseUrl/events/{id}/modifier/";       // PUT
-  static const String eventsPartial        = "$baseUrl/events/{id}/modifier/";       // PATCH
-  static const String eventsValidate       = "$baseUrl/events/{id}/valider/";        // POST
+  static const String eventsCalendar = "$baseUrl/events/evenements/"; // GET
+  static const String eventsCreate = "$baseUrl/events/creer/"; // POST
+  static const String eventsDelete = "$baseUrl/events/evenements/{id}/supprimer/"; // DELETE
+  static const String eventsUpdate = "$baseUrl/events/{id}/modifier/"; // PUT
+  static const String eventsPartial = "$baseUrl/events/{id}/modifier/"; // PATCH
+  static const String eventsValidate = "$baseUrl/events/{id}/valider/"; // POST
 
-  // Endpoints « Groupes »
-  static const String groupsList = "$baseUrl/groups/mes/";
-  static const String groupsBase          = '$baseUrl/groups/';
-  static const String groupsCreate        = '${groupsBase}creer/';
-  static const String groupsJoin          = '${groupsBase}{groupe_id}/rejoindre/';
-  static const String groupsQuit          = '${groupsBase}{groupe_id}/quitter/';
-  static const String groupsMembers       = '${groupsBase}{groupe_id}/membres/';
-  static const String groupsMessages      = '${groupsBase}{groupe_id}/messages/';
-  static const String groupsSendMessage   = '${groupsBase}{groupe_id}/envoyer-message/';
+  // Groupes
+  static const String groupsList        = "$baseUrl/groups/listes/";
+  static const String groupsCreate      = "$baseUrl/groups/creer/";
+  static const String groupsJoin        = "$baseUrl/groups/{groupe_id}/rejoindre/";
+  static const String groupsQuit        = "$baseUrl/groups/{groupe_id}/quitter/";
+  static const String groupsMembers     = "$baseUrl/groups/{groupe_id}/membres/";
+  static const String groupsMessages    = "$baseUrl/groups/{groupe_id}/messages/";
+  static const String groupsSendMessage = "$baseUrl/groups/{groupe_id}/envoyer-message/";
 }
+

@@ -1,3 +1,5 @@
+// lib/widgets/profile_widgets/parcours_section.dart
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -8,114 +10,122 @@ class ParcoursSection extends StatelessWidget {
   final VoidCallback onEdit;
 
   const ParcoursSection({
-    super.key,
+    Key? key,
     required this.parcoursAcademiques,
     required this.parcoursProfessionnels,
     required this.onAdd,
     required this.onEdit,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final hasAny = parcoursAcademiques.isNotEmpty || parcoursProfessionnels.isNotEmpty;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // En-tête avec titre et bouton
-          Row(
-            children: [
-              Text(
-                'Mon Parcours',
-                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-              const Spacer(),
-              ElevatedButton.icon(
-                onPressed: hasAny ? onEdit : onAdd,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                icon: Icon(hasAny ? Icons.edit : Icons.add, size: 20, color: Colors.white),
-                label: Text(
-                  hasAny ? 'Modifier' : 'Ajouter',
-                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Contenu
-          if (!hasAny)
-            Center(
-              child: Text(
-                "Aucun parcours renseigné.",
-                style: GoogleFonts.poppins(color: Colors.grey[600]),
-              ),
-            )
-          else
-            Expanded(
-              child: ListView(
-                children: [
-                  if (parcoursAcademiques.isNotEmpty) ...[
-                    Text('Académique',
-                        style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500)),
-                    const SizedBox(height: 8),
-                    ...parcoursAcademiques.map((p) => _buildCard(p)).toList(),
-                    const SizedBox(height: 16),
-                  ],
-                  if (parcoursProfessionnels.isNotEmpty) ...[
-                    Text('Professionnel',
-                        style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500)),
-                    const SizedBox(height: 8),
-                    ...parcoursProfessionnels.map((p) => _buildCard(p)).toList(),
-                  ],
-                ],
-              ),
+    final accent = const Color(0xFF4CAF50);
+    return Column(
+      children: [
+        // Bouton "Ajouter" en haut
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.add, size: 20),
+            label: Text("Ajouter un parcours", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: accent,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              padding: const EdgeInsets.symmetric(vertical: 12),
             ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCard(Map<String, dynamic> data) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 1,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (data.containsKey('titre'))
-              Text(
-                data['titre'],
-                style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600),
-              ),
-            if (data.containsKey('description'))
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  data['description'],
-                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700]),
-                ),
-              ),
-          ],
+            onPressed: onAdd,
+          ),
         ),
-      ),
+
+        // Parcours académique
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 2,
+            child: ExpansionTile(
+              leading: Icon(Icons.school, color: accent),
+              title: Text(
+                "Parcours académique",
+                style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              children: parcoursAcademiques.isEmpty
+                  ? [
+                Text(
+                  "Aucun parcours académique",
+                  style: GoogleFonts.poppins(color: Colors.grey[600]),
+                )
+              ]
+                  : parcoursAcademiques.map((p) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(p['diplome'] ?? '',
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    subtitle: Text(
+                      "${p['institution']}, ${p['annee_obtention']}"
+                          "${p['mention'] != null ? "\n${p['mention']}" : ""}",
+                      style: GoogleFonts.poppins(color: Colors.grey[700]),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+
+        // Parcours professionnel
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 2,
+            child: ExpansionTile(
+              leading: Icon(Icons.work, color: accent),
+              title: Text(
+                "Parcours professionnel",
+                style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              children: parcoursProfessionnels.isEmpty
+                  ? [
+                Text(
+                  "Aucun parcours professionnel",
+                  style: GoogleFonts.poppins(color: Colors.grey[600]),
+                )
+              ]
+                  : parcoursProfessionnels.map((p) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(p['poste'] ?? '',
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    subtitle: Text(
+                      "${p['entreprise']} • ${p['date_debut']} (${p['type_contrat']})",
+                      style: GoogleFonts.poppins(color: Colors.grey[700]),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+
+        // Bouton Modifier
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: TextButton.icon(
+            icon: const Icon(Icons.edit, color: Colors.grey),
+            label: Text("Modifier", style: GoogleFonts.poppins(color: Colors.grey[800])),
+            onPressed: onEdit,
+          ),
+        ),
+      ],
     );
   }
 }

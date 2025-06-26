@@ -1,63 +1,56 @@
-// lib/widgets/group/group_message_bubble.dart
+// lib/widgets/group/message_bubble.dart
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-import 'package:memoire/models/group_model.dart';
 
-class GroupMessageBubble extends StatelessWidget {
-  final GroupMessageModel message;
-  final bool isMine;
+class MessageBubble extends StatelessWidget {
+  final String auteur;
+  final String contenu;
+  final String date;
+  final bool alignRight;
 
-  const GroupMessageBubble({
-    super.key,
-    required this.message,
-    this.isMine = false,
-  });
+  const MessageBubble({
+    Key? key,
+    required this.auteur,
+    required this.contenu,
+    required this.date,
+    this.alignRight = false,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final time = DateFormat.Hm().format(message.dateEnvoi);
-    final bgColor = isMine
-        ? const Color(0xFF4CAF50).withOpacity(0.1)
-        : Colors.grey.shade200;
+    final bg = alignRight ? Colors.green.shade100 : Colors.grey.shade200;
+    final align = alignRight ? CrossAxisAlignment.end : CrossAxisAlignment.start;
+    final radius = alignRight
+        ? const BorderRadius.only(
+        topLeft: Radius.circular(12),
+        topRight: Radius.circular(12),
+        bottomLeft: Radius.circular(12))
+        : const BorderRadius.only(
+        topLeft: Radius.circular(12),
+        topRight: Radius.circular(12),
+        bottomRight: Radius.circular(12));
 
-    return Align(
-      alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.all(12),
-        constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.75
-        ),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          crossAxisAlignment:
-          isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-          children: [
-            Text(
-              message.auteurUsername,
-              style: GoogleFonts.poppins(
-                  fontSize: 13, fontWeight: FontWeight.w600
-              ),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      child: Column(
+        crossAxisAlignment: align,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: bg, borderRadius: radius),
+            child: Column(
+              crossAxisAlignment: align,
+              children: [
+                Text(auteur, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 4),
+                Text(contenu, style: GoogleFonts.poppins(fontSize: 14)),
+                const SizedBox(height: 4),
+                Text(date, style: GoogleFonts.poppins(fontSize: 10, color: Colors.grey)),
+              ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              message.message,
-              style: GoogleFonts.poppins(fontSize: 14),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              time,
-              style: GoogleFonts.poppins(
-                  fontSize: 11, color: Colors.grey[600]
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

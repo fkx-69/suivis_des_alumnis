@@ -5,6 +5,7 @@ from .models import Evenement
 from .serializers import EvenementSerializer
 from .permissions import IsAdmin, IsEtudiant
 from accounts.models import CustomUser
+from rest_framework import parsers
 from notifications.utils import envoyer_notification
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -14,6 +15,8 @@ class CreateEvenementView(generics.CreateAPIView):
     queryset = Evenement.objects.all()
     serializer_class = EvenementSerializer
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser]
+
 
     @swagger_auto_schema(
         operation_description="Créer un événement. S'il est créé par un admin, il est automatiquement validé.",

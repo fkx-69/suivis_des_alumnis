@@ -6,6 +6,7 @@ class Evenement(models.Model):
     description = models.TextField()
     date_debut = models.DateTimeField()
     date_fin = models.DateTimeField()
+    image = models.ImageField(upload_to='evenements/', null=True, blank=True)
     createur = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='evenements_crees')
     valide = models.BooleanField(default=False)

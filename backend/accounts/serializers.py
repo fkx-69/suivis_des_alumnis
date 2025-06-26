@@ -4,8 +4,7 @@ from .models import CustomUser, Etudiant, Alumni, ParcoursAcademique, ParcoursPr
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
-
-class AbsoluteMediaUrlField(serializers.FileField):
+class AbsoluteMediaUrlField(serializers.ImageField):
     def to_representation(self, value):
         request = self.context.get('request')
         if not value:
@@ -42,7 +41,6 @@ class RegisterEtudiantSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user_data = validated_data.pop('user')
         filiere = validated_data.pop('filiere')
-        
       
 
         password = user_data.pop('password')
@@ -162,6 +160,8 @@ class UpdateUserSerializer(serializers.ModelSerializer):
 
 # === PROFIL PUBLIC ===
 class UserPublicSerializer(serializers.ModelSerializer):
+    photo_profil = AbsoluteMediaUrlField()
+
     class Meta:
         model = CustomUser
         fields = [

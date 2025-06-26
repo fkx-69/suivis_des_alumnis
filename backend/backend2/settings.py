@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'messaging',
     'statistiques',
     'drf_yasg',
+    'gestion',
 ]
 
 REST_FRAMEWORK = {

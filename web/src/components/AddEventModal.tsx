@@ -20,6 +20,7 @@ export default function AddEventModal({
     description: "",
     date_debut: "",
     date_fin: "",
+    image: undefined as File | undefined,
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +33,12 @@ export default function AddEventModal({
     setForm((f) => ({ ...f, [name]: value }));
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setForm((f) => ({ ...f, image: e.target.files?.[0] }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -39,7 +46,7 @@ export default function AddEventModal({
     try {
       const newEvent = await createEvent(form);
       onCreated?.(newEvent);
-      setForm({ titre: "", description: "", date_debut: "", date_fin: "" });
+      setForm({ titre: "", description: "", date_debut: "", date_fin: "", image: undefined });
       onClose();
     } catch (err: any) {
       setError(err.message);
@@ -98,6 +105,12 @@ export default function AddEventModal({
           placeholder="Description"
           required
           className="textarea textarea-ghost w-full text-sm opacity-80 h-32"
+        />
+        <Input
+          type="file"
+          name="image"
+          onChange={handleFileChange}
+          className="input-ghost"
         />
         <div className="flex justify-between items-center text-sm gap-4 flex-wrap">
           <div className="flex items-center gap-2 flex-1 min-w-[10rem]">

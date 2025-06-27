@@ -19,18 +19,14 @@ export default function GroupesPage() {
   const handleJoin = async (id: number) => {
     await joinGroup(id);
     setGroups((prev) =>
-      prev.map((g) =>
-        g.id === id ? { ...g, membres: [...g.membres, "me"] } : g
-      )
+      prev.map((g) => (g.id === id ? { ...g, est_membre: true } : g))
     );
   };
 
   const handleLeave = async (id: number) => {
     await leaveGroup(id);
     setGroups((prev) =>
-      prev.map((g) =>
-        g.id === id ? { ...g, membres: g.membres.filter((m) => m !== "me") } : g
-      )
+      prev.map((g) => (g.id === id ? { ...g, est_membre: false } : g))
     );
   };
 
@@ -59,7 +55,7 @@ export default function GroupesPage() {
               {g.nom_groupe}
             </Link>
             <p className="text-sm opacity-80">{g.description}</p>
-            {g.membres.includes("me") ? (
+            {g.est_membre ? (
               <button className="btn btn-sm mt-2" onClick={() => handleLeave(g.id)}>
                 Quitter
               </button>

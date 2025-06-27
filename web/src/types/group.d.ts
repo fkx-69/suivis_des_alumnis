@@ -5,6 +5,8 @@ export interface Group {
   createur: string;
   membres: string[];
   date_creation: string;
+  est_membre: boolean;
+  role: string;
 }
 
 export interface GroupMessage {

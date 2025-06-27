@@ -25,7 +25,7 @@ export default function EventCard({
 }: EventCardProps) {
   return (
     <div
-      className={`relative card card-lg w-full bg-base-100 ${event.image ? "" : "card-xl"} shadow-sm`}
+      className={`relative card card-lg w-full bg-base-100 ${event.image ? "" : "card-xl"} shadow-sm overflow-hidden`}
       onClick={onToggle}
     >
       {showActions && (

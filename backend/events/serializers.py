@@ -9,13 +9,13 @@ class EvenementSerializer(serializers.ModelSerializer):
     date_debut_affiche = serializers.SerializerMethodField()
     date_fin_affiche   = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
-    image = serializers.ImageField(use_url=True)
+    image = serializers.ImageField(use_url=True, required=False, allow_null=True)
 
     class Meta:
         model = Evenement
         fields = [
             'id',
-            'titre',
+            'titre', 
             'description',
             'image',
             'date_debut',       

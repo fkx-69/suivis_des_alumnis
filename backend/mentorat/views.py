@@ -74,14 +74,25 @@ class RepondreDemandeView(generics.UpdateAPIView):
     serializer_class = DemandeMentoratSerializer
     permission_classes = [IsAuthenticated, IsAlumni, IsOwnerOrReadOnly]
 
+
+    def put(self, request, *args, **kwargs):
+        raise NotImplementedError("Cette méthode n'est pas disponible. Utilisez PATCH.")
+
     @swagger_auto_schema(
         operation_description="Accepter ou refuser une demande de mentorat.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             required=["statut"],
             properties={
-                "statut": openapi.Schema(type=openapi.TYPE_STRING, enum=["acceptee", "refusee"]),
-                "motif_refus": openapi.Schema(type=openapi.TYPE_STRING, description="Motif du refus (facultatif)"),
+                "statut": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    enum=["acceptee", "refusee"],
+                    description="Statut à appliquer (acceptee ou refusee)"
+                ),
+                "motif_refus": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Motif du refus (facultatif)"
+                ),
             }
         ),
         responses={
@@ -114,13 +125,10 @@ class RepondreDemandeView(generics.UpdateAPIView):
             if statut == 'acceptee'
             else f"Votre demande de mentorat a été refusée par {request.user.username}."
         )
-        envoyer_notification(
-            destinataire=instance.etudiant,
-            message=message
-        )
+
+        envoyer_notification(destinataire=instance.etudiant, message=message)
 
         return Response(self.get_serializer(instance).data)
-
 
 # === Supprimer (annuler) une demande ===
 class SupprimerDemandeView(generics.DestroyAPIView):

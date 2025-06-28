@@ -13,10 +13,11 @@ class GroupeSerializer(serializers.ModelSerializer):
     )
     est_membre = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField() 
+    image = serializers.ImageField(use_url=True, required=False, allow_null=True)   
 
     class Meta:
         model = Groupe
-        fields = ['id', 'nom_groupe', 'description', 'createur', 'membres', 'date_creation', 'est_membre', 'role']
+        fields = ['id', 'nom_groupe', 'description', 'createur', 'membres', 'date_creation', 'est_membre', 'role', 'image']
 
     def get_est_membre(self, obj):
         request = self.context.get('request')

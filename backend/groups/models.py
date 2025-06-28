@@ -4,6 +4,7 @@ from django.conf import settings
 class Groupe(models.Model):
     nom_groupe = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True)
+    image= models.ImageField(null=True, blank=True,upload_to='groupes/')
     createur = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='groupes_crees',

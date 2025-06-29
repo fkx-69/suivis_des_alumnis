@@ -171,7 +171,6 @@ class UserPublicSerializer(serializers.ModelSerializer):
             'photo_profil',
             'biographie',
             'role',
-            'peut_recevoir_demande_mentorat',
         ]
     def get_peut_recevoir_demande(self, obj):
         return obj.role == 'ALUMNI'

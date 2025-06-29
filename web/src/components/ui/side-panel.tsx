@@ -36,6 +36,11 @@ const navItems = [
     href: "/discussions",
   },
   {
+    label: "Groupes",
+    icon: <Users size={20} />,
+    href: "/groupes",
+  },
+  {
     label: "Évènements",
     icon: <CalendarIcon size={20} />,
     href: "/evenement",

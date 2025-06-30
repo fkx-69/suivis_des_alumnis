@@ -170,8 +170,11 @@ class UserPublicSerializer(serializers.ModelSerializer):
             'prenom',
             'photo_profil',
             'biographie',
+            'role',
         ]
-
+    def get_peut_recevoir_demande(self, obj):
+        return obj.role == 'ALUMNI'
+    
 class PublicAlumniProfileSerializer(serializers.ModelSerializer):
     user = UserPublicSerializer()
     parcours_academiques = ParcoursAcademiqueSerializer(many=True, source='parcoursacademique_set', read_only=True)

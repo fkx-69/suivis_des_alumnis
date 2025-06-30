@@ -73,12 +73,7 @@ export default function DiscussionsLayout({
                           }`}
                         >
                           {conv.last_message ? (
-                            <>
-                              {user?.username === conv.last_message.expediteur_username && (
-                                <span className="font-medium">Vous : </span>
-                              )}
-                              {conv.last_message.contenu}
-                            </>
+                            conv.last_message
                           ) : (
                             <span className="italic">Aucun message</span>
                           )}

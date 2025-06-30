@@ -12,12 +12,23 @@ interface EditEventModalProps {
   onUpdated?: (event: ApiEvent) => void;
 }
 
+const toDatetimeLocal = (dateStr: string) => {
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "";
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
 export default function EditEventModal({ event, onClose, onUpdated }: EditEventModalProps) {
   const [form, setForm] = useState({
     titre: event.titre,
     description: event.description,
-    date_debut: event.date_debut,
-    date_fin: event.date_fin,
+    date_debut: toDatetimeLocal(event.date_debut),
+    date_fin: toDatetimeLocal(event.date_fin),
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -36,6 +36,11 @@ const navItems = [
     href: "/discussions",
   },
   {
+    label: "Groupes",
+    icon: <Users size={20} />,
+    href: "/groupes",
+  },
+  {
     label: "Évènements",
     icon: <CalendarIcon size={20} />,
     href: "/evenement",
@@ -136,7 +141,7 @@ export default function SidePanel({ children }: { children: ReactNode }) {
       <div className="drawer-side">
         <label htmlFor="side-panel-drawer" className="drawer-overlay md:hidden"></label>
         <aside
-          className={`${panelWidth} bg-base-200 border-r border-base-200 flex flex-col justify-between transition-all duration-300`}
+          className={`${panelWidth} bg-base-200 border-r border-base-200 flex flex-col justify-between transition-all duration-300 h-full`}
         >
           <div>
             <div className={collapsed ? "flex justify-center p-2" : "flex justify-end p-2"}>

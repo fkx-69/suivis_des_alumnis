@@ -38,6 +38,7 @@ export default function ConversationPage() {
           const placeholderConv = {
             ...userProfile,
             id: -1, // Pas encore de vrai ID
+            last_message: null
           };
           setConversation(placeholderConv as Conversation);
           setMessages([]); // Pas encore de messages

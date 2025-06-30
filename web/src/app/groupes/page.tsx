@@ -19,18 +19,14 @@ export default function GroupesPage() {
   const handleJoin = async (id: number) => {
     await joinGroup(id);
     setGroups((prev) =>
-      prev.map((g) =>
-        g.id === id ? { ...g, membres: [...g.membres, "me"] } : g
-      )
+      prev.map((g) => (g.id === id ? { ...g, est_membre: true } : g))
     );
   };
 
   const handleLeave = async (id: number) => {
     await leaveGroup(id);
     setGroups((prev) =>
-      prev.map((g) =>
-        g.id === id ? { ...g, membres: g.membres.filter((m) => m !== "me") } : g
-      )
+      prev.map((g) => (g.id === id ? { ...g, est_membre: false } : g))
     );
   };
 
@@ -47,30 +43,39 @@ export default function GroupesPage() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-4 space-y-4">
-      <h1 className="text-2xl font-semibold">Groupes</h1>
-      <button className="btn btn-primary" onClick={() => setShowForm(true)}>
-        Créer un groupe
-      </button>
-      <ul className="space-y-2">
+    <main className="p-4 sm:p-6 lg:p-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">Groupes</h1>
+        <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+          Créer un groupe
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {groups.map((g) => (
-          <li key={g.id} className="p-3 bg-base-200 rounded-md">
-            <Link href={`/groupes/${g.id}`} className="font-semibold">
-              {g.nom_groupe}
-            </Link>
-            <p className="text-sm opacity-80">{g.description}</p>
-            {g.membres.includes("me") ? (
-              <button className="btn btn-sm mt-2" onClick={() => handleLeave(g.id)}>
-                Quitter
-              </button>
-            ) : (
-              <button className="btn btn-sm mt-2" onClick={() => handleJoin(g.id)}>
-                Rejoindre
-              </button>
-            )}
-          </li>
+          <div key={g.id} className="card bg-base-100 shadow-xl border border-base-300 transition-shadow hover:shadow-2xl">
+            <div className="card-body">
+              <h2 className="card-title">
+                <Link href={`/groupes/${g.id}`} className="link link-hover">
+                  {g.nom_groupe}
+                </Link>
+              </h2>
+              <p className="text-base-content/80 line-clamp-3 h-16">{g.description}</p>
+              <div className="card-actions justify-end mt-4">
+                {g.est_membre ? (
+                  <button className="btn btn-ghost" onClick={() => handleLeave(g.id)}>
+                    Quitter
+                  </button>
+                ) : (
+                  <button className="btn btn-primary" onClick={() => handleJoin(g.id)}>
+                    Rejoindre
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
       {showForm && <AddGroupModal onClose={() => setShowForm(false)} onCreated={handleCreated} />}
     </main>
   );

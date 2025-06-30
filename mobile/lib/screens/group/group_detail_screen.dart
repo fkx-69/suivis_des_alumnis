@@ -1,9 +1,13 @@
 // lib/screens/group/group_detail_screen.dart
+
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:memoire/models/group_model.dart';
 import 'package:memoire/services/group_service.dart';
+import 'package:memoire/services/auth_service.dart';
+import 'package:memoire/screens/group/group_member_screen.dart';
 
 class GroupDetailScreen extends StatefulWidget {
   final GroupModel group;
@@ -14,166 +18,185 @@ class GroupDetailScreen extends StatefulWidget {
 }
 
 class _GroupDetailScreenState extends State<GroupDetailScreen> {
-  final _svc = GroupeService();
+  final GroupeService _svc = GroupeService();
+  final AuthService   _auth = AuthService();
+
+  List<GroupMessageModel> _msgs        = [];
+  bool                    _loadingMsgs = false;
+  bool                    _isMember    = false;
+  String?                 _meUsername;
   final _msgCtl = TextEditingController();
-  List<GroupMessageModel> _msgs = [];
-  bool _loading = true;
-  bool _isMember = false;
+  Timer? _polling;
 
   @override
   void initState() {
     super.initState();
-    _checkMembershipAndLoad();
+    _isMember = widget.group.isMember;
+    _auth.getUserInfo().then((u) {
+      setState(() => _meUsername = u.username);
+    });
+    if (_isMember) _startChat();
   }
 
-  Future<void> _checkMembershipAndLoad() async {
-    // assume that si premier fetchMessages 403 = pas membre
+  void _startChat() {
+    _loadMessages();
+    _polling ??= Timer.periodic(const Duration(seconds: 5), (_) {
+      _loadMessages();
+    });
+  }
+
+  @override
+  void dispose() {
+    _polling?.cancel();
+    _msgCtl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadMessages() async {
+    setState(() => _loadingMsgs = true);
     try {
       _msgs = await _svc.fetchMessages(widget.group.id);
-      _isMember = true;
-    } catch (e) {
-      _isMember = false;
+    } catch (_) {
+      _msgs = [];
+    } finally {
+      setState(() => _loadingMsgs = false);
     }
-    setState(() => _loading = false);
   }
 
   Future<void> _join() async {
     await _svc.joinGroup(widget.group.id);
-    setState(() => _loading = true);
-    await _checkMembershipAndLoad();
+    setState(() => _isMember = true);
+    _startChat();
   }
 
   Future<void> _send() async {
-    final txt = _msgCtl.text.trim();
-    if (txt.isEmpty) return;
-    await _svc.sendMessage(id: widget.group.id, contenu: txt);
-    _msgCtl.clear();
-    _msgs = await _svc.fetchMessages(widget.group.id);
-    setState(() {});
+    final text = _msgCtl.text.trim();
+    if (text.isEmpty) return;
+
+    setState(() => _loadingMsgs = true);
+    try {
+      await _svc.sendMessage(id: widget.group.id, contenu: text);
+      _msgCtl.clear();
+      _msgs = await _svc.fetchMessages(widget.group.id);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Échec envoi : $e')),
+      );
+    } finally {
+      setState(() => _loadingMsgs = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // header
-      body: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.only(top: 48, bottom: 16),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF2196F3), Color(0xFF00BCD4)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+      appBar: AppBar(
+        title: Text(widget.group.nomGroupe, style: GoogleFonts.poppins()),
+        actions: [
+          if (_isMember)
+            IconButton(
+              icon: const Icon(Icons.group),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => GroupMembersScreen(
+                    groupId: widget.group.id,
+                    groupName: widget.group.nomGroupe,
+                  ),
+                ),
               ),
             ),
-            child: SafeArea(
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
+        ],
+      ),
+      body: Column(
+        children: [
+          // description & bouton rejoindre
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            color: Colors.blue.shade50,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(widget.group.description,
+                    style: GoogleFonts.poppins(color: Colors.grey[800])),
+                const SizedBox(height: 12),
+                if (!_isMember)
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: _join,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green.shade600,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6)),
                       ),
-                      const Spacer(),
-                      Text(widget.group.nomGroupe,
-                          style: GoogleFonts.poppins(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white)),
-                      const Spacer(flex: 2),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(widget.group.description,
-                        style: GoogleFonts.poppins(color: Colors.white70)),
-                  ),
-                  if (!_loading && !_isMember)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12),
-                      child: ElevatedButton(
-                        onPressed: _join,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Color(0xFF2196F3),
-                        ),
-                        child: const Text('Rejoindre'),
-                      ),
+                      child: Text('Rejoindre le groupe',
+                          style: GoogleFonts.poppins(color: Colors.white)),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
           ),
 
-          const SizedBox(height: 8),
-
-          // messages / joining
-          if (_loading)
-            const Expanded(child: Center(child: CircularProgressIndicator()))
-          else if (!_isMember)
-            Expanded(
-              child: Center(
-                child: Text(
-                  'Vous devez rejoindre le groupe pour lire les messages',
-                  style: GoogleFonts.poppins(color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            )
-          else
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                itemCount: _msgs.length,
-                itemBuilder: (ctx, i) {
-                  final m = _msgs[i];
-                  final isMine = m.auteurUsername.toLowerCase() == 'vous';
-                  final time = DateFormat.Hm().format(m.dateEnvoi);
-                  return Align(
-                    alignment:
-                    isMine ? Alignment.centerRight : Alignment.centerLeft,
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      padding: const EdgeInsets.all(12),
-                      constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * .7),
-                      decoration: BoxDecoration(
-                        color: isMine
-                            ? const Color(0xFF4CAF50).withOpacity(.1)
-                            : Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: isMine
-                            ? CrossAxisAlignment.end
-                            : CrossAxisAlignment.start,
-                        children: [
-                          Text(m.auteurUsername,
-                              style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w600, fontSize: 13)),
-                          const SizedBox(height: 4),
-                          Text(m.message, style: GoogleFonts.poppins()),
-                          const SizedBox(height: 4),
-                          Text(time,
-                              style: GoogleFonts.poppins(
-                                  fontSize: 11, color: Colors.grey[600])),
-                        ],
-                      ),
+          // chat
+          Expanded(
+            child: _loadingMsgs
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 8),
+              itemCount: _msgs.length,
+              itemBuilder: (ctx, i) {
+                final m    = _msgs[i];
+                final mine = (m.auteurUsername == _meUsername);
+                final time = DateFormat.Hm().format(m.dateEnvoi);
+                return Align(
+                  alignment:
+                  mine ? Alignment.centerRight : Alignment.centerLeft,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    padding: const EdgeInsets.all(12),
+                    constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * .7),
+                    decoration: BoxDecoration(
+                      color: mine
+                          ? Colors.green.shade100
+                          : Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  );
-                },
-              ),
+                    child: Column(
+                      crossAxisAlignment: mine
+                          ? CrossAxisAlignment.end
+                          : CrossAxisAlignment.start,
+                      children: [
+                        Text(m.auteurUsername,
+                            style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13)),
+                        const SizedBox(height: 4),
+                        Text(m.message, style: GoogleFonts.poppins()),
+                        const SizedBox(height: 4),
+                        Text(time,
+                            style: GoogleFonts.poppins(
+                                fontSize: 11,
+                                color: Colors.grey[600])),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
+          ),
 
-          // input
-          if (!_loading && _isMember)
+          // input & send (uniquement si membre)
+          if (_isMember)
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                  border: Border(top: BorderSide(color: Colors.grey.shade300))),
+                  border:
+                  Border(top: BorderSide(color: Colors.grey.shade300))),
               child: Row(
                 children: [
                   Expanded(

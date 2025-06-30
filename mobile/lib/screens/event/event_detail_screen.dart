@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/event_model.dart';
 import '../../widgets/app_bottom_nav_bar.dart';
-import '../auth/home_screen.dart';
 import '../profile/profile_screen.dart';
+import 'package:memoire/home_screen.dart';
 
 class EventDetailScreen extends StatelessWidget {
   final EventModel event;

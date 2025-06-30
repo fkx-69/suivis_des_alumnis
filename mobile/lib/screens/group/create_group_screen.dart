@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:memoire/services/group_service.dart';
+import 'group_detail_screen.dart';
+import 'package:memoire/models/group_model.dart';
 
 class CreateGroupScreen extends StatefulWidget {
   const CreateGroupScreen({super.key});
@@ -21,28 +23,41 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     try {
-      final group = await GroupeService().createGroup(
+      final svc = GroupeService();
+      final grp = await svc.createGroup(
         nomGroupe: _nameCtl.text.trim(),
         description: _descCtl.text.trim(),
       );
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Groupe "${group.nomGroupe}" créé !')),
+
+      // Reconstruire le modèle en forçant isMember = true
+      final created = GroupModel(
+        id: grp.id,
+        nomGroupe: grp.nomGroupe,
+        description: grp.description,
+        createur: grp.createur,
+        dateCreation: grp.dateCreation,
+        role: grp.role,
+        isMember: true,
       );
-      Navigator.pop(context, true);
+
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => GroupDetailScreen(group: created),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur : $e')),
+        SnackBar(content: Text('Erreur lors de la création : $e')),
       );
-    } finally {
       setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Gradient header + form card
     return Scaffold(
       body: Stack(
         children: [
@@ -59,7 +74,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
           SafeArea(
             child: Column(
               children: [
-                // AppBar custom
+                // En-tête
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   child: Row(
@@ -78,7 +93,6 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                     ],
                   ),
                 ),
-
                 // Formulaire
                 Expanded(
                   child: SingleChildScrollView(
@@ -114,16 +128,19 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                                 onPressed: _isLoading ? null : _handleSubmit,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF4CAF50),
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding:
+                                  const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8)),
                                 ),
                                 child: _isLoading
                                     ? const CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation(Colors.white))
+                                    valueColor:
+                                    AlwaysStoppedAnimation(Colors.white))
                                     : Text('Créer',
                                     style: GoogleFonts.poppins(
-                                        fontSize: 16, fontWeight: FontWeight.w600)),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600)),
                               ),
                             ],
                           ),

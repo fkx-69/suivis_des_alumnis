@@ -4,11 +4,11 @@ import '../../models/event_model.dart';
 import '../../services/event_service.dart';
 import '../../widgets/app_bottom_nav_bar.dart';
 import '../../widgets/event/event_list_view.dart';
-import '../auth/home_screen.dart';
 import '../profile/profile_screen.dart';
 import 'create_event_screen.dart';
 import 'event_detail_screen.dart';
 import 'package:memoire/screens/group/group_list_screen.dart';
+import 'package:memoire/home_screen.dart';
 
 class EventListScreen extends StatefulWidget {
   const EventListScreen({super.key});
@@ -50,6 +50,9 @@ class _EventListScreenState extends State<EventListScreen> {
         break;
       case 3:
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
+        break;
+      case 4:
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const GroupListScreen()));
         break;
     }
     setState(() => _selectedIndex = idx);

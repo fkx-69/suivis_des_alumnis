@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:memoire/screens/auth/home_screen.dart';
+import 'package:memoire/home_screen.dart';
 
 
 void main() {

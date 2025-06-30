@@ -12,6 +12,8 @@ class ApiConstants {
   static const String changeEmail = '$baseUrl/accounts/change-email/';
   static const String verifyPassword = '$baseUrl/accounts/verify-password/';
   static const String getProfile = '$baseUrl/accounts/profile_widgets';
+  static const String alumnisList            = '$baseUrl/alumnis/';
+  static const String publicAlumniProfileById= '$baseUrl/alumni/public/{id}/';
 
   // Profil public
   static const String accountRead = '$baseUrl/accounts/{username}/';
@@ -67,12 +69,21 @@ class ApiConstants {
   static const String eventsValidate = "$baseUrl/events/{id}/valider/"; // POST
 
   // Groupes
-  static const String groupsList        = "$baseUrl/groups/listes/";
-  static const String groupsCreate      = "$baseUrl/groups/creer/";
-  static const String groupsJoin        = "$baseUrl/groups/{groupe_id}/rejoindre/";
-  static const String groupsQuit        = "$baseUrl/groups/{groupe_id}/quitter/";
-  static const String groupsMembers     = "$baseUrl/groups/{groupe_id}/membres/";
-  static const String groupsMessages    = "$baseUrl/groups/{groupe_id}/messages/";
-  static const String groupsSendMessage = "$baseUrl/groups/{groupe_id}/envoyer-message/";
+  static const String groupsList        = '$baseUrl/groups/listes/';
+  static const String myGroupsList      = '$baseUrl/groups/mes-groupes/';
+  static const String groupsCreate      = '$baseUrl/groups/creer/';
+  static const String groupsJoin        = '$baseUrl/groups/{groupe_id}/rejoindre/';
+  static const String groupsQuit        = '$baseUrl/groups/{groupe_id}/quitter/';
+  static const String groupsMembers     = '$baseUrl/groups/{groupe_id}/membres/';
+  static const String groupsMessages    = '$baseUrl/groups/{groupe_id}/messages/';
+  static const String groupsSendMessage = '$baseUrl/groups/{groupe_id}/envoyer-message/';
+
+  // 🎯 Messagerie privée
+  static const String messagingConversations   = '$baseUrl/messaging/conversations/';
+  static const String messagingSendPrivate            = '$baseUrl/messaging/envoyer/';
+  static const String messagingSent            = '$baseUrl/messaging/envoyes/';
+  static const String messagingReceived        = '$baseUrl/messaging/recus/';
+  static const String messagingWithUser        = '$baseUrl/messaging/with/{username}/';
+
 }
 

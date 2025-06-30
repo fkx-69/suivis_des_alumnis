@@ -10,8 +10,8 @@ import 'package:memoire/widgets/profile_widgets/parcours_section.dart';
 import 'package:memoire/widgets/profile_widgets/user_publication_list.dart';
 import 'package:memoire/screens/event/event_list_screen.dart';
 import 'package:memoire/screens/profile/edit_parcours_screen.dart';
-import 'package:memoire/screens/auth/home_screen.dart';
 import 'package:memoire/screens/group/group_list_screen.dart';
+import 'package:memoire/home_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

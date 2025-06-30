@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:memoire/constants/api_constants.dart';
 import 'package:memoire/models/alumni_model.dart';
@@ -9,10 +8,8 @@ import 'package:memoire/services/dio_client.dart';
 import '../helpers/token_manager.dart';
 
 class AuthService {
-  // ─────────────── Champ privé pour garder en mémoire l'utilisateur ───────────────
   UserModel? _currentUser;
   UserModel? get currentUser => _currentUser;
-  // ────────────────────────────────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
@@ -201,17 +198,50 @@ class AuthService {
     );
   }
 
-  /// Signaler un utilisateur.
+  /// Signaler un utilisateur
   Future<void> reportUser({
     required int reportedUserId,
     required String reason,
   }) async {
     await DioClient.dio.post(
-      ApiConstants.reportsReport,
+      ApiConstants.reportsReport, // assure-toi que c’est bien la constante
       data: {
         'reported_user_id': reportedUserId,
         'reason': reason,
       },
     );
+  }
+  /// récupère la liste brute de tous les alumnis (JSON)
+  Future<List<Map<String, dynamic>>> fetchAllAlumniJson() async {
+    final resp = await DioClient.dio.get(ApiConstants.alumnisList);
+    return List<Map<String, dynamic>>.from(resp.data as List);
+  }
+
+  /// récupère le profil public complet d’un alumni par son alumni.id (JSON)
+  Future<Map<String, dynamic>> fetchPublicAlumniProfileById(int alumniId) async {
+    final url = ApiConstants.publicAlumniProfileById
+        .replaceFirst('{id}', alumniId.toString());
+    final resp = await DioClient.dio.get(url);
+    return Map<String, dynamic>.from(resp.data as Map);
+  }
+
+  /// Pipeline : username → alumni.id → profil complet JSON + user_id
+  Future<Map<String, dynamic>> fetchPublicAlumniByUsername(String username) async {
+    // 1) Liste brute de tous les alumnis
+    final all = await fetchAllAlumniJson(); // retourne List<Map>
+    // 2) Trouve l’alumni dont user.username matche
+    final match = all.firstWhere(
+          (a) => (a['user']?['username'] as String?) == username,
+      orElse: () => throw Exception('Aucun alumni trouvé pour "$username"'),
+    );
+    final alumniId = match['id'] as int;
+    final userId   = (match['user'] as Map<String, dynamic>)['id'] as int;
+
+    // 3) Récupère le JSON complet via /alumni/public/{id}/
+    final profile = await fetchPublicAlumniProfileById(alumniId);
+
+    // 4) Injecte user_id pour pouvoir le reporter
+    profile['user_id'] = userId;
+    return profile;
   }
 }

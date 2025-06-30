@@ -19,35 +19,60 @@ class GroupCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          CircleAvatar(
+    final displayName = nom.length > 10 ? '${nom.substring(0, 10)}…' : nom;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(40),
+          child: CircleAvatar(
             radius: 32,
-            backgroundColor: isMember ? Colors.green.shade300 : Colors.grey.shade300,
+            backgroundColor:
+            isMember ? Colors.green.shade400 : Colors.grey.shade300,
             child: Text(
               nom[0].toUpperCase(),
               style: const TextStyle(fontSize: 24, color: Colors.white),
             ),
           ),
-          const SizedBox(height: 6),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: 70,
+          child: Text(
+            displayName,
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500),
+          ),
+        ),
+        if (!isMember && onJoin != null) ...[
+          const SizedBox(height: 4),
           SizedBox(
-            width: 70,
-            child: Text(
-              nom,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(fontSize: 12),
+            height: 28,
+            child: OutlinedButton(
+              onPressed: onJoin,
+              style: OutlinedButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(64, 28),
+                side: BorderSide(color: Theme.of(context).primaryColor),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                'Rejoindre',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
             ),
           ),
-          if (!isMember && onJoin != null)
-            TextButton(
-              onPressed: onJoin,
-              child: const Text('Rejoindre', style: TextStyle(fontSize: 12)),
-            ),
         ],
-      ),
+      ],
     );
   }
 }

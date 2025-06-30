@@ -2,16 +2,8 @@ from django.db import models
 from django.conf import settings
 
 class Report(models.Model):
-    reported_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        related_name='reports_made', 
-        on_delete=models.CASCADE
-    )
-    reported_user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        related_name='reports_received', 
-        on_delete=models.CASCADE
-    )
+    reported_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='reports_made', on_delete=models.CASCADE)
+    reported_user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='reports_received', on_delete=models.CASCADE)
     reason = models.TextField(
         max_length=50,
         choices=[

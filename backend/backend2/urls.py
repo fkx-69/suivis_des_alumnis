@@ -47,6 +47,7 @@ urlpatterns = [
     path('api/notifications/', include('notifications.urls')),
     path('api/statistiques/', include('statistiques.urls')),
     path('api/messaging/', include('messaging.urls')),
+    path('api/gestion/', include('gestion.urls')),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
 

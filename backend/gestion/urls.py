@@ -1,6 +1,7 @@
 from django.urls import path
-from .views import LancerEnqueteView
+from .views import SoumettreEnqueteAPIView,LancerEnvoiEnqueteAPIView
 
 urlpatterns = [
-    path('lancer-enquete/', LancerEnqueteView.as_view(), name='lancer-enquete'),
+    path('repondre/', SoumettreEnqueteAPIView.as_view(), name='soumettre-enquete'),
+    path('lancer-enquete/', LancerEnvoiEnqueteAPIView.as_view(), name='lancer-enquete'),
 ]

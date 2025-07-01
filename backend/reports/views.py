@@ -2,23 +2,20 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from .permissions import IsAdmin
 from django.core.mail import send_mail
 from django.conf import settings
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 from .models import Report
 from .serializers import ReportSerializer
 from accounts.models import CustomUser
-from .permissions import IsEtudiantOrAlumni
-
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-
+from .permissions import IsAdmin, IsEtudiantOrAlumni, IsNotBanned
 
 # === Créer un signalement ===
 class ReportCreateView(generics.CreateAPIView):
     serializer_class = ReportSerializer
-    permission_classes = [IsAuthenticated, IsEtudiantOrAlumni]
+    permission_classes = [IsAuthenticated, IsEtudiantOrAlumni, IsNotBanned]
 
     @swagger_auto_schema(
         operation_description="Permet à un étudiant ou un alumni de signaler un utilisateur.",
@@ -33,7 +30,6 @@ class ReportCreateView(generics.CreateAPIView):
         reported_user = serializer.instance.reported_user
         reason = serializer.instance.reason
 
-        # Envoi d’un email à l’admin
         send_mail(
             subject="Un utilisateur a été signalé",
             message=(
@@ -45,20 +41,18 @@ class ReportCreateView(generics.CreateAPIView):
             fail_silently=False,
         )
 
-
-# === Lister tous les signalements (admin uniquement) ===
+# === Liste des signalements (admin) ===
 class ReportedUsersListView(generics.ListAPIView):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
 
     @swagger_auto_schema(
-        operation_description="Liste tous les utilisateurs signalés (réservé à l'admin).",
+        operation_description="Liste tous les utilisateurs signalés (admin uniquement).",
         responses={200: ReportSerializer(many=True)}
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
-
 
 # === Bannir un utilisateur ===
 @swagger_auto_schema(
@@ -79,7 +73,6 @@ def ban_user(request, user_id):
         return Response({'detail': 'Utilisateur banni avec succès.'}, status=status.HTTP_200_OK)
     except CustomUser.DoesNotExist:
         return Response({'detail': 'Utilisateur non trouvé.'}, status=status.HTTP_404_NOT_FOUND)
-
 
 # === Supprimer un utilisateur ===
 @swagger_auto_schema(

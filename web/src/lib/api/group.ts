@@ -6,8 +6,19 @@ export async function fetchGroups() {
   return res.data;
 }
 
-export async function createGroup(data: { nom_groupe: string; description: string }) {
-  const res = await api.post<Group>("/groups/creer/", data);
+export async function createGroup(data: { nom_groupe: string; description: string; image?: File | null }) {
+  const formData = new FormData();
+  formData.append('nom_groupe', data.nom_groupe);
+  formData.append('description', data.description);
+  if (data.image) {
+    formData.append('image', data.image);
+  }
+
+  const res = await api.post<Group>("/groups/creer/", formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
   return res.data;
 }
 

@@ -15,7 +15,7 @@ api.interceptors.request.use((config) => {
       config.headers = {
         ...config.headers,
         Authorization: `Bearer ${token}`,
-      } as AxiosRequestHeaders; // Explicitly cast to AxiosRequestHeaders
+      } as AxiosRequestHeaders;
     }
   }
   return config;

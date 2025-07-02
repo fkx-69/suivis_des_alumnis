@@ -5,9 +5,10 @@ import "./globals.css";
 import SidePanel from "../components/ui/side-panel";
 import { usePathname, useRouter } from "next/navigation";
 import { AuthProvider, useAuth } from "@/lib/api/authContext";
+import { ProfileModalProvider } from "@/contexts/ProfileModalContext";
+
 import { useEffect } from "react";
 import { ThemeProvider } from "next-themes";
-import { ProfileModalProvider } from '@/contexts/ProfileModalContext';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,12 +40,12 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="data-theme" defaultTheme="light" enableSystem={false}>
           <AuthProvider>
-            <ProfileModalProvider>
+          <ProfileModalProvider>
               <AuthGuard>
                 {showSidePanel ? <SidePanel>{children}</SidePanel> : children}
               </AuthGuard>
-            </ProfileModalProvider>
-          </AuthProvider>
+                      </ProfileModalProvider>
+        </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
@@ -56,14 +57,26 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
-    if (!loading && !user && pathname !== "/auth/signIn") {
-      router.push("/auth/login");
-    }
-  }, [loading, user, pathname, router]);
+  const publicPaths = ['/auth/login', '/auth/signIn', '/'];
 
-  if (loading) {
-    return null;
+  useEffect(() => {
+    if (loading) return; // Do nothing while loading
+
+    const isPublic = publicPaths.includes(pathname);
+
+    if (!user && !isPublic) {
+      router.push('/auth/login');
+    } else if (user && (pathname === '/auth/login' || pathname === '/auth/signIn' || pathname === '/')) {
+      router.push('/publications');
+    }
+  }, [user, loading, pathname, router]);
+
+  if (loading || (!user && !publicPaths.includes(pathname)) || (user && (pathname === '/auth/login' || pathname === '/auth/signIn' || pathname === '/'))) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
   }
 
   return <>{children}</>;

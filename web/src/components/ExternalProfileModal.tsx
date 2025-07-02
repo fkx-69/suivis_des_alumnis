@@ -49,7 +49,7 @@ export default function ExternalProfileModal({ user, onClose }: ExternalProfileM
         onClick={(e) => e.stopPropagation()}
       >
         <button 
-          className="btn btn-sm btn-circle btn-ghost absolute top-3 right-3"
+          className="btn btn-sm btn-circle btn-ghost absolute top-3 right-3 z-10"
           type="button" 
           onClick={onClose}
         >
@@ -59,7 +59,7 @@ export default function ExternalProfileModal({ user, onClose }: ExternalProfileM
         <div className="flex flex-col items-center text-center">
           <img 
             className="mb-4 w-28 h-28 rounded-full shadow-lg object-cover"
-            src={user.photo_profil || '/default-avatar.png'} 
+            src={user.photo_profil || `https://ui-avatars.com/api/?name=${user.prenom}+${user.nom}&background=random`} 
             alt={`Profil de ${user.prenom}`}
           />
           <h3 className="mb-1 text-2xl font-bold text-base-content">{user.prenom} {user.nom}</h3>
@@ -81,3 +81,4 @@ export default function ExternalProfileModal({ user, onClose }: ExternalProfileM
     </div>
   );
 }
+

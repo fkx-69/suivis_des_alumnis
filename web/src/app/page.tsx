@@ -6,14 +6,6 @@ export default function Home() {
       <h1 className="text-4xl font-bold mb-8">
         Bienvenue sur notre plateforme
       </h1>
-      <div className="space-x-4">
-        <Link href="auth/login" className="btn btn-primary btn-lg">
-          Connexion
-        </Link>
-        <Link href="auth/signIn" className="btn btn-accent btn-lg">
-          S'inscrire
-        </Link>
-      </div>
     </div>
   );
 }

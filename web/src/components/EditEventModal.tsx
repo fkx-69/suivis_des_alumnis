@@ -83,7 +83,7 @@ export default function EditEventModal({ event, onClose, onUpdated }: EditEventM
         onSubmit={handleSubmit}
       >
         <button
-          className="btn btn-sm btn-circle absolute top-2 right-2"
+          className="btn btn-sm btn-circle absolute top-2 right-2 z-10"
           type="button"
           onClick={onClose}
         >

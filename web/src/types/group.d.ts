@@ -6,6 +6,7 @@ export interface Group {
   membres: string[];
   date_creation: string;
   est_membre: boolean;
+  image?: string | null;
   role: string;
 }
 

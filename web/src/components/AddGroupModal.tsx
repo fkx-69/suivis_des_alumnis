@@ -13,6 +13,7 @@ interface AddGroupModalProps {
 
 export default function AddGroupModal({ onClose, onCreated }: AddGroupModalProps) {
   const [form, setForm] = useState({ nom_groupe: "", description: "" });
+  const [image, setImage] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,14 +22,21 @@ export default function AddGroupModal({ onClose, onCreated }: AddGroupModalProps
     setForm((f) => ({ ...f, [name]: value }));
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImage(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
     try {
-      const group = await createGroup(form);
+      const group = await createGroup({ ...form, image });
       onCreated?.(group);
       setForm({ nom_groupe: "", description: "" });
+      setImage(null);
       onClose();
     } catch (err: any) {
       setError(err.message);
@@ -53,7 +61,7 @@ export default function AddGroupModal({ onClose, onCreated }: AddGroupModalProps
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
       >
-        <button type="button" className="btn btn-sm btn-circle absolute top-2 right-2" onClick={onClose}>
+        <button type="button" className="btn btn-sm btn-circle absolute top-2 right-2 z-10" onClick={onClose}>
           <XIcon size={18} />
         </button>
         {error && <div className="alert alert-error">{error}</div>}
@@ -72,6 +80,12 @@ export default function AddGroupModal({ onClose, onCreated }: AddGroupModalProps
           placeholder="Description"
           required
           className="textarea textarea-ghost w-full h-32"
+        />
+        <Input
+          type="file"
+          name="image"
+          onChange={handleImageChange}
+          className="file-input file-input-bordered w-full"
         />
         <button className="btn btn-primary" disabled={submitting} type="submit">
           Créer le groupe

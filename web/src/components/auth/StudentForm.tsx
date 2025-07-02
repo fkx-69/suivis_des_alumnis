@@ -1,72 +1,66 @@
 'use client';
 import React from 'react';
+import { useFormContext } from 'react-hook-form';
 import type { Filiere } from '@/lib/api/filiere';
-import type { StudentRegisterPayload } from '@/types/auth';
+import { type StudentFormValues } from '@/lib/validators/auth';
+import { niveau_etude } from '@/lib/constants';
 
-export interface StudentFormProps {
+interface StudentFormProps {
   filieres: Filiere[];
-  studentData: Omit<StudentRegisterPayload, 'user'>;
-  years: number[];
-  niveaux: string[];
-  onStudentChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }
 
-export default function StudentForm({
-  filieres,
-  studentData,
-  years,
-  niveaux,
-  onStudentChange,
-}: StudentFormProps) {
+export default function StudentForm({ filieres }: StudentFormProps) {
+  const { register, formState: { errors } } = useFormContext<StudentFormValues>();
+  const years = Array.from(
+    { length: new Date().getFullYear() - 2017 + 1 },
+    (_, i) => 2017 + i
+  );
   return (
     <fieldset className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block mb-1 text-base-content">Filière</label>
           <select
-            name="filiere"
-            value={studentData.filiere}
-            onChange={onStudentChange}
+            {...register('filiere')}
             required
-            className="select select-primary"
+            className="select select-primary w-full"
           >
             {filieres.map((filiere) => (
-              <option key={filiere.code} value={filiere.code}>
+              <option key={filiere.id} value={filiere.id}>
                 {filiere.nom_complet}
               </option>
             ))}
           </select>
+          {errors.filiere && <p className="text-error text-xs mt-1">{errors.filiere.message}</p>}
         </div>
         <div>
           <label className="block mb-1 text-base-content">Niveau d'étude</label>
           <select
-            name="niveau_etude"
-            value={studentData.niveau_etude}
-            onChange={onStudentChange}
-            className="select select-primary"
+            {...register('niveau_etude')}
+            className="select select-primary w-full"
           >
-            {niveaux.map((niv) => (
+            {niveau_etude.map((niv) => (
               <option key={niv} value={niv}>
                 {niv}
               </option>
             ))}
           </select>
+          {errors['niveau_etude'] && <p className="text-error text-xs mt-1">{errors['niveau_etude'].message}</p>}
         </div>
       </div>
       <div>
         <label className="block mb-1 text-base-content">Année d'entrée</label>
         <select
-          className="select select-primary"
-          onChange={onStudentChange}
-          name="annee_entree"
-          value={studentData.annee_entree}
+          className="select select-primary w-full"
+          {...register('annee_entree')}
         >
           {years.map((year) => (
-            <option key={year} value={year}>
+            <option key={year} value={String(year)}>
               {year}
             </option>
           ))}
         </select>
+        {errors['annee_entree'] && <p className="text-error text-xs mt-1">{errors['annee_entree'].message}</p>}
       </div>
     </fieldset>
   );

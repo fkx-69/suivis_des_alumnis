@@ -1,95 +1,64 @@
 'use client';
 import React from 'react';
 import { Input } from '@/components/ui/Input';
-import type { UserForm } from '@/types/auth';
+import { useFormContext } from 'react-hook-form';
+import { RegisterFormValues } from '@/lib/validators/auth';
 
-export interface MessageError {
-  [key: string]: string[];
-}
-
-interface Props {
-  user: UserForm;
-  confirmPassword: string;
-  isPasswordEqual: boolean;
-  messageError: MessageError;
-  onUserChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onConfirmPasswordChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
-export default function PersonalInfoForm({
-  user,
-  confirmPassword,
-  isPasswordEqual,
-  messageError,
-  onUserChange,
-  onConfirmPasswordChange,
-}: Props) {
+export default function PersonalInfoForm() {
+  const { register, formState: { errors } } = useFormContext<RegisterFormValues>();
   return (
     <fieldset className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <Input
           label="Nom"
-          name="nom"
-          value={user.nom}
-          onChange={onUserChange}
+          {...register('nom')}
           required
           className="input input-primary"
-          error={messageError.nom?.join(', ')}
+          error={errors.nom?.message}
         />
         <Input
           label="Prénom"
-          name="prenom"
-          value={user.prenom}
-          onChange={onUserChange}
+          {...register('prenom')}
           required
           className="input input-primary"
-          error={messageError.prenom?.join(', ')}
+          error={errors.prenom?.message}
         />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <Input
           label="Email"
           type="email"
-          name="email"
-          value={user.email}
-          onChange={onUserChange}
+          {...register('email')}
           required
           className="input input-primary"
-          error={messageError.email?.join(', ')}
+          error={errors.email?.message}
         />
         <Input
           label="Nom d'utilisateur"
-          name="username"
-          value={user.username}
-          onChange={onUserChange}
+          {...register('username')}
           required
           className="input input-primary"
-          error={messageError.username?.join(', ')}
+          error={errors.username?.message}
         />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <Input
           label="Mot de passe"
           type="password"
-          name="password"
-          value={user.password}
-          onChange={onUserChange}
+          {...register('password')}
           required
-          className={isPasswordEqual ? 'input input-primary' : 'input input-error'}
+          className={`input input-primary ${errors.password ? 'input-error' : ''}`}
+          error={errors.password?.message}
         />
         <Input
           label="Confirmer le mot de passe"
           type="password"
-          name="confirmPassword"
-          value={confirmPassword}
-          onChange={onConfirmPasswordChange}
+          {...register('confirmPassword')}
           required
-          className={isPasswordEqual ? 'input input-primary' : 'input input-error'}
+          className={`input input-primary ${errors.confirmPassword ? 'input-error' : ''}`}
+          error={errors.confirmPassword?.message}
         />
       </div>
-      {!isPasswordEqual && (
-        <p className="text-error">Les mots de passe ne correspondent pas.</p>
-      )}
     </fieldset>
   );
 }

@@ -28,7 +28,7 @@ interface PersonalProfileProps {
 }
 
 export default function PersonalProfile({ onClose }: PersonalProfileProps) {
-  const { user, login } = useAuth();
+  const { user, updateUser } = useAuth();
   const [fields, setFields] = useState<ProfileField[]>(buildFields(user));
   const [editing, setEditing] = useState<string | null>(null);
   const [showButton, setShowButton] = useState(false);
@@ -80,31 +80,12 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
         <div className="flex flex-col items-center text-center">
           <div className="avatar">
             <div className="w-24 rounded-full relative group overflow-hidden">
-              {user?.photo_profil ? (
-                // eslint-disable-next-line @next/next/no-img-element
+              
                 <img
-                  src={"http://127.0.0.1:8000/" + user.photo_profil}
+                  src={(user?.photo_profil && "http://127.0.0.1:8000/" + user?.photo_profil) || `https://ui-avatars.com/api/?name=${user?.prenom}+${user?.nom}&background=random`}
                   alt="Profile"
                   className="object-cover w-full h-full"
                 />
-              ) : (
-                <svg
-                  className="w-full h-full text-base-content bg-base-200"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 100 100"
-                >
-                  <rect width="100" height="100" fill="currentColor" />
-                  <text
-                    x="50"
-                    y="55"
-                    textAnchor="middle"
-                    fontSize="50"
-                    fill="white"
-                  >
-                    {user?.username?.charAt(0).toUpperCase()}
-                  </text>
-                </svg>
-              )}
               <label
                 htmlFor="photo-upload"
                 className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 cursor-pointer"
@@ -238,7 +219,7 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
                     newUser = { ...newUser, ...updated };
                     setSelectedFile(null);
                   }
-                  login(newUser);
+                  updateUser(newUser);
                   toast.success("Profil mis à jour");
                 } catch {
                   toast.error("Erreur lors de la mise à jour");

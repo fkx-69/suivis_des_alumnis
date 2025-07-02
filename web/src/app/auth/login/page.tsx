@@ -2,7 +2,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { login as loginApi } from "@/lib/api/auth";
 import { useAuth } from "@/lib/api/authContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -28,11 +27,8 @@ export default function LoginPage() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await loginApi(data);
-      localStorage.setItem("token", response.access);
-      login(response.user);
+      await login(data);
       toast.success("Connexion réussie");
-      router.push("/");
     } catch {
       toast.error("Identifiants incorrects");
     }

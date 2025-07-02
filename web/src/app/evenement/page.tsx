@@ -13,6 +13,7 @@ import {
   fetchPendingEvents,
   deleteEvent,
 } from "@/lib/api/evenement";
+import { Plus } from "lucide-react";
 
 
 export default function Page() {
@@ -86,6 +87,12 @@ export default function Page() {
     );
   }
 
+  const filteredEvents = showMyEvents
+    ? events.filter((e) => e.is_owner)
+    : showPendingEvents
+    ? events.filter((e) => !e.valide)
+    : events.filter((e) => e.valide);
+
   return (
     <main className="mx-auto max-w-7xl px-4 py-4 lg:py-8">
       <div className="mb-4 flex gap-2">
@@ -118,25 +125,26 @@ export default function Page() {
           onClose={() => setEditingEvent(null)}
         />
       )}
-      {((showMyEvents
-        ? events.filter((e) => e.is_owner).length === 0
-        : events.length === 0) || (showPendingEvents && events.length === 0)) && (
+      
+      {filteredEvents.length === 0 ? (
         <div className="alert alert-info max-w-lg mx-auto mt-10">
-          <span>Aucun événement futur pour le moment.</span>
+          <span>Aucun futur événement pour le moment.</span>
+        </div>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredEvents.map((ev) => (
+            <EventCard
+              key={ev.id}
+              event={ev}
+              onToggle={() => setSelectedEvent(ev)}
+              showActions={showMyEvents || showPendingEvents}
+              onEdit={() => setEditingEvent(ev)}
+              onDelete={() => requestDelete(ev)}
+            />
+          ))}
         </div>
       )}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {(showMyEvents ? events.filter((e) => e.is_owner) : showPendingEvents ? events : events).map((ev) => (
-          <EventCard
-            key={ev.id}
-            event={ev}
-            onToggle={() => setSelectedEvent(ev)}
-            showActions={showMyEvents || showPendingEvents}
-            onEdit={() => setEditingEvent(ev)}
-            onDelete={() => requestDelete(ev)}
-          />
-        ))}
-      </div>
+
       {selectedEvent && (
         <EventModal
           event={selectedEvent}
@@ -145,7 +153,7 @@ export default function Page() {
       )}
       {eventToDelete && (
         <ConfirmModal
-          title="Supprimer l\'évènement"
+          title="Supprimer l'évènement"
           message={`Supprimer "${eventToDelete.titre}" ?`}
           confirmText="Supprimer"
           cancelText="Annuler"
@@ -153,12 +161,14 @@ export default function Page() {
           onCancel={() => setEventToDelete(null)}
         />
       )}
+
       <button
-        className="btn btn-secondary fixed bottom-4 right-4 w-12 h-12 rounded-full flex items-center justify-center"
         onClick={() => setShowForm((s) => !s)}
+        className="btn btn-primary btn-circle fixed bottom-10 right-10 shadow-lg z-50"
+        aria-label="Ajouter une publication"
       >
-        +
-      </button>
+        <Plus size={28} />
+      </button> 
     </main>
   );
 }

@@ -8,15 +8,24 @@ import {
 } from "@/lib/api/messaging";
 import { fetchUserProfile } from "@/lib/api/users";
 import { Conversation, Message } from "@/types/messaging";
-import { Input } from "@/components/ui/Input";
+import { useAuth } from "@/lib/api/authContext";
 
 export default function ConversationPage() {
   const { username } = useParams<{ username: string }>();
+  const { user } = useAuth();
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [content, setContent] = useState("");
   const wsRef = useRef<WebSocket | null>(null);
-  const [socketOpen, setSocketOpen] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   useEffect(() => {
     if (!username) return;
@@ -27,24 +36,25 @@ export default function ConversationPage() {
         const existingConv = allConversations.find((c) => c.username === username);
 
         if (existingConv) {
-          // La conversation existe, on charge les messages et on ouvre le socket
           setConversation(existingConv);
           const msgs = await fetchMessages(username);
           setMessages(msgs);
           openSocket(existingConv.id);
         } else {
-          // C'est une nouvelle conversation, on crée un placeholder
           const userProfile = await fetchUserProfile(username);
           const placeholderConv = {
             ...userProfile,
-            id: -1, // Pas encore de vrai ID
-            last_message: null
+            id: -1,
+            last_message: null,
           };
           setConversation(placeholderConv as Conversation);
-          setMessages([]); // Pas encore de messages
+          setMessages([]);
         }
       } catch (error) {
-        console.error("Erreur lors de l'initialisation de la conversation:", error);
+        console.error(
+          "Erreur lors de l'initialisation de la conversation:",
+          error
+        );
       }
     };
 
@@ -52,7 +62,6 @@ export default function ConversationPage() {
 
     return () => {
       wsRef.current?.close();
-      setSocketOpen(false);
     };
   }, [username]);
 
@@ -62,7 +71,6 @@ export default function ConversationPage() {
       `${protocol}://${window.location.host}/ws/notifications/`
     );
     wsRef.current = ws;
-    ws.onopen = () => setSocketOpen(true);
     ws.onmessage = (event) => {
       const msg: Message = JSON.parse(event.data);
       setMessages((prev) => [...prev, msg]);
@@ -77,7 +85,6 @@ export default function ConversationPage() {
       setMessages((prev) => [...prev, msg]);
       setContent("");
 
-      // Si c'était une nouvelle conversation, on récupère ses infos et on ouvre le socket
       if (conversation.id === -1) {
         const allConversations = await fetchConversations();
         const newConv = allConversations.find((c) => c.username === username);
@@ -100,40 +107,82 @@ export default function ConversationPage() {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <header className="p-4 border-b border-base-300">
-        <h2 className="text-xl font-semibold">
+    <div className="flex flex-col h-full bg-base-200">
+      <header className="bg-base-100 p-4 text-base-content border-b border-base-300 shadow-sm">
+        <h1 className="text-xl font-semibold">
           {conversation.prenom} {conversation.nom}
-        </h2>
+        </h1>
       </header>
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-base-200/50">
-        {messages.map((m) => (
-          <div
-            key={m.id}
-            className={`chat ${
-              m.expediteur_username === conversation.username
-                ? "chat-start"
-                : "chat-end"
-            }`}
-          >
-            <div className="chat-bubble max-w-lg">{m.contenu}</div>
-          </div>
-        ))}
+
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((m) => {
+          const isMyMessage = m.expediteur_username === user?.username;
+
+          if (isMyMessage) {
+            // User's messages on the right
+            return (
+              <div key={m.id} className="flex items-end justify-end gap-3">
+                <div className="chat-bubble chat-bubble-primary shadow">
+                  {m.contenu}
+                </div>
+                <div className="avatar">
+                  <div className="w-9 rounded-full">
+                    <img
+                      src={
+                        (user?.photo_profil ? `http://127.0.0.1:8000/${user.photo_profil}` : `https://ui-avatars.com/api/?name=${user?.prenom}+${user?.nom}&background=random`)
+                      }
+                      alt="My Avatar"
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          } else {
+            // Recipient's messages on the left
+            return (
+              <div key={m.id} className="flex items-end gap-3">
+                <div className="avatar">
+                  <div className="w-9 rounded-full">
+                    <img
+                      src={
+                        conversation.photo_profil ||
+                        `https://ui-avatars.com/api/?name=${conversation.prenom}+${conversation.nom}&background=random`
+                      }
+                      alt="User Avatar"
+                    />
+                  </div>
+                </div>
+                <div className="chat-bubble bg-base-100 text-base-content shadow">
+                  {m.contenu}
+                </div>
+              </div>
+            );
+          }
+        })}
+        <div ref={messagesEndRef} />
       </div>
-      <footer className="p-4 border-t border-base-300">
-        <div className="flex gap-2">
-          <Input
-            className="flex-1"
-            placeholder="Votre message..."
+
+      <footer className="bg-base-100 border-t border-base-300 p-4">
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            placeholder="Type a message..."
+            className="input input-bordered w-full"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+              }
+            }}
           />
           <button
             className="btn btn-primary"
             onClick={sendMessage}
+            disabled={!content.trim()}
           >
-            Envoyer
+            Send
           </button>
         </div>
       </footer>

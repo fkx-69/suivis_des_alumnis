@@ -56,7 +56,7 @@ export default function AddPublicationModal({ isOpen, onClose, onPublish }: AddP
   return (
     <div className="modal modal-open modal-bottom sm:modal-middle">
       <div className="modal-box relative">
-        <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-10">✕</button>
         <h3 className="font-bold text-lg mb-4">Créer une publication</h3>
 
         <form onSubmit={handleSubmit} className="space-y-4">

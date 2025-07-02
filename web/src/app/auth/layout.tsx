@@ -1,6 +1,6 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
-import { AuthProvider, useAuth } from "@/lib/api/authContext";
+import { useAuth } from "@/lib/api/authContext";
 import { useEffect } from "react";
 
 
@@ -9,11 +9,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <AuthProvider>
-      <AuthGuard>{children}</AuthGuard>
-    </AuthProvider>
-  );
+  return <AuthGuard>{children}</AuthGuard>;
 }
 
 function AuthGuard({ children }: { children: React.ReactNode }) {

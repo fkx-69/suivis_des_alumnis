@@ -9,6 +9,7 @@ from .serializers import (
     UserSerializer, ParcoursAcademiqueSerializer, ParcoursProfessionnelSerializer,
     ChangePasswordSerializer, ChangeEmailSerializer, UpdateUserSerializer, UserPublicSerializer,PublicAlumniProfileSerializer
     )
+from .models import POSTES_PAR_SECTEUR
 from django.db.models import Q
 from random import sample
 
@@ -52,6 +53,21 @@ class SearchUserView(generics.ListAPIView):
             Q(email__icontains=query),
             is_active=True
         )
+    
+
+class PostesParSecteurAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        data = []
+
+        for secteur, postes in POSTES_PAR_SECTEUR:
+            data.append({
+                "secteur": secteur,
+                "postes": [{"code": code, "libelle": label} for code, label in postes]
+            })
+
+        return Response(data)
 
 
 class SuggestionsView(generics.ListAPIView):
@@ -138,6 +154,7 @@ class ParcoursAcademiqueViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(alumni=self.request.user.alumni)
 
+
 class ParcoursProfessionnelViewSet(viewsets.ModelViewSet):
     serializer_class = ParcoursProfessionnelSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerAlumni]
@@ -147,6 +164,7 @@ class ParcoursProfessionnelViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(alumni=self.request.user.alumni)
+
 
 # === MISE À JOUR EMAIL / MOT DE PASSE ===
 class ChangePasswordAPIView(APIView):
@@ -194,3 +212,21 @@ class PublicAlumniProfileAPIView(RetrieveAPIView):
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+# === PARCOURS PUBLIQUES PAR ALUMNI ID ===
+
+class PublicParcoursAcademiqueView(generics.ListAPIView):
+    serializer_class = ParcoursAcademiqueSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        alumni_id = self.kwargs['alumni_id']
+        return ParcoursAcademique.objects.filter(alumni_id=alumni_id)
+
+
+class PublicParcoursProfessionnelView(generics.ListAPIView):
+    serializer_class = ParcoursProfessionnelSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        alumni_id = self.kwargs['alumni_id']
+        return ParcoursProfessionnel.objects.filter(alumni_id=alumni_id)

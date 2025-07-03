@@ -56,7 +56,7 @@ from .models import (
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
     list_display = ('email', 'username', 'prenom', 'nom', 'role', 'is_staff', 'is_active')
-    list_filter = ('role', 'is_staff', 'is_active')
+    list_filter = ('role', 'is_staff', 'is_active','is_banned')
     fieldsets = (
         (None, {
             'fields': (
@@ -65,7 +65,7 @@ class CustomUserAdmin(UserAdmin):
             )
         }),
         ('Permissions', {
-            'fields': ('is_staff', 'is_active', 'is_superuser', 'groups', 'user_permissions')
+            'fields': ('is_staff', 'is_active','is_banned', 'is_superuser', 'groups', 'user_permissions')
         }),
         ('Important dates', {'fields': ('last_login',)}),
     )
@@ -75,7 +75,7 @@ class CustomUserAdmin(UserAdmin):
             'fields': (
                 'email', 'username', 'prenom', 'nom',
                 'password1', 'password2', 'role',
-                'is_staff', 'is_active'
+                'is_staff', 'is_active','is_banned'
             )
         }),
     )

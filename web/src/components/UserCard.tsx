@@ -1,4 +1,3 @@
-"use client";
 import { useState } from "react";
 import { User } from "@/types/auth";
 import { useAuth } from "@/lib/api/authContext";
@@ -13,8 +12,7 @@ export default function UserCard({ user }: UserCardProps) {
   const { user: currentUser } = useAuth();
   const [sent, setSent] = useState(false);
 
-  const canRequest =
-    currentUser?.role === "ETUDIANT" && user.role === "ALUMNI";
+  const canRequest = currentUser?.role === "ETUDIANT" && user.role === "ALUMNI";
 
   const sendRequest = async () => {
     try {

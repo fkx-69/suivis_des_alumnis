@@ -15,9 +15,8 @@ export async function deletePublication(id: number) {
   await api.delete(`/publications/${id}/supprimer/`);
 }
 
-export async function addComment(publication: number, contenu: string) {
-  const res = await api.post(`/publications/commenter/`, {
-    publication,
+export async function addComment(id: number, contenu: string) {
+  const res = await api.post(`/publications/${id}/commentaires/`, {
     contenu,
   });
   return res.data as Publication;
@@ -25,4 +24,9 @@ export async function addComment(publication: number, contenu: string) {
 
 export async function deleteComment(id: number) {
   await api.delete(`/publications/commentaire/${id}/supprimer/`);
+}
+
+export async function fetchUserPublications(username: string) {
+  const res = await api.get<Publication[]>(`/publications/utilisateur/${username}/`);
+  return res.data;
 }

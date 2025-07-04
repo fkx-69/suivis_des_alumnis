@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useEffect, useRef } from "react";
 import { Edit2 as Pencil, CameraIcon } from "lucide-react";
 import { motion } from "framer-motion";
@@ -80,12 +78,15 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
         <div className="flex flex-col items-center text-center">
           <div className="avatar">
             <div className="w-24 rounded-full relative group overflow-hidden">
-              
-                <img
-                  src={(user?.photo_profil && "http://127.0.0.1:8000/" + user?.photo_profil) || `https://ui-avatars.com/api/?name=${user?.prenom}+${user?.nom}&background=random`}
-                  alt="Profile"
-                  className="object-cover w-full h-full"
-                />
+              <img
+                src={
+                  (user?.photo_profil &&
+                    "http://127.0.0.1:8000/" + user?.photo_profil) ||
+                  `https://ui-avatars.com/api/?name=${user?.prenom}+${user?.nom}&background=random`
+                }
+                alt="Profile"
+                className="object-cover w-full h-full"
+              />
               <label
                 htmlFor="photo-upload"
                 className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 cursor-pointer"

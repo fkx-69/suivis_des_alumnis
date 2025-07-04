@@ -1,4 +1,3 @@
-"use client";
 import { CalendarIcon, XIcon } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { motion } from "framer-motion";
@@ -46,7 +45,13 @@ export default function AddEventModal({
     try {
       const newEvent = await createEvent(form);
       onCreated?.(newEvent);
-      setForm({ titre: "", description: "", date_debut: "", date_fin: "", image: undefined });
+      setForm({
+        titre: "",
+        description: "",
+        date_debut: "",
+        date_fin: "",
+        image: undefined,
+      });
       onClose();
     } catch (err: any) {
       setError(err.message);

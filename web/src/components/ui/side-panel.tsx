@@ -1,8 +1,5 @@
-"use client";
-
 import React, { useState, ReactNode, useEffect, useRef } from "react";
 import Link from "next/link";
-import PersonalProfile from "./personal-profile";
 import { useAuth } from "@/lib/api/authContext";
 import { useRouter, usePathname } from "next/navigation";
 import ThemeToggle from "./theme-toggle";
@@ -46,20 +43,9 @@ const navItems = [
     href: "/evenement",
   },
   {
-    label: "Mentorat",
-    icon: <Users size={20} />,
-    href: "/mentorat",
-  },
-
-  {
     label: "Publications",
     icon: <FileTextIcon size={20} />,
     href: "/publications",
-  },
-  {
-    label: "Notifications",
-    icon: <BellIcon size={20} />,
-    href: "/notifications",
   },
   {
     label: "Statistiques",
@@ -72,23 +58,26 @@ const navItems = [
     icon: <MapIcon size={20} />,
     href: "/parcours",
   },
-
 ];
 const profileItems = {
-  label: "Profil",
+  label: "Profile",
   icon: <UserCircleIcon size={20} />,
-  href: "#",
+  href: "/profile",
 };
 
 export default function SidePanel({ children }: { children: ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const panelWidth = collapsed ? "w-16" : "w-50";
-
   const pathname = usePathname();
-
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
+
+  const visibleNavItems = navItems.filter((item) => {
+    if (item.label === "Parcours") {
+      return user?.role?.toUpperCase() === "ALUMNI";
+    }
+    return true;
+  });
 
   const handleLogout = async () => {
     await logout();
@@ -98,59 +87,43 @@ export default function SidePanel({ children }: { children: ReactNode }) {
     router.push("/auth/login");
   };
 
-  const profileButtonRef = useRef<HTMLButtonElement>(null);
-
-  const handleCloseProfile = () => {
-    setShowProfile(false);
-  };
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        profileButtonRef.current &&
-        profileButtonRef.current.contains(event.target as Node)
-      ) {
-        return;
-      }
-    }
-
-    if (showProfile) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showProfile]);
-
   return (
     <div className="drawer md:drawer-open h-screen">
       <input id="side-panel-drawer" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-col overflow-hidden">
         <header className="navbar bg-base-200 md:hidden">
-          <label htmlFor="side-panel-drawer" className="btn btn-ghost btn-square">
+          <label
+            htmlFor="side-panel-drawer"
+            className="btn btn-ghost btn-square"
+          >
             <Menu size={20} />
           </label>
         </header>
-        <main className="relative flex-1 overflow-y-auto">
-          {showProfile && <PersonalProfile onClose={handleCloseProfile} />}
-          {children}
-        </main>
+        <main className="relative flex-1 overflow-y-auto">{children}</main>
       </div>
       <div className="drawer-side">
-        <label htmlFor="side-panel-drawer" className="drawer-overlay md:hidden"></label>
+        <label
+          htmlFor="side-panel-drawer"
+          className="drawer-overlay md:hidden"
+        ></label>
         <aside
-          className={`${panelWidth} bg-base-200 border-r border-base-200 flex flex-col justify-between transition-all duration-300 h-full`}
+          className={`${panelWidth} bg-base-300 border-r border-base-300 flex flex-col justify-between transition-all duration-300 h-full`}
         >
           <div>
-            <div className={collapsed ? "flex justify-center p-2" : "flex justify-end p-2"}>
-              <button onClick={() => setCollapsed((c) => !c)} className="btn btn-ghost btn-sm">
+            <div
+              className={
+                collapsed ? "flex justify-center p-2" : "flex justify-end p-2"
+              }
+            >
+              <button
+                onClick={() => setCollapsed((c) => !c)}
+                className="btn btn-ghost btn-sm"
+              >
                 <GripHorizontalIcon size={20} />
               </button>
             </div>
             <ul className="menu p-2 space-y-1">
-              {navItems.map((item) => (
+              {visibleNavItems.map((item) => (
                 <li
                   key={item.href}
                   className={
@@ -162,24 +135,28 @@ export default function SidePanel({ children }: { children: ReactNode }) {
                   <Link
                     href={item.href}
                     className={`flex items-center p-2 w-full btn-primary ${collapsed ? "justify-center" : "gap-3"}`}
-                    onClick={() => showProfile && setShowProfile(false)}
                   >
                     {item.icon}
-                    {!collapsed && <span className="text-content">{item.label}</span>}
+                    {!collapsed && (
+                      <span className="text-content">{item.label}</span>
+                    )}
                   </Link>
                 </li>
               ))}
-              <li>
-                <button
-                  ref={profileButtonRef}
-                  className={`flex items-center p-2 w-full ${collapsed ? "justify-center" : "gap-3"} hover:bg-base-300 rounded-md`}
-                  onClick={() => setShowProfile((prev) => !prev)}
-                  aria-haspopup="true"
-                  aria-expanded={showProfile}
+              <li
+                className={
+                  pathname === "/profile"
+                    ? "bg-primary text-primary-content rounded-md"
+                    : "hover:bg-base-300 rounded-md"
+                }
+              >
+                <Link
+                  href="/profile"
+                  className={`flex items-center p-2 w-full ${collapsed ? "justify-center" : "gap-3"}`}
                 >
                   {profileItems.icon}
-                  {!collapsed && <span className="text-content">Profil</span>}
-                </button>
+                  {!collapsed && <span className="text-content">Profile</span>}
+                </Link>
               </li>
             </ul>
           </div>

@@ -57,7 +57,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const publicPaths = ['/auth/login', '/auth/signIn', '/'];
+  const publicPaths = ['/auth/login', '/auth/signIn'];
 
   useEffect(() => {
     if (loading) return; // Do nothing while loading
@@ -66,12 +66,12 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
     if (!user && !isPublic) {
       router.push('/auth/login');
-    } else if (user && (pathname === '/auth/login' || pathname === '/auth/signIn' || pathname === '/')) {
-      router.push('/publications');
+    } else if (user && (pathname === '/auth/login' || pathname === '/auth/signIn')) {
+      router.push('/');
     }
   }, [user, loading, pathname, router]);
 
-  if (loading || (!user && !publicPaths.includes(pathname)) || (user && (pathname === '/auth/login' || pathname === '/auth/signIn' || pathname === '/'))) {
+  if (loading || (!user && !publicPaths.includes(pathname)) || (user && (pathname === '/auth/login' || pathname === '/auth/signIn'))) {
     return (
       <div className="flex justify-center items-center h-screen">
         <span className="loading loading-spinner loading-lg"></span>

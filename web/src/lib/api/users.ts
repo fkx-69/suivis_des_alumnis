@@ -6,6 +6,7 @@ export interface UserProfile {
   prenom: string;
   photo_profil: string;
   biographie: string;
+  role: 'alumni' | 'etudiant' | 'enseignant';
 }
 
 export const fetchUserProfile = async (username: string): Promise<UserProfile> => {

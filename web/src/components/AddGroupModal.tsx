@@ -1,4 +1,3 @@
-"use client";
 import { XIcon } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { motion } from "framer-motion";
@@ -11,13 +10,18 @@ interface AddGroupModalProps {
   onCreated?: (group: Group) => void;
 }
 
-export default function AddGroupModal({ onClose, onCreated }: AddGroupModalProps) {
+export default function AddGroupModal({
+  onClose,
+  onCreated,
+}: AddGroupModalProps) {
   const [form, setForm] = useState({ nom_groupe: "", description: "" });
   const [image, setImage] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
   };
@@ -52,7 +56,10 @@ export default function AddGroupModal({ onClose, onCreated }: AddGroupModalProps
   }, [onClose]);
 
   return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+    <div
+      className="absolute inset-0 z-50 flex items-center justify-center bg-black/40"
+      onClick={onClose}
+    >
       <motion.form
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -61,7 +68,11 @@ export default function AddGroupModal({ onClose, onCreated }: AddGroupModalProps
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
       >
-        <button type="button" className="btn btn-sm btn-circle absolute top-2 right-2 z-10" onClick={onClose}>
+        <button
+          type="button"
+          className="btn btn-sm btn-circle absolute top-2 right-2 z-10"
+          onClick={onClose}
+        >
           <XIcon size={18} />
         </button>
         {error && <div className="alert alert-error">{error}</div>}

@@ -1,5 +1,3 @@
-"use client";
-
 import { motion } from "framer-motion";
 
 interface ConfirmModalProps {
@@ -32,7 +30,9 @@ export default function ConfirmModal({
         onClick={(e) => e.stopPropagation()}
       >
         {title && <h2 className="text-lg font-bold">{title}</h2>}
-        {message && <p className="text-sm opacity-80 whitespace-pre-line">{message}</p>}
+        {message && (
+          <p className="text-sm opacity-80 whitespace-pre-line">{message}</p>
+        )}
         <div className="flex justify-end gap-2 pt-2">
           <button className="btn" type="button" onClick={onCancel}>
             {cancelText}

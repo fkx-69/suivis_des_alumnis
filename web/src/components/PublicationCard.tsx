@@ -3,25 +3,7 @@ import { useProfileModal } from "@/contexts/ProfileModalContext";
 import { Publication } from "@/types/publication";
 import { MessageCircle } from "lucide-react";
 import { useState } from "react";
-
-function formatTimeAgo(dateString: string): string {
-  const now = new Date();
-  const date = new Date(dateString);
-  const secondsPast = (now.getTime() - date.getTime()) / 1000;
-
-  if (secondsPast < 60) return "à l'instant";
-  if (secondsPast < 3600) return `${Math.floor(secondsPast / 60)} min`;
-  if (secondsPast <= 86400) return `${Math.floor(secondsPast / 3600)} h`;
-  const days = Math.floor(secondsPast / 86400);
-  if (days === 1) return "hier";
-  if (days <= 7) return `${days} j`;
-
-  return new Intl.DateTimeFormat("fr-FR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(date);
-}
+import { formatTimeAgo } from "@/lib/utils";
 
 interface PublicationCardProps {
   publication: Publication;

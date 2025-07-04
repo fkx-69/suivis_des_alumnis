@@ -1,32 +1,32 @@
-"use client";
-
-import React from 'react';
-import { motion } from 'framer-motion';
-import { XIcon, Users, Calendar } from 'lucide-react';
-import { Group } from '@/types/group';
+import React from "react";
+import { motion } from "framer-motion";
+import { XIcon, Users, Calendar } from "lucide-react";
+import { Group } from "@/types/group";
 
 interface GroupDetailModalProps {
   group: Group;
   onClose: () => void;
 }
 
-export default function GroupDetailModal({ group, onClose }: GroupDetailModalProps) {
-
+export default function GroupDetailModal({
+  group,
+  onClose,
+}: GroupDetailModalProps) {
   React.useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         onClose();
       }
     };
-    window.addEventListener('keydown', handleEsc);
+    window.addEventListener("keydown", handleEsc);
 
     return () => {
-      window.removeEventListener('keydown', handleEsc);
+      window.removeEventListener("keydown", handleEsc);
     };
   }, [onClose]);
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={onClose}
     >
@@ -61,13 +61,15 @@ export default function GroupDetailModal({ group, onClose }: GroupDetailModalPro
             </div>
             <div className="flex items-center gap-2">
               <Calendar size={16} />
-              <span>Créé le {new Date(group.date_creation).toLocaleDateString()}</span>
+              <span>
+                Créé le {new Date(group.date_creation).toLocaleDateString()}
+              </span>
             </div>
           </div>
         </div>
-        <button 
+        <button
           className="btn btn-sm btn-circle btn-ghost absolute top-3 right-3 z-10"
-          type="button" 
+          type="button"
           onClick={onClose}
         >
           <XIcon size={20} />

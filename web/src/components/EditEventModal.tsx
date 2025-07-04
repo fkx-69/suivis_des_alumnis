@@ -1,4 +1,3 @@
-"use client";
 import { CalendarIcon, XIcon } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { motion } from "framer-motion";
@@ -23,7 +22,11 @@ const toDatetimeLocal = (dateStr: string) => {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
-export default function EditEventModal({ event, onClose, onUpdated }: EditEventModalProps) {
+export default function EditEventModal({
+  event,
+  onClose,
+  onUpdated,
+}: EditEventModalProps) {
   const [form, setForm] = useState({
     titre: event.titre,
     description: event.description,

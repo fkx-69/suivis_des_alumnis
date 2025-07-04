@@ -8,14 +8,16 @@ import '../../widgets/profile_widgets/user_info_card.dart';
 import '../../models/publication_model.dart';
 import '../../services/publication_service.dart';
 import '../../widgets/publication_card.dart';
+import 'package:dio/dio.dart';
+import '../group/chat_screen.dart';
 
 class PublicProfileScreen extends StatefulWidget {
   final String username;
 
   const PublicProfileScreen({
-    Key? key,
+    super.key,
     required this.username,
-  }) : super(key: key);
+  });
 
   @override
   State<PublicProfileScreen> createState() => _PublicProfileScreenState();
@@ -24,7 +26,6 @@ class PublicProfileScreen extends StatefulWidget {
 class _PublicProfileScreenState extends State<PublicProfileScreen> {
   final AuthService _auth = AuthService();
   final MessagingService _messaging = MessagingService();
-
   bool _isLoading = true;
   UserModel? _user;
   List<Map<String, dynamic>> _acad = [];
@@ -41,27 +42,26 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
   Future<void> _loadProfile() async {
     setState(() => _isLoading = true);
     try {
-      final user = await _auth.fetchPublicProfile(widget.username);
-      _user = user;
+      // On utilise la nouvelle méthode unifiée qui charge tout pour un alumni.
+      // Cela résout les problèmes d'ID pour les parcours et les signalements.
+      final profileData = await _auth.fetchCompleteAlumniProfile(widget.username);
+      _user = profileData['user'];
+      _acad = profileData['parcours_academiques'];
+      _prof = profileData['parcours_professionnels'];
 
-      if (_user!.role.toLowerCase() == 'alumni') {
-        final alumniData = await _auth.fetchPublicAlumniByUsername(_user!.username);
-
-        // On extrait directement les parcours du JSON complet
-        _acad = List<Map<String, dynamic>>.from(alumniData['parcours_academiques'] ?? []);
-        _prof = List<Map<String, dynamic>>.from(alumniData['parcours_professionnels'] ?? []);
-      }
-
-      // Charger les publications et les filtrer
+      // Charger les publications de l'utilisateur
       final allPublications = await _publicationService.fetchFeed();
       _publications = allPublications
-          .where((p) => p.auteur.username.toLowerCase() == widget.username.toLowerCase())
+          .where((p) => p.auteur.toLowerCase() == widget.username.toLowerCase())
           .toList();
 
     } catch (e) {
+      // Si fetchCompleteAlumniProfile échoue (ex: l'utilisateur n'est pas un alumni),
+      // on l'affiche. La gestion des profils non-alumni nécessiterait une
+      // correction du backend pour inclure l'ID dans toutes les réponses de profil.
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur : $e')),
+          SnackBar(content: Text('Erreur de chargement du profil : $e')),
         );
       }
     } finally {
@@ -69,33 +69,14 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     }
   }
 
-  Future<void> _sendMessage() async {
-    final contenu = await showDialog<String>(
-      context: context,
-      builder: (_) => _TextEntryDialog(
-        title: 'Envoyer un message',
-        hint: 'Votre message…',
+  void _sendMessage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ChatScreen(
+          peerUsername: widget.username,
+        ),
       ),
     );
-    if (contenu == null || contenu.trim().isEmpty) return;
-
-    try {
-      await _messaging.sendMessage(
-        toUsername: widget.username,
-        contenu: contenu.trim(),
-      );
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Message envoyé')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur : $e')),
-        );
-      }
-    }
   }
 
   Future<void> _requestMentorat() async {
@@ -122,7 +103,9 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     if (ok != true) return;
 
     try {
-      await _messaging.sendMentorshipRequest(userId: _user!.id!);
+      // On utilise directement le username, comme sur la version web.
+      await _messaging.sendMentorshipRequest(username: widget.username);
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Demande de mentorat envoyée')),
@@ -138,66 +121,91 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
   }
 
   Future<void> _reportUser() async {
+    // 1) Capturer le context avant l’await
+    final ctx = context;
+
+    // 2) Boîte de dialogue pour choisir le motif
     final String? reason = await showDialog<String>(
-      context: context,
+      context: ctx,
       builder: (BuildContext context) {
         return SimpleDialog(
-          title: Text('Signaler @${_user?.username ?? 'cet utilisateur'}', style: GoogleFonts.poppins()),
-          children: <Widget>[
+          title: Text('Signaler @${_user?.username ?? 'utilisateur'}'),
+          children: [
             SimpleDialogOption(
               onPressed: () => Navigator.pop(context, 'comportement_inapproprié'),
-              child: Text('Comportement inapproprié', style: GoogleFonts.poppins()),
+              child: Text('Comportement inapproprié'),
             ),
             SimpleDialogOption(
               onPressed: () => Navigator.pop(context, 'contenu_inapproprié'),
-              child: Text('Contenu inapproprié', style: GoogleFonts.poppins()),
+              child: Text('Contenu inapproprié'),
             ),
             SimpleDialogOption(
               onPressed: () => Navigator.pop(context, 'autre'),
-              child: Text('Autre', style: GoogleFonts.poppins()),
+              child: Text('Autre'),
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0, right: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Annuler'),
-                  ),
-                ],
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Annuler'),
               ),
             ),
           ],
         );
       },
     );
+    if (reason == null) return; // l'utilisateur a annulé
 
-    if (reason == null) return; // L'utilisateur a annulé
+    // 3) Vérifier que _user est bien chargé
+    if (_user == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        const SnackBar(
+          content: Text("Impossible de signaler : utilisateur introuvable."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
+    // 4) On peut déballer _user en toute sécurité
+    final user = _user!;
+
+    // 5) Appel au service
     try {
       await _auth.reportUser(
-        reportedUserId: _user!.id!,
+        reportedUserId: user.id,  // id est non-nullable dans UserModel
         reason: reason,
       );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Utilisateur signalé. Merci pour votre contribution.'),
-            backgroundColor: Colors.green,
-          ),
-        );
+      if (!mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        const SnackBar(
+          content: Text('Utilisateur signalé. Merci pour votre contribution.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } on DioException catch (e) { // Correction: DioError -> DioException
+      // Extraire un message plus lisible si possible
+      String msg = 'Une erreur est survenue';
+      final data = e.response?.data;
+      if (data is Map && data['reported_user_id'] is List && data['reported_user_id'].isNotEmpty) {
+        msg = data['reported_user_id'][0] as String;
       }
+      if (!mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        SnackBar(
+          content: Text('Erreur lors du signalement : $msg'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erreur lors du signalement : $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        SnackBar(
+          content: Text('Erreur inattendue : $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 

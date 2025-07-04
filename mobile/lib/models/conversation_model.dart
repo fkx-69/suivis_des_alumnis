@@ -13,10 +13,12 @@ class ConversationModel {
 
   factory ConversationModel.fromJson(Map<String, dynamic> json) {
     return ConversationModel(
-      withUsername: json['with_username'] as String,
-      lastMessage: json['last_message'] as String,
-      dateLastMessage: DateTime.parse(json['date_last_message'] as String),
-      unreadCount: json['unread_count'] as int,
+      withUsername: json['with_username'] ?? 'Utilisateur inconnu',
+      lastMessage: json['last_message'] ?? '',
+      dateLastMessage: json['date_last_message'] != null
+          ? DateTime.parse(json['date_last_message'])
+          : DateTime.now(),
+      unreadCount: json['unread_count'] ?? 0,
     );
   }
 }

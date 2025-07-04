@@ -75,8 +75,8 @@ class _ChatScreenState extends State<ChatScreen> {
               itemCount: _msgs.length,
               itemBuilder: (_, i) {
                 final m = _msgs[i];
-                final mine = (m.fromUsername == _me);
-                final time = DateFormat.Hm().format(m.dateEnvoi);
+                final mine = (m.expediteur.username == _me);
+                final time = DateFormat.Hm().format(m.timestamp);
                 return Align(
                   alignment:
                   mine ? Alignment.centerRight : Alignment.centerLeft,

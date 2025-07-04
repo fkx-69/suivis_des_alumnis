@@ -1,5 +1,5 @@
 class UserModel {
-  final int? id;
+  final int id;
   final String email;
   final String username;
   final String nom;
@@ -39,29 +39,40 @@ class UserModel {
     this.nomEntreprise,
   });
 
+  String? get profileImageUrl => photoProfil;
+
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    final bool hasUserWrapper = json.containsKey('user');
-    final userData = hasUserWrapper ? json['user'] as Map<String, dynamic> : json;
+    // Gère le cas où le JSON est enveloppé sous "user"
+    final userData = json.containsKey('user')
+        ? json['user'] as Map<String, dynamic>
+        : json;
+
 
     return UserModel(
-      id: json['id'] as int?, // toujours à la racine, même s'il y a 'user'
-      email: userData['email'] ?? '',
-      username: userData['username'] ?? '',
-      nom: userData['nom'] ?? '',
-      prenom: userData['prenom'] ?? '',
-      biographie: userData['biographie'],
-      role: userData['role'] ?? '',
-      photoProfil: userData['photo_profil'],
-      isBanned: userData['is_banned'] ?? false,
-      filiere: json['filiere'],
-      niveauEtude: json['niveau_etude'],
-      anneeEntree: json['annee_entree'],
-      secteurActivite: json['secteur_activite'],
-      situationPro: json['situation_pro'],
-      posteActuel: json['poste_actuel'],
-      nomEntreprise: json['nom_entreprise'],
+      // ID toujours présent ; on lève si absent
+      id: userData['id'] is int
+          ? userData['id'] as int
+          : int.parse(userData['id']?.toString() ?? '0'),
+      email: userData['email'] as String? ?? '',
+      username: userData['username'] as String? ?? '',
+      nom: userData['nom'] as String? ?? '',
+      prenom: userData['prenom'] as String? ?? '',
+      biographie: userData['biographie'] as String?,
+      role: userData['role'] as String? ?? '',
+      photoProfil: userData['photo_profil'] as String?,
+      isBanned: userData['is_banned'] as bool? ?? false,
+      filiere: userData['filiere'] as String?,
+      niveauEtude: userData['niveau_etude'] as String?,
+      anneeEntree: userData['annee_entree'] is int
+          ? userData['annee_entree'] as int
+          : int.tryParse(userData['annee_entree']?.toString() ?? ''),
+      secteurActivite: userData['secteur_activite'] as String?,
+      situationPro: userData['situation_pro'] as String?,
+      posteActuel: userData['poste_actuel'] as String?,
+      nomEntreprise: userData['nom_entreprise'] as String?,
     );
   }
+
   UserModel copyWith({
     int? id,
     String? email,
@@ -88,6 +99,7 @@ class UserModel {
       biographie: biographie ?? this.biographie,
       role: role ?? this.role,
       photoProfil: photoProfil ?? this.photoProfil,
+      isBanned: isBanned,
       filiere: filiere ?? this.filiere,
       niveauEtude: niveauEtude ?? this.niveauEtude,
       anneeEntree: anneeEntree ?? this.anneeEntree,
@@ -97,5 +109,4 @@ class UserModel {
       nomEntreprise: nomEntreprise ?? this.nomEntreprise,
     );
   }
-
 }

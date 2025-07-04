@@ -1,25 +1,30 @@
+import 'package:memoire/models/user_model.dart';
+
 class PrivateMessageModel {
   final int id;
-  final String fromUsername;
-  final String toUsername;
+  final UserModel expediteur;
+  final UserModel destinataire;
   final String contenu;
-  final DateTime dateEnvoi;
+  final DateTime timestamp;
+  final bool isRead;
 
   PrivateMessageModel({
     required this.id,
-    required this.fromUsername,
-    required this.toUsername,
+    required this.expediteur,
+    required this.destinataire,
     required this.contenu,
-    required this.dateEnvoi,
+    required this.timestamp,
+    required this.isRead,
   });
 
   factory PrivateMessageModel.fromJson(Map<String, dynamic> json) {
     return PrivateMessageModel(
-      id: json['id'] as int,
-      fromUsername: json['from_username'] as String,
-      toUsername: json['to_username'] as String,
-      contenu: json['contenu'] as String,
-      dateEnvoi: DateTime.parse(json['date_envoi'] as String),
+      id: json['id'],
+      expediteur: UserModel.fromJson(json['expediteur']),
+      destinataire: UserModel.fromJson(json['destinataire']),
+      contenu: json['contenu'],
+      timestamp: DateTime.parse(json['timestamp']),
+      isRead: json['is_read'] ?? false,
     );
   }
 }

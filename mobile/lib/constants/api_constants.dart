@@ -23,6 +23,14 @@ class ApiConstants {
 
   // Mentorat
   static const String mentoratSend = '$baseUrl/mentorat/envoyer/';
+  static const String mentoratMyRequests = '$baseUrl/mentorat/mes-demandes/';
+  static const String mentoratRespond = '$baseUrl/mentoring/respond/';
+  static const String mentoratDelete = '$baseUrl/mentoring/delete/';
+
+  // Notifications
+  static const String notifications = '$baseUrl/notifications/';
+  static const String notificationMarkRead = '$baseUrl/notifications/{id}/mark-as-read/';
+  static const String notificationDelete = '$baseUrl/notifications/{id}/delete/';
 
   // Signalement
   static const String reportsReport = '$baseUrl/reports/report/';

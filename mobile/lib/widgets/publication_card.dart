@@ -27,7 +27,9 @@ class _PublicationCardState extends State<PublicationCard> {
   }
 
   Future<void> _postComment() async {
-    if (_commentController.text.trim().isEmpty) return;
+    if (_commentController.text
+        .trim()
+        .isEmpty) return;
     setState(() => _isCommenting = true);
 
     try {
@@ -66,8 +68,10 @@ class _PublicationCardState extends State<PublicationCard> {
           children: [
             _buildHeader(),
             const SizedBox(height: 12),
-            if (widget.publication.texte != null && widget.publication.texte!.isNotEmpty)
-              Text(widget.publication.texte!, style: GoogleFonts.poppins(fontSize: 15)),
+            if (widget.publication.texte != null &&
+                widget.publication.texte!.isNotEmpty)
+              Text(widget.publication.texte!,
+                  style: GoogleFonts.poppins(fontSize: 15)),
             if (widget.publication.photo != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
@@ -88,7 +92,7 @@ class _PublicationCardState extends State<PublicationCard> {
     return Row(
       children: [
         CircleAvatar(
-          backgroundImage: NetworkImage(widget.publication.auteur.photoProfil ?? 'https://via.placeholder.com/150'),
+          backgroundImage: NetworkImage('https://via.placeholder.com/150'),
           radius: 20,
         ),
         const SizedBox(width: 12),
@@ -97,12 +101,14 @@ class _PublicationCardState extends State<PublicationCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.publication.auteur.username,
+                widget.publication.auteurUsername,
                 style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
               ),
               Text(
-                DateFormat('d MMMM yyyy \'à\' HH:mm', 'fr_FR').format(DateTime.parse(widget.publication.createdAt)),
-                style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
+                DateFormat('d MMMM yyyy \'à\' HH:mm', 'fr_FR')
+                    .format(widget.publication.datePublication),
+                style: GoogleFonts.poppins(
+                    fontSize: 12, color: Colors.grey[600]),
               ),
             ],
           ),
@@ -115,14 +121,16 @@ class _PublicationCardState extends State<PublicationCard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Commentaires', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        Text('Commentaires',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
         if (_comments.isNotEmpty)
           ..._comments.map((comment) => _buildCommentTile(comment)),
         if (_comments.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Text('Aucun commentaire.', style: GoogleFonts.poppins(color: Colors.grey)),
+            child: Text('Aucun commentaire.',
+                style: GoogleFonts.poppins(color: Colors.grey)),
           ),
         const SizedBox(height: 8),
         Row(
@@ -132,7 +140,9 @@ class _PublicationCardState extends State<PublicationCard> {
                 controller: _commentController,
                 decoration: InputDecoration(
                   hintText: 'Ajouter un commentaire...',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide.none),
                   filled: true,
                   fillColor: Colors.grey[200],
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -144,9 +154,9 @@ class _PublicationCardState extends State<PublicationCard> {
             _isCommenting
                 ? const CircularProgressIndicator()
                 : IconButton(
-                    icon: const Icon(Icons.send, color: Color(0xFF2196F3)),
-                    onPressed: _postComment,
-                  ),
+              icon: const Icon(Icons.send, color: Color(0xFF2196F3)),
+              onPressed: _postComment,
+            ),
           ],
         ),
       ],
@@ -160,7 +170,7 @@ class _PublicationCardState extends State<PublicationCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
-            backgroundImage: NetworkImage(comment.auteur.photoProfil ?? 'https://via.placeholder.com/150'),
+            backgroundImage: NetworkImage('https://via.placeholder.com/150'),
             radius: 16,
           ),
           const SizedBox(width: 8),
@@ -168,7 +178,8 @@ class _PublicationCardState extends State<PublicationCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(comment.auteur.username, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13)),
+                Text(comment.auteurUsername, style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600, fontSize: 13)),
                 Text(comment.contenu, style: GoogleFonts.poppins(fontSize: 13)),
               ],
             ),

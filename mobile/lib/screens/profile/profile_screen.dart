@@ -14,6 +14,7 @@ import 'package:memoire/screens/group/group_list_screen.dart';
 import 'package:memoire/home_screen.dart';
 import 'package:memoire/widgets/profile_widgets/parcours_display_section.dart';
 import 'create_publication_screen.dart';
+import '../messaging/conversations_main_screen.dart';
 
 
 class ProfileScreen extends StatefulWidget {
@@ -56,7 +57,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _navActions = [
           () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeScreen()),),
           () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EventsMainScreen()),),
-          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GroupListScreen()),),
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConversationsMainScreen()),),
       if (isAlumni) () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EditParcoursScreen()),),
           () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()),),
     ];

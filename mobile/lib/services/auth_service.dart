@@ -170,13 +170,18 @@ class AuthService {
     }
   }
 
-  /// Récupère le profil public (ne nécessite pas de token).
   Future<UserModel> fetchPublicProfile(String username) async {
     final url = ApiConstants.accountRead.replaceFirst('{username}', username);
-    print('✅ URL demandée : $url'); // AJOUT TEMPORAIRE
+    print('✅ fetchPublicProfile URL → $url');
     final resp = await DioClient.dio.get(url);
+
+    // NOUVEAU : logguez la réponse brute
+    print('✅ fetchPublicProfile RAW → ${resp.data}');
+
     return UserModel.fromJson(resp.data as Map<String, dynamic>);
   }
+
+
 
 
 
@@ -195,18 +200,13 @@ class AuthService {
   }
 
   /// Envoie une demande de mentorat à un alumni.
-  Future<void> sendMentorshipRequest({
-    required int userId,
-    String? message,
-  }) async {
-    await DioClient.dio.post(
-      ApiConstants.mentoratSend,
-      data: {
-        'alumni_id': userId,
-        if (message != null) 'message': message,
-      },
-    );
-  }
+  ///  Future<void> sendMentorshipRequest({
+  ///  required int userId,
+///   String? message,
+  ///  }) async {
+  ///   await DioClient.dio.post(ApiConstants.mentoratSend,
+  /// data: {'alumni_id': userId,
+///  if (message != null) 'message': message,},);}
 
   /// Signaler un utilisateur
   Future<void> reportUser({
@@ -239,9 +239,20 @@ class AuthService {
       throw Exception('Une erreur inattendue est survenue.');
     }
   }
-  /// récupère la liste brute de tous les alumnis (JSON)
-  Future<List<Map<String, dynamic>>> fetchAllAlumniJson() async {
-    final resp = await DioClient.dio.get(ApiConstants.alumnisList);
+  /// récupère la liste des alumnis (JSON), avec possibilité de recherche par username
+  Future<List<Map<String, dynamic>>> fetchAllAlumniJson({String? username}) async {
+    final params = <String, dynamic>{};
+    if (username != null && username.isNotEmpty) {
+      // On assume que le backend supporte la recherche via un paramètre 'search'
+      params['search'] = username;
+    }
+    final resp = await DioClient.dio.get(ApiConstants.alumnisList, queryParameters: params);
+
+    // Gère une réponse paginée de DRF, qui est un Map contenant 'results'
+    if (resp.data is Map<String, dynamic> && resp.data.containsKey('results')) {
+      return List<Map<String, dynamic>>.from(resp.data['results'] as List);
+    }
+    // Gère une réponse non paginée, qui est directement une List
     return List<Map<String, dynamic>>.from(resp.data as List);
   }
 
@@ -249,33 +260,31 @@ class AuthService {
 
   /// Pipeline : username → alumni complet + user_id
   Future<Map<String, dynamic>> fetchPublicAlumniByUsername(String username) async {
-    // 1) Liste brute de tous les alumnis
-    final all = await fetchAllAlumniJson(); // List<Map>
+    // Étape 1 : Récupérer le profil utilisateur de base pour obtenir son ID.
+    final userProfile = await fetchPublicProfile(username);
+    final userId = userProfile.id;
 
-    // 2) Trouve l’alumni via username
-    final match = all.firstWhere(
-          (a) => (a['user']?['username'] as String?)?.toLowerCase() == username.toLowerCase(),
-      orElse: () => throw Exception('Aucun alumni trouvé pour "$username"'),
-    );
+    // Étape 2 : Utiliser l'endpoint de profil détaillé en pariant qu'il accepte un USER_ID.
+    final url = ApiConstants.publicAlumniProfileById.replaceFirst('{id}', userId.toString());
+    final resp = await DioClient.dio.get(url);
+    final alumniData = resp.data as Map<String, dynamic>;
 
-    final user = match['user'] as Map<String, dynamic>?;
-    if (user == null || user['id'] == null) {
-      throw Exception('alumni user.id manquant pour $username');
+    // Étape 3 : Vérifier si l'ID de l'objet Alumni est maintenant présent.
+    final alumniId = alumniData['id'] as int?;
+    if (alumniId == null) {
+      throw Exception(
+          "La solution de contournement a échoué. L'ID de l'alumni est toujours manquant, même sur l'endpoint de profil détaillé. Un changement au backend est requis pour inclure le champ 'id' dans la réponse de l'API.");
     }
 
-    final userId = user['id'];
-    final alumniId = match['id'] ?? userId;
-
-    // 3) On récupère les parcours depuis le backend
+    // Étape 4 : Utiliser l'ID d'alumni pour récupérer les parcours.
     final parcoursAcad = await fetchParcoursAcademiques(alumniId);
     final parcoursPro = await fetchParcoursProfessionnels(alumniId);
 
-    // 4) On enrichit l’objet avec tous les éléments nécessaires
-    match['user_id'] = userId;
-    match['parcours_academiques'] = parcoursAcad;
-    match['parcours_professionnels'] = parcoursPro;
+    // Étape 5 : Enrichir l'objet avec les parcours et le retourner.
+    alumniData['parcours_academiques'] = parcoursAcad;
+    alumniData['parcours_professionnels'] = parcoursPro;
 
-    return match;
+    return alumniData;
   }
 
   // ❌ Supprime ou commente cette méthode, devenue inutile
@@ -322,4 +331,43 @@ class AuthService {
     return _currentUser?.username;
   }
 
+  /// LA NOUVELLE FONCTION ROBUSTE
+  /// Charge le profil complet d'un alumni (infos user + parcours) en une seule fois.
+  /// C'est la méthode à privilégier pour l'écran de profil public.
+  Future<Map<String, dynamic>> fetchCompleteAlumniProfile(String username) async {
+    // 1. Rechercher l'alumni dans la liste pour obtenir les IDs et les données complètes.
+    final results = await fetchAllAlumniJson(username: username);
+
+    if (results.isEmpty) {
+      throw Exception('Aucun alumni trouvé pour "$username".');
+    }
+
+    final match = results.firstWhere(
+      (a) => (a['user']?['username'] as String?)?.toLowerCase() == username.toLowerCase(),
+      orElse: () => throw Exception('Aucune correspondance exacte pour "$username".'),
+    );
+
+    // 2. Extraire l'objet utilisateur complet et l'ID de l'alumni.
+    final userObject = match['user'] as Map<String, dynamic>?;
+    final alumniId = match['id'] as int?;
+
+    if (userObject == null || userObject['id'] == null || alumniId == null) {
+      throw Exception(
+          "L'API ne retourne pas les données complètes. L'ID utilisateur ou l'ID alumni est manquant.");
+    }
+
+    // 3. Créer le modèle UserModel complet.
+    final userModel = UserModel.fromJson(userObject);
+
+    // 4. Récupérer les parcours.
+    final parcoursAcad = await fetchParcoursAcademiques(alumniId);
+    final parcoursPro = await fetchParcoursProfessionnels(alumniId);
+
+    // 5. Retourner toutes les données nécessaires pour l'écran de profil.
+    return {
+      'user': userModel,
+      'parcours_academiques': parcoursAcad,
+      'parcours_professionnels': parcoursPro,
+    };
+  }
 }

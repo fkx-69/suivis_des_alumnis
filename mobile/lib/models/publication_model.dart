@@ -7,7 +7,7 @@ class PublicationModel {
   final String? video;
   final DateTime datePublication;
   final List<CommentModel> commentaires;
-  final int nombresCommentaires; // ✅ ajouter ce champ
+  final int nombresCommentaires;
 
   PublicationModel({
     required this.id,
@@ -17,8 +17,11 @@ class PublicationModel {
     this.video,
     required this.datePublication,
     required this.commentaires,
-    required this.nombresCommentaires, // ✅ inclure ici
+    required this.nombresCommentaires,
   });
+
+  // ✅ Getter personnalisé
+  String get auteur => auteurUsername;
 
   factory PublicationModel.fromJson(Map<String, dynamic> json) {
     return PublicationModel(
@@ -31,7 +34,7 @@ class PublicationModel {
       commentaires: (json['commentaires'] as List)
           .map((e) => CommentModel.fromJson(e))
           .toList(),
-      nombresCommentaires: json['nombres_commentaires'] ?? 0, // ✅
+      nombresCommentaires: json['nombres_commentaires'] ?? 0,
     );
   }
 }

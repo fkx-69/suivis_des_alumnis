@@ -119,7 +119,7 @@ class AlumniSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Alumni
-        fields = ['user', 'filiere' , 'secteur_activite', 'situation_pro', 'poste_actuel', 'nom_entreprise']
+        fields = ['id', 'user', 'filiere', 'secteur_activite', 'situation_pro', 'poste_actuel', 'nom_entreprise']
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
@@ -165,6 +165,7 @@ class UserPublicSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = [
+            'id',  
             'username',
             'nom',
             'prenom',
@@ -172,6 +173,7 @@ class UserPublicSerializer(serializers.ModelSerializer):
             'biographie',
             'role',
         ]
+
     def get_peut_recevoir_demande(self, obj):
         return obj.role == 'ALUMNI'
     
@@ -183,6 +185,7 @@ class PublicAlumniProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Alumni
         fields = [
+            'id',  
             'user',
             'filiere',
             'secteur_activite',
@@ -192,3 +195,4 @@ class PublicAlumniProfileSerializer(serializers.ModelSerializer):
             'parcours_academiques',
             'parcours_professionnels',
         ]
+

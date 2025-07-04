@@ -1,6 +1,6 @@
 class ApiConstants {
-  static const String baseUrl = "http://localhost:8000/api"; // localhost Android/emulator
-  // static const String baseUrl = "http://127.0.0.1:8000/api"; // pour web
+ // static const String baseUrl = "http://172.20.10.2:8000/api"; // localhost Android/emulator
+  static const String baseUrl = "http://localhost:8000/api"; // pour web
 
   // Auth
   static const String login = '$baseUrl/accounts/login/';
@@ -12,8 +12,8 @@ class ApiConstants {
   static const String changeEmail = '$baseUrl/accounts/change-email/';
   static const String verifyPassword = '$baseUrl/accounts/verify-password/';
   static const String getProfile = '$baseUrl/accounts/profile_widgets';
-  static const String alumnisList            = '$baseUrl/alumnis/';
-  static const String publicAlumniProfileById= '$baseUrl/alumni/public/{id}/';
+  static const String alumnisList = '$baseUrl/accounts/alumnis/';
+  static const String publicAlumniProfileById= '$baseUrl/accounts/alumni/public/{id}/';
 
   // Profil public
   static const String accountRead = '$baseUrl/accounts/{username}/';
@@ -44,6 +44,8 @@ class ApiConstants {
   static const String parcoursProfessionnelsPartial = "$baseUrl/accounts/parcours-professionnels/{id}/";
   static const String parcoursProfessionnelsDelete = "$baseUrl/accounts/parcours-professionnels/{id}/";
 
+  static const String parcoursAcademiquesAlumni = '$baseUrl/accounts/parcours-academiques/alumni/';
+  static const String parcoursProfessionnelsAlumni = '$baseUrl/accounts/parcours-professionnels/alumni/';
   // Filières
   static const String filieres = '$baseUrl/filiere/';
 
@@ -55,18 +57,29 @@ class ApiConstants {
 
   /// Commenter une publication
   static const String publicationsComment = "$baseUrl/publications/commenter/";
+  // Pour commenter une publication
+  static const String commenterPublication = "$baseUrl/publications/commenter/";
+
+// Pour supprimer un commentaire
+  static String publicationsDeleteComment(int id) =>
+      '$baseUrl/publications/commentaire/$id/supprimer/';
+
+
+
 
   /// Supprimer une publication (remplace {id} par l’ID)
   static const String publicationsDelete = "$baseUrl/publications/{id}/supprimer/";
 
   // Événements
-  // Endpoints "events"
   static const String eventsCalendar = "$baseUrl/events/evenements/"; // GET
-  static const String eventsCreate = "$baseUrl/events/creer/"; // POST
+  static const String eventsCreate = "$baseUrl/events/evenements/creer/"; // ✅ Bonne URL
+  static const String eventsValidate = "$baseUrl/events/evenements/{id}/valider/"; // POST
+// EVENTS
+  static const String eventsAll = "$baseUrl/events/evenements/"; // GET: Tous les événements
+  static const String myEvents = "$baseUrl/events/evenements/mes/"; // GET: Mes événements
+  static const String eventsUpdate = "$baseUrl/events/evenements/{id}/modifier/"; // PUT ou PATCH
   static const String eventsDelete = "$baseUrl/events/evenements/{id}/supprimer/"; // DELETE
-  static const String eventsUpdate = "$baseUrl/events/{id}/modifier/"; // PUT
-  static const String eventsPartial = "$baseUrl/events/{id}/modifier/"; // PATCH
-  static const String eventsValidate = "$baseUrl/events/{id}/valider/"; // POST
+
 
   // Groupes
   static const String groupsList        = '$baseUrl/groups/listes/';
@@ -84,6 +97,12 @@ class ApiConstants {
   static const String messagingSent            = '$baseUrl/messaging/envoyes/';
   static const String messagingReceived        = '$baseUrl/messaging/recus/';
   static const String messagingWithUser        = '$baseUrl/messaging/with/{username}/';
+
+  static const suggestions = '$baseUrl/accounts/suggestions/';
+  static const search = '$baseUrl/accounts/search/';
+  static const feed = '$baseUrl/publications/fil/';
+  static const events = '$baseUrl/events/evenements/';
+  static const userPublic = '$baseUrl/accounts'; // Pour voir un profil via /{username}/
 
 }
 

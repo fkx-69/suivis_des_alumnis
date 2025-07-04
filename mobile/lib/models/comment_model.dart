@@ -5,6 +5,7 @@ class CommentModel {
   final String auteurUsername;
   final String contenu;
   final DateTime dateCommentaire;
+  final String? auteurPhotoProfil; // ✅ AJOUT
 
   CommentModel({
     required this.id,
@@ -12,6 +13,7 @@ class CommentModel {
     required this.auteurUsername,
     required this.contenu,
     required this.dateCommentaire,
+    this.auteurPhotoProfil, // ✅ AJOUT
   });
 
   factory CommentModel.fromJson(Map<String, dynamic> json) {
@@ -21,6 +23,7 @@ class CommentModel {
       auteurUsername: json['auteur_username'],
       contenu: json['contenu'],
       dateCommentaire: DateTime.parse(json['date_commentaire']),
+      auteurPhotoProfil: json['auteur_photo_profil'], // ✅ AJOUT
     );
   }
 }

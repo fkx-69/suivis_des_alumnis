@@ -1,9 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../../models/event_model.dart';
 
-typedef EventFormSubmit = Future<void> Function(EventModel event);
+typedef EventFormSubmit = Future<void> Function(EventModel event, File? image);
 
 class EventForm extends StatefulWidget {
   final EventModel? initial;
@@ -26,6 +28,7 @@ class _EventFormState extends State<EventForm> {
   late DateTime _date;
   late TimeOfDay _timeStart;
   late TimeOfDay _timeEnd;
+  File? _imageFile;
 
   @override
   void initState() {
@@ -88,6 +91,16 @@ class _EventFormState extends State<EventForm> {
     if (picked != null) setState(() => _timeEnd = picked);
   }
 
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
+    }
+  }
+
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -119,7 +132,7 @@ class _EventFormState extends State<EventForm> {
       createur: widget.initial?.createur,
     );
 
-    await widget.onSubmit(ev);
+    await widget.onSubmit(ev, _imageFile);
   }
 
   @override
@@ -159,6 +172,39 @@ class _EventFormState extends State<EventForm> {
             maxLines: 4,
             validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
           ),
+          const SizedBox(height: 24),
+
+          // Image Picker
+          if (_imageFile != null)
+            Stack(
+              alignment: Alignment.topRight,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(_imageFile!, height: 150, width: double.infinity, fit: BoxFit.cover),
+                ),
+                Container(
+                  margin: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                    onPressed: () => setState(() => _imageFile = null),
+                  ),
+                ),
+              ],
+            ),
+          if (_imageFile == null)
+            OutlinedButton.icon(
+              onPressed: _pickImage,
+              icon: const Icon(Icons.image_outlined),
+              label: const Text('Ajouter une image (optionnel)'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
           const SizedBox(height: 24),
 
           // Sélecteurs date & heure

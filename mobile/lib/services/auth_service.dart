@@ -8,6 +8,14 @@ import 'package:memoire/services/dio_client.dart';
 import '../helpers/token_manager.dart';
 
 class AuthService {
+  static final AuthService _instance = AuthService._internal();
+
+  factory AuthService() {
+    return _instance;
+  }
+
+  AuthService._internal();
+  
   UserModel? _currentUser;
   UserModel? get currentUser => _currentUser;
 
@@ -164,11 +172,13 @@ class AuthService {
 
   /// Récupère le profil public (ne nécessite pas de token).
   Future<UserModel> fetchPublicProfile(String username) async {
-    final url =
-    ApiConstants.accountRead.replaceFirst('{username}', username);
+    final url = ApiConstants.accountRead.replaceFirst('{username}', username);
+    print('✅ URL demandée : $url'); // AJOUT TEMPORAIRE
     final resp = await DioClient.dio.get(url);
     return UserModel.fromJson(resp.data as Map<String, dynamic>);
   }
+
+
 
   /// Envoie un message à un utilisateur ou à une conversation.
   Future<void> sendMessage({
@@ -203,13 +213,31 @@ class AuthService {
     required int reportedUserId,
     required String reason,
   }) async {
-    await DioClient.dio.post(
-      ApiConstants.reportsReport, // assure-toi que c’est bien la constante
-      data: {
-        'reported_user_id': reportedUserId,
-        'reason': reason,
-      },
-    );
+    final data = {
+      'reported_user_id': reportedUserId,
+      'reason': reason,
+    };
+
+    print('SIGNALE UTILISATEUR - ENVOI: $data');
+
+    try {
+      final response = await DioClient.dio.post(
+        ApiConstants.reportsReport,
+        data: data,
+      );
+      print('SIGNALE UTILISATEUR - SUCCÈS: ${response.statusCode}');
+    } on DioException catch (e) {
+      print('SIGNALE UTILISATEUR - ERREUR DIO: ${e.response?.statusCode}');
+      print('SIGNALE UTILISATEUR - ERREUR DATA: ${e.response?.data}');
+      
+      final errorMessage = e.response?.data?['detail'] ?? 
+                           e.response?.data?.toString() ?? 
+                           'Une erreur inconnue est survenue lors du signalement.';
+      throw Exception(errorMessage);
+    } catch (e) {
+      print('SIGNALE UTILISATEUR - ERREUR INCONNUE: $e');
+      throw Exception('Une erreur inattendue est survenue.');
+    }
   }
   /// récupère la liste brute de tous les alumnis (JSON)
   Future<List<Map<String, dynamic>>> fetchAllAlumniJson() async {
@@ -217,31 +245,81 @@ class AuthService {
     return List<Map<String, dynamic>>.from(resp.data as List);
   }
 
-  /// récupère le profil public complet d’un alumni par son alumni.id (JSON)
-  Future<Map<String, dynamic>> fetchPublicAlumniProfileById(int alumniId) async {
-    final url = ApiConstants.publicAlumniProfileById
-        .replaceFirst('{id}', alumniId.toString());
-    final resp = await DioClient.dio.get(url);
-    return Map<String, dynamic>.from(resp.data as Map);
-  }
 
-  /// Pipeline : username → alumni.id → profil complet JSON + user_id
+
+  /// Pipeline : username → alumni complet + user_id
   Future<Map<String, dynamic>> fetchPublicAlumniByUsername(String username) async {
     // 1) Liste brute de tous les alumnis
-    final all = await fetchAllAlumniJson(); // retourne List<Map>
-    // 2) Trouve l’alumni dont user.username matche
+    final all = await fetchAllAlumniJson(); // List<Map>
+
+    // 2) Trouve l’alumni via username
     final match = all.firstWhere(
-          (a) => (a['user']?['username'] as String?) == username,
+          (a) => (a['user']?['username'] as String?)?.toLowerCase() == username.toLowerCase(),
       orElse: () => throw Exception('Aucun alumni trouvé pour "$username"'),
     );
-    final alumniId = match['id'] as int;
-    final userId   = (match['user'] as Map<String, dynamic>)['id'] as int;
 
-    // 3) Récupère le JSON complet via /alumni/public/{id}/
-    final profile = await fetchPublicAlumniProfileById(alumniId);
+    final user = match['user'] as Map<String, dynamic>?;
+    if (user == null || user['id'] == null) {
+      throw Exception('alumni user.id manquant pour $username');
+    }
 
-    // 4) Injecte user_id pour pouvoir le reporter
-    profile['user_id'] = userId;
-    return profile;
+    final userId = user['id'];
+    final alumniId = match['id'] ?? userId;
+
+    // 3) On récupère les parcours depuis le backend
+    final parcoursAcad = await fetchParcoursAcademiques(alumniId);
+    final parcoursPro = await fetchParcoursProfessionnels(alumniId);
+
+    // 4) On enrichit l’objet avec tous les éléments nécessaires
+    match['user_id'] = userId;
+    match['parcours_academiques'] = parcoursAcad;
+    match['parcours_professionnels'] = parcoursPro;
+
+    return match;
   }
+
+  // ❌ Supprime ou commente cette méthode, devenue inutile
+  // Future<Map<String, dynamic>> fetchPublicAlumniProfileById(int alumniId) async {
+  //   final url = ApiConstants.publicAlumniProfileById
+  //       .replaceFirst('{id}', alumniId.toString());
+  //   final resp = await DioClient.dio.get(url);
+  //   return Map<String, dynamic>.from(resp.data as Map);
+  // }
+
+  /// Récupère les parcours académiques d’un alumni par son ID
+  Future<List<Map<String, dynamic>>> fetchParcoursAcademiques(int alumniId) async {
+    try {
+      final url = '${ApiConstants.parcoursAcademiquesAlumni}$alumniId/';
+      final response = await DioClient.dio.get(url);
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(response.data);
+      } else {
+        throw Exception('Erreur chargement parcours académiques');
+      }
+    } on DioException catch (e) {
+      final msg = e.response?.data['detail'] ?? 'Erreur chargement parcours académiques';
+      throw Exception(msg.toString());
+    }
+  }
+
+  /// Récupère les parcours professionnels d’un alumni par son ID
+  Future<List<Map<String, dynamic>>> fetchParcoursProfessionnels(int alumniId) async {
+    try {
+      final url = '${ApiConstants.parcoursProfessionnelsAlumni}$alumniId/';
+      final response = await DioClient.dio.get(url);
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(response.data);
+      } else {
+        throw Exception('Erreur chargement parcours professionnels');
+      }
+    } on DioException catch (e) {
+      final msg = e.response?.data['detail'] ?? 'Erreur chargement parcours professionnels';
+      throw Exception(msg.toString());
+    }
+  }
+  /// Récupère le username de l'utilisateur connecté
+  String? getCurrentUsername() {
+    return _currentUser?.username;
+  }
+
 }

@@ -6,6 +6,8 @@ class EventModel {
   final String description;
   final DateTime dateDebut;
   final DateTime dateFin;
+  final String? image; // Champ pour l'URL de l'image
+  final bool valide;
 
   // Champs en lecture seule (renvoyés par l’API, mais jamais envoyés)
   final String? dateDebutAffiche;
@@ -18,6 +20,8 @@ class EventModel {
     required this.description,
     required this.dateDebut,
     required this.dateFin,
+    this.image,
+    this.valide = false,
     this.dateDebutAffiche,
     this.dateFinAffiche,
     this.createur,
@@ -31,6 +35,8 @@ class EventModel {
       description: json['description'] as String,
       dateDebut: DateTime.parse(json['date_debut'] as String),
       dateFin: DateTime.parse(json['date_fin'] as String),
+      image: json['image'] as String?,
+      valide: json['valide'] as bool? ?? false,
       dateDebutAffiche: json['date_debut_affiche'] as String?,
       dateFinAffiche: json['date_fin_affiche'] as String?,
       createur: json['createur'] as String?,

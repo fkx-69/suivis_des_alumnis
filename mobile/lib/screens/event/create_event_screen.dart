@@ -70,19 +70,18 @@ class CreateEventScreen extends StatelessWidget {
                             dateDebut: initialDay!,
                             dateFin: initialDay!.add(const Duration(hours: 1)),
                           ),
-                          onSubmit: (ev) async {
-                            final body = ev.toJson();
+                          onSubmit: (event, image) async {
                             try {
-                              await EventService().createEvent(ev);
+                              await EventService().createEvent(event, image: image);
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Événement créé !')),
+                                const SnackBar(content: Text('Événement créé avec succès !')),
                               );
                               Navigator.pop(context, true);
                             } catch (e) {
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Erreur création événement : $e')),
+                                SnackBar(content: Text('Erreur lors de la création : $e')),
                               );
                             }
                           },

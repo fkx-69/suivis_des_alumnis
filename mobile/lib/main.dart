@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:memoire/home_screen.dart';
+import 'package:memoire/screens/auth/welcome_screen.dart';
 
 
 void main() {
@@ -20,7 +21,7 @@ class AlumniApp extends StatelessWidget {
         textTheme: GoogleFonts.poppinsTextTheme(),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const WelcomeScreen(),
     );
   }
 }

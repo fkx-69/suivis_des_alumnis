@@ -62,4 +62,14 @@ class PublicationService {
       throw Exception(msg);
     }
   }
+  Future<void> deleteComment(int commentId) async {
+    final url = ApiConstants.publicationsDeleteComment(commentId);
+    try {
+      await _dio.delete(url);
+    } on DioException catch (e) {
+      final msg = e.response?.data['detail'] ?? 'Erreur suppression commentaire';
+      throw Exception(msg);
+    }
+  }
+
 }

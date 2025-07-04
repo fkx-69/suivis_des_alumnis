@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import '../../models/publication_model.dart';
 import '../../models/comment_model.dart';
-import 'package:memoire/services/publication_service.dart';
+import '../../services/publication_service.dart';
+import '../../services/auth_service.dart';
 
 class PublicationDetailScreen extends StatefulWidget {
   final List<PublicationModel> publications;
@@ -24,14 +28,17 @@ class _PublicationDetailScreenState extends State<PublicationDetailScreen> {
   final PublicationService _service = PublicationService();
   final TextEditingController _commentController = TextEditingController();
   bool _submitting = false;
+  String? currentUsername;
 
   @override
   void initState() {
     super.initState();
+    initializeDateFormatting('fr_FR', null);
     _pageController = PageController(
       initialPage: widget.initialIndex,
       viewportFraction: 1,
     );
+    currentUsername = AuthService().getCurrentUsername();
   }
 
   @override
@@ -44,51 +51,146 @@ class _PublicationDetailScreenState extends State<PublicationDetailScreen> {
   Future<void> _addComment(int pubId) async {
     final text = _commentController.text.trim();
     if (text.isEmpty) return;
+
     setState(() => _submitting = true);
+    FocusScope.of(context).unfocus();
+
     try {
-      await _service.commentPublication(pubId, text);
-      final idx = _pageController.page!.toInt();
-      setState(() {
-        widget.publications[idx].commentaires.add(
-          CommentModel(
-            id: -1,
-            publication: pubId,
-            auteurUsername: 'Vous',
-            contenu: text,
-            dateCommentaire: DateTime.now(),
-          ),
-        );
-        _commentController.clear();
-      });
+      final newComment = await _service.commentPublication(pubId, text);
+      final pageIndex = _pageController.page?.round() ?? widget.initialIndex;
+
+      if (mounted) {
+        setState(() {
+          widget.publications[pageIndex].commentaires.add(newComment);
+          _commentController.clear();
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        Fluttertoast.showToast(msg: 'Erreur: ${e.toString()}');
+      }
     } finally {
-      setState(() => _submitting = false);
+      if (mounted) {
+        setState(() => _submitting = false);
+      }
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
-        leading: BackButton(color: const Color(0xFF2196F3)),
-        title: Text(
-          'Publication',
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF2196F3),
-            fontWeight: FontWeight.w600,
+  Future<void> _deleteComment(int pubId, int commentId) async {
+    try {
+      await _service.deleteComment(commentId);
+      final pageIndex = _pageController.page?.round() ?? widget.initialIndex;
+
+      if (mounted) {
+        setState(() {
+          widget.publications[pageIndex].commentaires.removeWhere((c) => c.id == commentId);
+        });
+      }
+      Fluttertoast.showToast(msg: 'Commentaire supprimé');
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Erreur suppression: ${e.toString()}');
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inSeconds < 60) return 'à l\'instant';
+    if (difference.inMinutes < 60) return 'il y a ${difference.inMinutes} min';
+    if (difference.inHours < 24) return 'il y a ${difference.inHours} h';
+
+    return DateFormat.yMMMd('fr_FR').add_Hm().format(date);
+  }
+
+  Widget _buildCommentItem(CommentModel comment, PublicationModel post) {
+    final isOwner = comment.auteurUsername == currentUsername;
+    final isPostOwner = post.auteurUsername == currentUsername;
+    final canDelete = isOwner || isPostOwner;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: Colors.grey.shade200,
+            backgroundImage: comment.auteurPhotoProfil != null
+                ? NetworkImage(comment.auteurPhotoProfil!)
+                : null,
+            child: comment.auteurPhotoProfil == null
+                ? Text(
+              comment.auteurUsername[0].toUpperCase(),
+              style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+            )
+                : null,
           ),
-        ),
-      ),
-      body: SafeArea(
-        child: PageView.builder(
-          controller: _pageController,
-          itemCount: widget.publications.length,
-          itemBuilder: (context, index) {
-            return _buildDetail(context, widget.publications[index]);
-          },
-        ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            comment.auteurUsername,
+                            style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                          ),
+                          if (canDelete)
+                            PopupMenuButton<String>(
+                              icon: const Icon(Icons.more_vert, size: 16),
+                              onSelected: (value) {
+                                if (value == 'delete') {
+                                  _deleteComment(post.id, comment.id);
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: 'delete',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.delete, color: Colors.red),
+                                      SizedBox(width: 8),
+                                      Text('Supprimer'),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        comment.contenu,
+                        style: GoogleFonts.poppins(color: Colors.black87),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: Text(
+                    _formatDate(comment.dateCommentaire),
+                    style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -98,7 +200,6 @@ class _PublicationDetailScreenState extends State<PublicationDetailScreen> {
     final keyboardInset = mediaQuery.viewInsets.bottom;
     return Column(
       children: [
-        // Media (photo or video placeholder)
         if (post.photo != null)
           Image.network(
             post.photo!,
@@ -116,7 +217,6 @@ class _PublicationDetailScreenState extends State<PublicationDetailScreen> {
             ),
           ),
 
-        // Texte de la publication
         if (post.texte != null && post.texte!.isNotEmpty)
           Padding(
             padding: const EdgeInsets.all(16),
@@ -128,7 +228,6 @@ class _PublicationDetailScreenState extends State<PublicationDetailScreen> {
 
         const Divider(height: 1),
 
-        // Commentaires
         Expanded(
           child: post.commentaires.isEmpty
               ? Center(
@@ -141,32 +240,14 @@ class _PublicationDetailScreenState extends State<PublicationDetailScreen> {
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: post.commentaires.length,
             itemBuilder: (ctx, i) {
-              final c = post.commentaires[i];
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.grey.shade300,
-                  child: Text(
-                    c.auteurUsername[0].toUpperCase(),
-                    style: GoogleFonts.poppins(color: Colors.grey[800]),
-                  ),
-                ),
-                title: Text(
-                  c.auteurUsername,
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                ),
-                subtitle: Text(c.contenu, style: GoogleFonts.poppins()),
-                trailing: Text(
-                  "${c.dateCommentaire.hour.toString().padLeft(2, '0')}:${c.dateCommentaire.minute.toString().padLeft(2, '0')}",
-                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
-                ),
-              );
+              final comment = post.commentaires[i];
+              return _buildCommentItem(comment, post);
             },
           ),
         ),
 
         const Divider(height: 1),
 
-        // Champ de saisie + bouton
         Padding(
           padding: EdgeInsets.only(
             left: 16,
@@ -211,6 +292,34 @@ class _PublicationDetailScreenState extends State<PublicationDetailScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey.shade100,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 1,
+        leading: BackButton(color: const Color(0xFF2196F3)),
+        title: Text(
+          'Publication',
+          style: GoogleFonts.poppins(
+            color: const Color(0xFF2196F3),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: PageView.builder(
+          controller: _pageController,
+          itemCount: widget.publications.length,
+          itemBuilder: (context, index) {
+            return _buildDetail(context, widget.publications[index]);
+          },
+        ),
+      ),
     );
   }
 }

@@ -8,10 +8,13 @@ import 'package:memoire/widgets/profile_widgets/profile_header.dart';
 import 'package:memoire/widgets/profile_widgets/user_info_card.dart';
 import 'package:memoire/widgets/profile_widgets/parcours_section.dart';
 import 'package:memoire/widgets/profile_widgets/user_publication_list.dart';
-import 'package:memoire/screens/event/event_list_screen.dart';
+import 'package:memoire/screens/event/events_main_screen.dart';
 import 'package:memoire/screens/profile/edit_parcours_screen.dart';
 import 'package:memoire/screens/group/group_list_screen.dart';
 import 'package:memoire/home_screen.dart';
+import 'package:memoire/widgets/profile_widgets/parcours_display_section.dart';
+import 'create_publication_screen.dart';
+
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -52,7 +55,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ];
     _navActions = [
           () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeScreen()),),
-          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EventListScreen()),),
+          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EventsMainScreen()),),
           () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GroupListScreen()),),
       if (isAlumni) () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EditParcoursScreen()),),
           () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()),),
@@ -151,12 +154,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 )
               else
-                ParcoursSection(
-                  parcoursAcademiques:   _parcoursA,
-                  parcoursProfessionnels: _parcoursP,
-                  onAdd:  () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EditParcoursScreen())),
-                  onEdit: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EditParcoursScreen())),
+              // Section parcours (pour alumni)
+                ParcoursDisplaySection(
+                  title: 'Parcours Académiques',
+                  icon: Icons.school,
+                  items: _parcoursA,
+                  titleField: 'diplome',
+                  subtitleFields: ['institution', 'annee_obtention', 'mention'],
                 ),
+              ParcoursDisplaySection(
+                title: 'Parcours Professionnels',
+                icon: Icons.work,
+                items: _parcoursP,
+                titleField: 'poste',
+                subtitleFields: ['entreprise', 'date_debut', 'type_contrat'],
+              ),
+
 
             ],
 
@@ -174,8 +187,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 24),
 
 
+
+
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreatePublicationScreen()),
+          ).then((_) => _loadData());
+        },
+        backgroundColor: const Color(0xFF2196F3),
+        child: const Icon(Icons.add, color: Colors.white),
+        tooltip: 'Créer une publication',
       ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white,

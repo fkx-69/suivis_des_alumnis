@@ -1,17 +1,21 @@
-// lib/screens/profile/public_profile_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
-import '../../widgets/profile_widgets/profile_header.dart';
+import '../../services/messaging_service.dart';
+import '../../widgets/profile_widgets/parcours_display_section.dart';
 import '../../widgets/profile_widgets/user_info_card.dart';
-import '../../widgets/profile_widgets/parcours_section.dart';
+import '../../models/publication_model.dart';
+import '../../services/publication_service.dart';
+import '../../widgets/publication_card.dart';
 
 class PublicProfileScreen extends StatefulWidget {
   final String username;
-  const PublicProfileScreen({Key? key, required this.username})
-      : super(key: key);
+
+  const PublicProfileScreen({
+    Key? key,
+    required this.username,
+  }) : super(key: key);
 
   @override
   State<PublicProfileScreen> createState() => _PublicProfileScreenState();
@@ -19,12 +23,14 @@ class PublicProfileScreen extends StatefulWidget {
 
 class _PublicProfileScreenState extends State<PublicProfileScreen> {
   final AuthService _auth = AuthService();
+  final MessagingService _messaging = MessagingService();
 
   bool _isLoading = true;
-  Map<String, dynamic>? _profileJson;
-  late UserModel _userModel;
-  late List<Map<String, dynamic>> _acad;
-  late List<Map<String, dynamic>> _prof;
+  UserModel? _user;
+  List<Map<String, dynamic>> _acad = [];
+  List<Map<String, dynamic>> _prof = [];
+  List<PublicationModel> _publications = [];
+  final PublicationService _publicationService = PublicationService();
 
   @override
   void initState() {
@@ -35,30 +41,28 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
   Future<void> _loadProfile() async {
     setState(() => _isLoading = true);
     try {
-      final json =
-      await _auth.fetchPublicAlumniByUsername(widget.username);
-      if (!mounted) return;
+      final user = await _auth.fetchPublicProfile(widget.username);
+      _user = user;
 
-      // 1) extraire et construire UserModel
-      final userMap =
-      Map<String, dynamic>.from(json['user'] as Map<String, dynamic>);
-      _userModel = UserModel.fromJson(userMap);
+      if (_user!.role.toLowerCase() == 'alumni') {
+        final alumniData = await _auth.fetchPublicAlumniByUsername(_user!.username);
 
-      // 2) extraire parcours
-      _acad = List<Map<String, dynamic>>.from(
-          json['parcours_academiques'] as List<dynamic>? ?? []);
-      _prof = List<Map<String, dynamic>>.from(
-          json['parcours_professionnels'] as List<dynamic>? ?? []);
+        // On extrait directement les parcours du JSON complet
+        _acad = List<Map<String, dynamic>>.from(alumniData['parcours_academiques'] ?? []);
+        _prof = List<Map<String, dynamic>>.from(alumniData['parcours_professionnels'] ?? []);
+      }
 
-      // injecter user_id pour signalement / mentorat
-      _profileJson = {
-        ...json,
-        'user_id': userMap['id'] as int,
-      };
+      // Charger les publications et les filtrer
+      final allPublications = await _publicationService.fetchFeed();
+      _publications = allPublications
+          .where((p) => p.auteur.username.toLowerCase() == widget.username.toLowerCase())
+          .toList();
+
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Erreur : $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur : $e')),
+        );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -76,7 +80,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     if (contenu == null || contenu.trim().isEmpty) return;
 
     try {
-      await _auth.sendMessage(
+      await _messaging.sendMessage(
         toUsername: widget.username,
         contenu: contenu.trim(),
       );
@@ -87,8 +91,9 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Erreur : $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur : $e')),
+        );
       }
     }
   }
@@ -117,11 +122,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     if (ok != true) return;
 
     try {
-      final userId = _profileJson!['user_id'] as int;
-      await _auth.sendMentorshipRequest(
-        userId: userId,
-        message: null,
-      );
+      await _messaging.sendMentorshipRequest(userId: _user!.id!);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Demande de mentorat envoyée')),
@@ -129,37 +130,73 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Erreur : $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur : $e')),
+        );
       }
     }
   }
 
   Future<void> _reportUser() async {
-    final raison = await showDialog<String>(
+    final String? reason = await showDialog<String>(
       context: context,
-      builder: (_) => _TextEntryDialog(
-        title: 'Signaler ce compte',
-        hint: 'Raison du signalement…',
-      ),
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: Text('Signaler @${_user?.username ?? 'cet utilisateur'}', style: GoogleFonts.poppins()),
+          children: <Widget>[
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, 'comportement_inapproprié'),
+              child: Text('Comportement inapproprié', style: GoogleFonts.poppins()),
+            ),
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, 'contenu_inapproprié'),
+              child: Text('Contenu inapproprié', style: GoogleFonts.poppins()),
+            ),
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, 'autre'),
+              child: Text('Autre', style: GoogleFonts.poppins()),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0, right: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Annuler'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
-    if (raison == null || raison.trim().isEmpty) return;
+
+    if (reason == null) return; // L'utilisateur a annulé
 
     try {
-      final userId = _profileJson!['user_id'] as int;
       await _auth.reportUser(
-        reportedUserId: userId,
-        reason: raison.trim(),
+        reportedUserId: _user!.id!,
+        reason: reason,
       );
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Compte signalé')),
+          const SnackBar(
+            content: Text('Utilisateur signalé. Merci pour votre contribution.'),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Erreur : $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors du signalement : $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
@@ -171,15 +208,16 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
-    if (_profileJson == null) {
+
+    if (_user == null) {
       return const Scaffold(
-        body: Center(child: Text('Profil introuvable')),
+        body: Center(child: Text("Profil introuvable")),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('@${_userModel.username}'),
+        title: Text('@${_user!.username}'),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -191,21 +229,19 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.report, color: Colors.redAccent),
+            icon: const Icon(Icons.flag_outlined),
             onPressed: _reportUser,
+            tooltip: "Signaler l'utilisateur",
           ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: _loadProfile,
-        color: const Color(0xFF4CAF50),
         child: ListView(
           padding: const EdgeInsets.symmetric(vertical: 16),
           children: [
-            ProfileHeader(user: _userModel),
+            _PublicHeader(user: _user!),
             const SizedBox(height: 16),
-
-            // actions sous le nom
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Row(
@@ -220,51 +256,116 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      icon: const Icon(Icons.group_add_outlined),
-                      label: const Text('Mentorat'),
-                      onPressed: _requestMentorat,
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(48),
+                  if (_user!.role.toLowerCase() == 'alumni') ...[
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.group_add_outlined),
+                        label: const Text('Mentorat'),
+                        onPressed: _requestMentorat,
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48),
+                        ),
                       ),
                     ),
-                  ),
+                  ]
                 ],
               ),
             ),
             const SizedBox(height: 24),
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: UserInfoCard(user: _userModel),
+              child: UserInfoCard(user: _user!),
             ),
             const SizedBox(height: 24),
+            if (_user!.role.toLowerCase() == 'alumni') ...[
+              ParcoursDisplaySection(
+                title: "Parcours académique",
+                icon: Icons.school_outlined,
+                items: _acad,
+                titleField: 'diplome',
+                subtitleFields: ['institution', 'annee_obtention', 'mention'],
+                accentColor: Colors.teal,
+              ),
+              ParcoursDisplaySection(
+                title: "Parcours professionnel",
+                icon: Icons.work_outline,
+                items: _prof,
+                titleField: 'poste',
+                subtitleFields: ['entreprise', 'date_debut', 'type_contrat'],
+                accentColor: Colors.indigo,
+              ),
+            ],
+            const SizedBox(height: 32),
 
+            // Section des publications
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
-                'Parcours',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[800],
-                ),
+                'Publications',
+                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
-            const SizedBox(height: 12),
-
-            ParcoursSection(
-              parcoursAcademiques: _acad,
-              parcoursProfessionnels: _prof,
-              onAdd: null,
-              onEdit: null,
-            ),
-
-            const SizedBox(height: 32),
+            const SizedBox(height: 8),
+            if (_publications.isEmpty)
+              const Center(child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text('Aucune publication pour le moment.'),
+              ))
+            else
+              ListView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: _publications.length,
+                itemBuilder: (context, index) {
+                  final publication = _publications[index];
+                  return PublicationCard(publication: publication);
+                },
+              ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PublicHeader extends StatelessWidget {
+  final UserModel user;
+  const _PublicHeader({required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    final nomComplet = '${user.prenom} ${user.nom}';
+    final username = '@${user.username}';
+    final image = user.photoProfil != null && user.photoProfil!.isNotEmpty
+        ? NetworkImage(user.photoProfil!)
+        : const AssetImage('assets/images/default_avatar.png') as ImageProvider;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Row(
+        children: [
+          CircleAvatar(radius: 42, backgroundImage: image),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(nomComplet,
+                    style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w600)),
+                Text(username,
+                    style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700])),
+                if (user.biographie != null && user.biographie!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    user.biographie!,
+                    style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[800]),
+                  ),
+                ]
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

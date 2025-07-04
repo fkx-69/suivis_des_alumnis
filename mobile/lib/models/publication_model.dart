@@ -1,13 +1,13 @@
 import 'comment_model.dart';
-
 class PublicationModel {
   final int id;
   final String auteurUsername;
   final String? texte;
-  final String? photo;  // URL
-  final String? video;  // URL
+  final String? photo;
+  final String? video;
   final DateTime datePublication;
   final List<CommentModel> commentaires;
+  final int nombresCommentaires; // ✅ ajouter ce champ
 
   PublicationModel({
     required this.id,
@@ -17,6 +17,7 @@ class PublicationModel {
     this.video,
     required this.datePublication,
     required this.commentaires,
+    required this.nombresCommentaires, // ✅ inclure ici
   });
 
   factory PublicationModel.fromJson(Map<String, dynamic> json) {
@@ -28,8 +29,9 @@ class PublicationModel {
       video: json['video'],
       datePublication: DateTime.parse(json['date_publication']),
       commentaires: (json['commentaires'] as List)
-          .map((c) => CommentModel.fromJson(c))
+          .map((e) => CommentModel.fromJson(e))
           .toList(),
+      nombresCommentaires: json['nombres_commentaires'] ?? 0, // ✅
     );
   }
 }

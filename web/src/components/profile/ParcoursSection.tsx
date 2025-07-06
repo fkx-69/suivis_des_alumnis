@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 import { Input } from "@/components/ui/Input";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2, GraduationCap, Briefcase } from "lucide-react";
 import {
   createParcoursAcademique,
   updateParcoursAcademique,
@@ -53,31 +53,44 @@ const ParcoursItem = ({ item, onDelete, onEdit }: ParcoursItemProps) => {
   return (
     <div
       key={isAcademic ? `ac-${item.id}` : `pro-${item.id}`}
-      className="p-4 rounded-lg bg-base-200 flex justify-between items-start"
+      className="card card-bordered bg-base-200 p-4 flex flex-row justify-between items-start"
     >
-      <div>
+      <div className="flex items-start gap-2">
         {isAcademic ? (
-          <>
-            <p className="font-semibold text-lg">{item.diplome}</p>
-            <p className="text-base-content/80">{item.institution}</p>
-            <p className="text-sm text-base-content/60">
-              Obtenu en {item.annee_obtention}{" "}
-              {item.mention && `- Mention ${Mentions[`mention_${item.mention}` as keyof typeof Mentions]}`}
-            </p>
-          </>
+          <GraduationCap className="mt-1 text-primary" size={20} />
         ) : (
-          <>
-            <p className="font-semibold text-lg">{(item as ParcoursProfessionnel).poste}</p>
-            <p className="text-base-content/80">{(item as ParcoursProfessionnel).entreprise}</p>
-            <p className="text-sm text-base-content/60">Depuis {new Date((item as ParcoursProfessionnel).date_debut).toLocaleDateString()} - {(item as ParcoursProfessionnel).type_contrat}</p>
-          </>
+          <Briefcase className="mt-1 text-primary" size={20} />
         )}
+        <div>
+          {isAcademic ? (
+            <>
+              <p className="font-semibold text-lg">{item.diplome}</p>
+              <p className="text-base-content/80">{item.institution}</p>
+              <p className="text-sm text-base-content/60">
+                Obtenu en {item.annee_obtention}{" "}
+                {item.mention &&
+                  `- Mention ${Mentions[`mention_${item.mention}` as keyof typeof Mentions]}`}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-semibold text-lg">{(item as ParcoursProfessionnel).poste}</p>
+              <p className="text-base-content/80">{(item as ParcoursProfessionnel).entreprise}</p>
+              <p className="text-sm text-base-content/60">
+                Depuis {new Date((item as ParcoursProfessionnel).date_debut).toLocaleDateString()} - {(item as ParcoursProfessionnel).type_contrat}
+              </p>
+            </>
+          )}
+        </div>
       </div>
       <div className="flex gap-2 items-center">
         <button className="btn btn-ghost btn-sm btn-circle" onClick={() => onEdit(item)}>
           <Pencil size={16} />
         </button>
-        <button className="btn btn-ghost btn-sm btn-circle text-error" onClick={() => onDelete(item.id, isAcademic ? 'academic' : 'professional')}>
+        <button
+          className="btn btn-ghost btn-sm btn-circle text-error"
+          onClick={() => onDelete(item.id, isAcademic ? 'academic' : 'professional')}
+        >
           <Trash2 size={16} />
         </button>
       </div>

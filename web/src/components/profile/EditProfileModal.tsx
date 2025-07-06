@@ -25,17 +25,23 @@ function buildFields(user: any): ProfileField[] {
 
 interface EditProfileModalProps {
   onClose: () => void;
+  onSaved?: () => void;
 }
 
-export default function EditProfileModal({ onClose }: EditProfileModalProps) {
+export default function EditProfileModal({ onClose, onSaved }: EditProfileModalProps) {
   const { user, updateUser } = useAuth();
   const [fields, setFields] = useState<ProfileField[]>(buildFields(user));
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedCover, setSelectedCover] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
   useEffect(() => {
       if (user?.photo_profil) {
           setPreviewUrl("http://127.0.0.1:8000/" + user.photo_profil);
+      }
+      if (user?.photo_couverture) {
+          setCoverPreview("http://127.0.0.1:8000/" + user.photo_couverture);
       }
   }, [user]);
 
@@ -54,6 +60,18 @@ export default function EditProfileModal({ onClose }: EditProfileModalProps) {
             setPreviewUrl(reader.result as string);
         };
         reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setSelectedCover(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCoverPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -78,6 +96,9 @@ export default function EditProfileModal({ onClose }: EditProfileModalProps) {
     if (selectedFile) {
       data.photo_profil = selectedFile;
     }
+    if (selectedCover) {
+      data.photo_couverture = selectedCover;
+    }
 
     try {
       let newUser = user;
@@ -90,9 +111,11 @@ export default function EditProfileModal({ onClose }: EditProfileModalProps) {
         const updated = await updateProfile(data);
         newUser = { ...newUser, ...updated };
         setSelectedFile(null);
+        setSelectedCover(null);
       }
       updateUser(newUser);
       toast.success("Profil mis à jour");
+      onSaved?.();
     } catch {
       toast.error("Erreur lors de la mise à jour");
     } finally {
@@ -139,6 +162,24 @@ export default function EditProfileModal({ onClose }: EditProfileModalProps) {
                     />
                 </div>
             </div>
+        </div>
+        <div className="mb-6">
+          <label className="label">
+            <span className="label-text">Image de couverture</span>
+          </label>
+          <input
+            type="file"
+            className="file-input file-input-bordered w-full"
+            accept="image/*"
+            onChange={handleCoverChange}
+          />
+          {coverPreview && (
+            <img
+              src={coverPreview}
+              alt="Cover Preview"
+              className="mt-2 h-32 w-full object-cover rounded-lg"
+            />
+          )}
         </div>
         
         <div className="space-y-4">

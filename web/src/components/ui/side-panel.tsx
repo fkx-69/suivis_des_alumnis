@@ -52,12 +52,6 @@ const navItems = [
     icon: <BarChart2Icon size={20} />,
     href: "/statistiques",
   },
-
-  {
-    label: "Parcours",
-    icon: <MapIcon size={20} />,
-    href: "/parcours",
-  },
 ];
 const profileItems = {
   label: "Profile",

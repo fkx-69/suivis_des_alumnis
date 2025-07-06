@@ -48,10 +48,15 @@ export default function MentoratRequests() {
       {demandes.length > 0 ? (
         <ul className="space-y-2">
           {demandes.map((d) => (
-            <li key={d.id} className="p-3 bg-base-200 rounded-lg shadow-sm space-y-1">
-              <p>
-                <span className="font-semibold">Etudiant:</span> {d.etudiant_username}
-              </p>
+            <li key={d.id} className="card card-bordered bg-base-200 shadow-sm p-4 space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="avatar">
+                  <div className="w-8 rounded-full">
+                    <img src={`https://ui-avatars.com/api/?name=${d.etudiant_username}`} />
+                  </div>
+                </div>
+                <p className="font-semibold">{d.etudiant_username}</p>
+              </div>
               <p>
                 <span className="font-semibold">Mentor:</span> {d.mentor_username}
               </p>
@@ -72,7 +77,7 @@ export default function MentoratRequests() {
                       Accepter
                     </button>
                     <button
-                      className="btn btn-sm"
+                      className="btn btn-sm btn-error"
                       onClick={() => handleRepondre(d.id, "refusee")}
                     >
                       Refuser

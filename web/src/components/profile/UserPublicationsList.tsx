@@ -10,6 +10,7 @@ export default function UserPublicationsList() {
   const { user } = useAuth();
   const [publications, setPublications] = useState<Publication[]>([]);
   const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(3);
 
   useEffect(() => {
     if (user?.username) {
@@ -44,16 +45,28 @@ export default function UserPublicationsList() {
     <div className="bg-base-100 p-6 rounded-2xl shadow-lg">
       <h3 className="text-xl font-bold mb-4">Mes Publications</h3>
       {publications.length > 0 ? (
-        <ul className="space-y-4">
-          {publications.map((p) => (
-            <li key={p.id}>
-              <PublicationCard
-                publication={p}
-                onComment={(v) => handleComment(p.id, v)}
-              />
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul className="space-y-4">
+            {publications.slice(0, visibleCount).map((p) => (
+              <li key={p.id}>
+                <PublicationCard
+                  publication={p}
+                  onComment={(v) => handleComment(p.id, v)}
+                />
+              </li>
+            ))}
+          </ul>
+          {visibleCount < publications.length && (
+            <div className="text-center mt-4">
+              <button
+                className="btn btn-sm"
+                onClick={() => setVisibleCount((c) => c + 3)}
+              >
+                Charger plus
+              </button>
+            </div>
+          )}
+        </>
       ) : (
         <p className="text-neutral-500 text-center py-8">Vous n'avez encore rien publié.</p>
       )}

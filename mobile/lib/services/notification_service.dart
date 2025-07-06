@@ -9,6 +9,7 @@ class NotificationService {
   Future<List<NotificationModel>> fetchNotifications() async {
     try {
       final response = await _dio.get(ApiConstants.notifications);
+      print('Notifications JSON: ${response.data}');
       final List<dynamic> data = response.data;
       return data.map((json) => NotificationModel.fromJson(json)).toList();
     } on DioException catch (e) {
@@ -32,5 +33,6 @@ class NotificationService {
       ApiConstants.notificationDelete.replaceFirst('{id}', notificationId.toString()),
     );
   }
+
 }
 

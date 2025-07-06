@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:memoire/models/conversation_model.dart';
 import 'package:memoire/services/messaging_service.dart';
-import 'chat_screen.dart';
+import 'package:memoire/screens/messaging/chat_screen.dart';
 
 class ConversationListScreen extends StatefulWidget {
   const ConversationListScreen({Key? key}) : super(key: key);
@@ -40,10 +40,6 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Messages', style: GoogleFonts.poppins()),
-        centerTitle: true,
-      ),
       body: RefreshIndicator(
         onRefresh: _loadConversations,
         child: _loading
@@ -55,23 +51,40 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
           separatorBuilder: (_, __) => const Divider(height: 1),
           itemBuilder: (ctx, i) {
             final c = _conversations[i];
-            final time = DateFormat.Hm()
-                .format(c.dateLastMessage);
+            final time = DateFormat.Hm().format(c.dateLastMessage);
+
+            // Utilisation de NetworkImage pour l'avatar, avec un fallback
+            final avatarImage = c.photoProfil != null && c.photoProfil!.isNotEmpty
+                ? NetworkImage(c.photoProfil!)
+                : null;
+
             return ListTile(
+              leading: CircleAvatar(
+                radius: 28,
+                backgroundImage: avatarImage,
+                backgroundColor: Colors.grey[200],
+                child: (avatarImage == null)
+                    ? Text(
+                        c.fullName.isNotEmpty ? c.fullName[0].toUpperCase() : '?',
+                        style: GoogleFonts.poppins(fontSize: 24, color: Colors.grey[600]),
+                      )
+                    : null,
+              ),
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (_) => ChatScreen(
-                    peerUsername: c.withUsername,
+                    peerUsername: c.username, // CORRIGÉ
                   ),
                 ),
               ),
-              title: Text(c.withUsername,
+              title: Text(c.fullName, // CORRIGÉ
                   style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
               subtitle: Text(c.lastMessage,
                   maxLines: 1, overflow: TextOverflow.ellipsis),
               trailing: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(time,
                       style: GoogleFonts.poppins(fontSize: 12)),

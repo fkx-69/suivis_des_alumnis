@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:memoire/models/conversation_model.dart';
 import 'package:memoire/services/messaging_service.dart';
-import 'package:memoire/screens/group/chat_screen.dart';
+import 'package:memoire/screens/messaging/chat_screen.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class ConversationsScreen extends StatefulWidget {
@@ -70,13 +70,24 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
               separatorBuilder: (context, index) => const Divider(height: 1, indent: 70),
               itemBuilder: (context, index) {
                 final convo = conversations[index];
+                // Utilisation de NetworkImage pour l'avatar, avec un fallback
+                final avatarImage = convo.photoProfil != null && convo.photoProfil!.isNotEmpty
+                    ? NetworkImage(convo.photoProfil!)
+                    : null;
+
                 return ListTile(
                   leading: CircleAvatar(
                     radius: 28,
+                    backgroundImage: avatarImage,
                     backgroundColor: Colors.grey[200],
-                    child: const Icon(Icons.person, color: Colors.grey, size: 30),
+                    child: (avatarImage == null)
+                        ? Text(
+                            convo.fullName.isNotEmpty ? convo.fullName[0].toUpperCase() : '?',
+                            style: TextStyle(fontSize: 24, color: Colors.grey[600]),
+                          )
+                        : null,
                   ),
-                  title: Text(convo.withUsername, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(convo.fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Text(
                     convo.lastMessage,
                     maxLines: 1,
@@ -101,7 +112,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                         ),
                     ],
                   ),
-                  onTap: () => _navigateToChat(convo.withUsername),
+                  onTap: () => _navigateToChat(convo.username), // Utiliser convo.username
                 );
               },
             );

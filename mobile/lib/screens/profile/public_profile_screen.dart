@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:memoire/models/mentorship_request_model.dart';
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/messaging_service.dart';
@@ -9,7 +10,7 @@ import '../../models/publication_model.dart';
 import '../../services/publication_service.dart';
 import '../../widgets/publication_card.dart';
 import 'package:dio/dio.dart';
-import '../group/chat_screen.dart';
+import '../messaging/chat_screen.dart';
 
 class PublicProfileScreen extends StatefulWidget {
   final String username;
@@ -32,6 +33,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
   List<Map<String, dynamic>> _prof = [];
   List<PublicationModel> _publications = [];
   final PublicationService _publicationService = PublicationService();
+  MentorshipRequestModel? _existingRequest;
+  bool _isRequestLoading = true;
 
   @override
   void initState() {
@@ -40,34 +43,77 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
   }
 
   Future<void> _loadProfile() async {
-    setState(() => _isLoading = true);
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      _isRequestLoading = true;
+    });
+
     try {
-      // On utilise la nouvelle méthode unifiée qui charge tout pour un alumni.
-      // Cela résout les problèmes d'ID pour les parcours et les signalements.
-      final profileData = await _auth.fetchCompleteAlumniProfile(widget.username);
-      _user = profileData['user'];
-      _acad = profileData['parcours_academiques'];
-      _prof = profileData['parcours_professionnels'];
+      // On commence par charger l'utilisateur (sans parcours)
+      final user = await _auth.fetchPublicProfile(widget.username);
 
-      // Charger les publications de l'utilisateur
-      final allPublications = await _publicationService.fetchFeed();
-      _publications = allPublications
-          .where((p) => p.auteur.toLowerCase() == widget.username.toLowerCase())
-          .toList();
+      if (user.role.toLowerCase() == 'alumni') {
+        // Cas ALUMNI → on charge tout
+        final profileDataFuture = _auth.fetchCompleteAlumniProfile(widget.username);
+        final publicationsFuture = _publicationService.fetchFeed();
+        final requestsFuture = _messaging.fetchMyMentorshipRequests();
 
+        final results = await Future.wait([
+          profileDataFuture,
+          publicationsFuture,
+          requestsFuture,
+        ]);
+
+        final profileData = results[0] as Map<String, dynamic>;
+        final allPublications = results[1] as List<PublicationModel>;
+        final allRequests = results[2] as List<MentorshipRequestModel>;
+
+        if (!mounted) return;
+
+        setState(() {
+          _user = profileData['user'];
+          _acad = profileData['parcours_academiques'];
+          _prof = profileData['parcours_professionnels'];
+          _publications = allPublications
+              .where((p) => p.auteur.toLowerCase() == widget.username.toLowerCase())
+              .toList();
+          _existingRequest = allRequests
+              .where((req) => req.mentor.username.toLowerCase() == widget.username.toLowerCase())
+              .cast<MentorshipRequestModel?>()
+              .firstOrNull;
+        });
+      } else {
+        // Cas ÉTUDIANT → on garde seulement les infos de base + publications
+        final allPublications = await _publicationService.fetchFeed();
+        if (!mounted) return;
+
+        setState(() {
+          _user = user;
+          _acad = [];
+          _prof = [];
+          _publications = allPublications
+              .where((p) => p.auteur.toLowerCase() == widget.username.toLowerCase())
+              .toList();
+          _existingRequest = null; // les étudiants ne reçoivent pas de mentorat
+        });
+      }
     } catch (e) {
-      // Si fetchCompleteAlumniProfile échoue (ex: l'utilisateur n'est pas un alumni),
-      // on l'affiche. La gestion des profils non-alumni nécessiterait une
-      // correction du backend pour inclure l'ID dans toutes les réponses de profil.
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erreur de chargement du profil : $e')),
         );
       }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _isRequestLoading = false;
+        });
+      }
     }
   }
+
 
   void _sendMessage() {
     Navigator.of(context).push(
@@ -103,13 +149,13 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
     if (ok != true) return;
 
     try {
-      // On utilise directement le username, comme sur la version web.
       await _messaging.sendMentorshipRequest(username: widget.username);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Demande de mentorat envoyée')),
         );
+        _loadProfile(); // Refresh state
       }
     } catch (e) {
       if (mounted) {
@@ -267,14 +313,22 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                   if (_user!.role.toLowerCase() == 'alumni') ...[
                     const SizedBox(width: 16),
                     Expanded(
-                      child: OutlinedButton.icon(
-                        icon: const Icon(Icons.group_add_outlined),
-                        label: const Text('Mentorat'),
-                        onPressed: _requestMentorat,
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size.fromHeight(48),
-                        ),
-                      ),
+                      child: _isRequestLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : OutlinedButton.icon(
+                              icon: const Icon(Icons.group_add_outlined),
+                              label: Text(_existingRequest?.statut == 'en_attente'
+                                  ? 'Demande envoyée'
+                                  : _existingRequest?.statut == 'acceptee'
+                                      ? 'Mentor'
+                                      : 'Mentorat'),
+                              onPressed: _existingRequest == null || _existingRequest?.statut == 'refusee'
+                                  ? _requestMentorat
+                                  : null, // Disable button if request is pending or accepted
+                              style: OutlinedButton.styleFrom(
+                                minimumSize: const Size.fromHeight(48),
+                              ),
+                            ),
                     ),
                   ]
                 ],

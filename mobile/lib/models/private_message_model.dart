@@ -3,28 +3,31 @@ import 'package:memoire/models/user_model.dart';
 class PrivateMessageModel {
   final int id;
   final UserModel expediteur;
-  final UserModel destinataire;
+  final int destinataireId; // L'API ne renvoie que l'ID
   final String contenu;
   final DateTime timestamp;
-  final bool isRead;
 
   PrivateMessageModel({
     required this.id,
     required this.expediteur,
-    required this.destinataire,
+    required this.destinataireId,
     required this.contenu,
     required this.timestamp,
-    required this.isRead,
   });
 
   factory PrivateMessageModel.fromJson(Map<String, dynamic> json) {
     return PrivateMessageModel(
       id: json['id'],
-      expediteur: UserModel.fromJson(json['expediteur']),
-      destinataire: UserModel.fromJson(json['destinataire']),
-      contenu: json['contenu'],
-      timestamp: DateTime.parse(json['timestamp']),
-      isRead: json['is_read'] ?? false,
+      // On reconstruit un UserModel partiel à partir des infos de l'API
+      expediteur: UserModel.fromJson({
+        'id': json['expediteur'],
+        'username': json['expediteur_username'] ?? '',
+        // Le reste des infos n'est pas nécessaire pour l'affichage du chat
+      }),
+      destinataireId: json['destinataire'],
+      contenu: json['contenu'] ?? '',
+      // On utilise le bon champ de date 'date_envoi'
+      timestamp: DateTime.parse(json['date_envoi']),
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:memoire/services/messaging_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+
 class MenteesList extends StatefulWidget {
   const MenteesList({super.key});
 
@@ -33,7 +34,7 @@ class _MenteesListState extends State<MenteesList> {
         if (snapshot.hasError) {
           return Center(child: Text('Erreur: ${snapshot.error}'));
         }
-        final acceptedRequests = snapshot.data?.where((r) => r.statut == 'acceptée').toList();
+        final acceptedRequests = snapshot.data?.where((r) => r.statut == 'acceptee').toList();
 
         if (acceptedRequests == null || acceptedRequests.isEmpty) {
           return const Center(child: Text('Vous n\'avez aucun mentoré pour le moment.'));
@@ -42,7 +43,20 @@ class _MenteesListState extends State<MenteesList> {
         return ListView.builder(
           itemCount: acceptedRequests.length,
           itemBuilder: (context, index) {
-            final mentee = acceptedRequests[index].utilisateur;
+            final mentee = acceptedRequests[index].etudiant;
+
+            // Gérer le cas où les données du mentoré sont manquantes pour éviter les crashs.
+            if (mentee == null) {
+              return const Card(
+                margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: ListTile(
+                  leading: CircleAvatar(child: Icon(Icons.person_off)),
+                  title: Text('Information du mentoré indisponible'),
+                  enabled: false,
+                ),
+              );
+            }
+
             return Card(
               margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: ListTile(
@@ -63,12 +77,15 @@ class _MenteesListState extends State<MenteesList> {
                   backgroundColor: Colors.blue.withOpacity(0.1),
                 ),
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PublicProfileScreen(username: mentee.username),
-                    ),
-                  );
+                  // On s'assure que le username existe avant de naviguer.
+                  if (mentee.username.isNotEmpty) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PublicProfileScreen(username: mentee.username),
+                      ),
+                    );
+                  }
                 },
               ),
             );

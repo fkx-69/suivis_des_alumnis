@@ -149,12 +149,18 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                   horizontal: 16, vertical: 8),
               itemCount: _msgs.length,
               itemBuilder: (ctx, i) {
-                final m    = _msgs[i];
+                final m = _msgs[i];
                 final mine = (m.auteurUsername == _meUsername);
                 final time = DateFormat.Hm().format(m.dateEnvoi);
-                return Align(
+
+                final bool showDateHeader = i == 0 ||
+                    _msgs[i].dateEnvoi.day != _msgs[i - 1].dateEnvoi.day ||
+                    _msgs[i].dateEnvoi.month != _msgs[i - 1].dateEnvoi.month ||
+                    _msgs[i].dateEnvoi.year != _msgs[i - 1].dateEnvoi.year;
+
+                final messageBubble = Align(
                   alignment:
-                  mine ? Alignment.centerRight : Alignment.centerLeft,
+                      mine ? Alignment.centerRight : Alignment.centerLeft,
                   child: Container(
                     margin: const EdgeInsets.symmetric(vertical: 4),
                     padding: const EdgeInsets.all(12),
@@ -167,25 +173,39 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
-                      crossAxisAlignment: mine
-                          ? CrossAxisAlignment.end
-                          : CrossAxisAlignment.start,
+                      crossAxisAlignment:
+                          mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                       children: [
                         Text(m.auteurUsername,
                             style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13)),
+                                fontWeight: FontWeight.w600, fontSize: 13)),
                         const SizedBox(height: 4),
                         Text(m.message, style: GoogleFonts.poppins()),
                         const SizedBox(height: 4),
                         Text(time,
                             style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                color: Colors.grey[600])),
+                                fontSize: 11, color: Colors.grey[600])),
                       ],
                     ),
                   ),
                 );
+
+                if (showDateHeader) {
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Text(
+                          DateFormat.yMMMMd('fr').format(m.dateEnvoi),
+                          style: GoogleFonts.poppins(color: Colors.grey),
+                        ),
+                      ),
+                      messageBubble,
+                    ],
+                  );
+                } else {
+                  return messageBubble;
+                }
               },
             ),
           ),

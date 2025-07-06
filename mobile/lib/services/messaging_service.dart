@@ -3,7 +3,11 @@ import 'package:memoire/constants/api_constants.dart';
 import 'package:memoire/models/conversation_model.dart';
 import 'package:memoire/models/private_message_model.dart';
 import 'package:memoire/models/mentorship_request_model.dart';
+import 'package:memoire/models/message_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:memoire/models/message_model.dart';
 import 'package:memoire/services/dio_client.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MessagingService {
   final Dio _dio = DioClient.dio;
@@ -61,12 +65,11 @@ class MessagingService {
     required String username,
     String? message,
   }) async {
-    // Conformément à l'implémentation web, nous utilisons le 'username'.
-    // La clé 'destinataire_username' est choisie par cohérence avec l'envoi de messages privés.
+    // L'analyse du code web montre que le backend attend la clé 'mentor_username'.
     await DioClient.dio.post(
       ApiConstants.mentoratSend,
       data: {
-        'destinataire_username': username,
+        'mentor_username': username, // Clé corrigée pour correspondre au backend.
         'message': message ?? '',
       },
     );
@@ -92,7 +95,7 @@ class MessagingService {
       url,
       data: {
         'statut': status,
-        if (reason != null) 'reason': reason,
+        if (reason != null) 'motif_refus': reason,
       },
     );
   }
@@ -113,5 +116,24 @@ class MessagingService {
   Future<void> deleteMentorshipRequest({required int requestId}) async {
     final url = ApiConstants.mentoratDelete.replaceFirst('{id}', requestId.toString());
     await _dio.delete(url);
+  }
+
+  /// Récupère les messages d'une conversation privée avec un utilisateur.
+  Future<List<MessageModel>> fetchMessages(String peerUsername) async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentUsername = prefs.getString('username') ?? '';
+
+    final List<PrivateMessageModel> privateMessages = await fetchWith(peerUsername);
+
+    final messages = privateMessages.map((pMsg) {
+      return MessageModel(
+        id: pMsg.id.toString(),
+        content: pMsg.contenu,
+        date: pMsg.timestamp, // Utilisation du champ 'timestamp'
+        isMe: pMsg.expediteur.username == currentUsername, // Comparaison des noms d'utilisateur
+      );
+    }).toList();
+
+    return messages;
   }
 }

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:memoire/models/mentorship_request_model.dart';
+import 'package:memoire/models/user_model.dart'; // Import UserModel
+import 'package:memoire/services/auth_service.dart'; // Import AuthService
 import 'package:memoire/services/messaging_service.dart';
 import 'package:timeago/timeago.dart' as timeago;
-
 
 class MentorshipRequestsScreen extends StatefulWidget {
   const MentorshipRequestsScreen({super.key});
@@ -14,7 +15,9 @@ class MentorshipRequestsScreen extends StatefulWidget {
 
 class _MentorshipRequestsScreenState extends State<MentorshipRequestsScreen> {
   final MessagingService _messagingService = MessagingService();
+  final AuthService _authService = AuthService();
   late Future<List<MentorshipRequestModel>> _requestsFuture;
+  int? _currentUserId;
 
   @override
   void initState() {
@@ -22,14 +25,16 @@ class _MentorshipRequestsScreenState extends State<MentorshipRequestsScreen> {
     _loadRequests();
   }
 
+  // Recharge les données et rafraîchit l'interface
   void _loadRequests() {
     setState(() {
+      _currentUserId = _authService.currentUser?.id;
       _requestsFuture = _messagingService.fetchMyMentorshipRequests();
     });
   }
 
   Future<void> _handleResponse(MentorshipRequestModel request, String status) async {
-    // Store context-dependent variables before async gaps.
+    // Capturez les dépendances du BuildContext avant les opérations asynchrones.
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     String? reason;
@@ -41,7 +46,7 @@ class _MentorshipRequestsScreenState extends State<MentorshipRequestsScreen> {
       if (reason == null) return; // User cancelled
     }
 
-    if (!mounted) return; // Check if the widget is still in the tree.
+    if (!mounted) return;
 
     try {
       await _messagingService.respondToMentorshipRequest(
@@ -52,7 +57,7 @@ class _MentorshipRequestsScreenState extends State<MentorshipRequestsScreen> {
       scaffoldMessenger.showSnackBar(
         SnackBar(content: Text('Demande ${status == 'acceptee' ? 'acceptée' : 'refusée'}')),
       );
-      _loadRequests(); // Refresh the list
+      _loadRequests();
     } catch (e) {
       if (mounted) {
         scaffoldMessenger.showSnackBar(
@@ -64,6 +69,24 @@ class _MentorshipRequestsScreenState extends State<MentorshipRequestsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_currentUserId == null) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Impossible de charger votre profil.'),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: _loadRequests,
+                child: const Text('Réessayer'),
+              )
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: () async => _loadRequests(),
@@ -86,8 +109,13 @@ class _MentorshipRequestsScreenState extends State<MentorshipRequestsScreen> {
               itemCount: requests.length,
               itemBuilder: (context, index) {
                 final request = requests[index];
+                final bool isSender = request.etudiant.id == _currentUserId;
+                final UserModel user = isSender ? request.mentor : request.etudiant;
+                
                 return _MentorshipRequestCard(
                   request: request,
+                  user: user, // Pass the correct user object
+                  isSender: isSender,
                   onAccept: () => _handleResponse(request, 'acceptee'),
                   onRefuse: () => _handleResponse(request, 'refusee'),
                 );
@@ -102,20 +130,30 @@ class _MentorshipRequestsScreenState extends State<MentorshipRequestsScreen> {
 
 class _MentorshipRequestCard extends StatelessWidget {
   final MentorshipRequestModel request;
+  final UserModel user;
+  final bool isSender;
   final VoidCallback onAccept;
   final VoidCallback onRefuse;
 
   const _MentorshipRequestCard({
     required this.request,
+    required this.user,
+    required this.isSender,
     required this.onAccept,
     required this.onRefuse,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isPending = request.statut.toLowerCase() == 'en attente';
-    final cardColor = isPending ? Colors.blue.shade50 : (request.statut.toLowerCase() == 'acceptee' ? Colors.green.shade50 : Colors.red.shade50);
-    final statusColor = isPending ? Colors.blue : (request.statut.toLowerCase() == 'acceptee' ? Colors.green : Colors.red);
+    final isPending = request.statut.toLowerCase() == 'en_attente';
+    final cardColor = isPending
+        ? Colors.blue.shade50
+        : (request.statut.toLowerCase() == 'acceptee'
+            ? Colors.green.shade50
+            : Colors.red.shade50);
+    final statusColor = isPending
+        ? Colors.blue
+        : (request.statut.toLowerCase() == 'acceptee' ? Colors.green : Colors.red);
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -132,20 +170,20 @@ class _MentorshipRequestCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'De: @${request.utilisateur.username}',
+                    '${isSender ? 'À' : 'De'}: @${user.username}',
                     style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                 ),
                 Text(
-                  timeago.format(request.timestamp, locale: 'fr'),
+                  timeago.format(request.dateDemande, locale: 'fr'),
                   style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[700]),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            if (request.message.isNotEmpty) ...[
+            if (request.message != null && request.message!.isNotEmpty) ...[
               Text(
-                request.message,
+                request.message!,
                 style: GoogleFonts.poppins(fontSize: 14),
               ),
               const SizedBox(height: 12),
@@ -163,7 +201,7 @@ class _MentorshipRequestCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (isPending) ...[
+            if (isPending && !isSender) ...[
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,

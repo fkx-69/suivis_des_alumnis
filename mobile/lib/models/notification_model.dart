@@ -12,12 +12,11 @@ class NotificationModel {
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
-    // Le backend renvoie 'verb' pour le message, 'timestamp' pour la date, et 'unread' (bool) pour le statut.
     return NotificationModel(
       id: json['id'],
-      message: json['verb'] ?? 'Notification sans message',
-      date: DateTime.parse(json['timestamp']),
-      isRead: json['unread'] == false, // si unread est true, alors isRead est false
+      message: json['message'] ?? 'Notification sans message',
+      date: DateTime.tryParse(json['date'] ?? '') ?? DateTime.now(),
+      isRead: json['is_read'] ?? false, // à adapter selon le vrai champ (voir ci-dessous)
     );
   }
 }

@@ -199,14 +199,7 @@ class AuthService {
     );
   }
 
-  /// Envoie une demande de mentorat à un alumni.
-  ///  Future<void> sendMentorshipRequest({
-  ///  required int userId,
-///   String? message,
-  ///  }) async {
-  ///   await DioClient.dio.post(ApiConstants.mentoratSend,
-  /// data: {'alumni_id': userId,
-///  if (message != null) 'message': message,},);}
+
 
   /// Signaler un utilisateur
   Future<void> reportUser({

@@ -1,5 +1,5 @@
 class ApiConstants {
- // static const String baseUrl = "http://172.20.10.2:8000/api"; // localhost Android/emulator
+  //static const String baseUrl = "http://172.20.10.2:8000/api"; // localhost Android/emulator
   static const String baseUrl = "http://localhost:8000/api"; // pour web
 
   // Auth
@@ -24,7 +24,7 @@ class ApiConstants {
   // Mentorat
   static const String mentoratSend = '$baseUrl/mentorat/envoyer/';
   static const String mentoratMyRequests = '$baseUrl/mentorat/mes-demandes/';
-  static const String mentoratRespond = '$baseUrl/mentoring/respond/';
+  static const String mentoratRespond = '$baseUrl/mentorat/repondre/{id}/';
   static const String mentoratDelete = '$baseUrl/mentoring/delete/';
 
   // Notifications
@@ -71,9 +71,7 @@ class ApiConstants {
 // Pour supprimer un commentaire
   static String publicationsDeleteComment(int id) =>
       '$baseUrl/publications/commentaire/$id/supprimer/';
-
-
-
+  
 
   /// Supprimer une publication (remplace {id} par l’ID)
   static const String publicationsDelete = "$baseUrl/publications/{id}/supprimer/";
@@ -112,5 +110,7 @@ class ApiConstants {
   static const events = '$baseUrl/events/evenements/';
   static const userPublic = '$baseUrl/accounts'; // Pour voir un profil via /{username}/
 
+  static const String statDomaines = '$baseUrl/statistiques/domaines';
+  static const String statSituation = '$baseUrl/statistiques/situation';
 }
 

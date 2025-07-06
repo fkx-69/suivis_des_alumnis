@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:memoire/services/auth_service.dart';
-import 'package:memoire/models/user_model.dart';
-import 'package:memoire/screens/messaging/discussions_list_screen.dart';
+import 'package:memoire/screens/group/conversation_list_screen.dart';
 import 'package:memoire/screens/group/group_list_screen.dart';
 import 'package:memoire/screens/messaging/mentorship_management_screen.dart';
-import 'package:memoire/models/notification_model.dart';
 import 'package:memoire/screens/notifications/notifications_screen.dart';
 import 'package:memoire/services/notification_service.dart';
 
@@ -67,7 +65,7 @@ class _ConversationsMainScreenState extends State<ConversationsMainScreen> {
     ];
 
     final List<Widget> tabViews = [
-      const DiscussionsListScreen(),
+      const ConversationListScreen(),
       const GroupListScreen(),
     ];
 

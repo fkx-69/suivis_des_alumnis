@@ -3,18 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../models/user_model.dart';
 import 'package:memoire/services/auth_service.dart';
 import 'package:memoire/services/parcours_service.dart';
-import '../../widgets/app_bottom_nav_bar.dart';
 import 'package:memoire/widgets/profile_widgets/profile_header.dart';
 import 'package:memoire/widgets/profile_widgets/user_info_card.dart';
-import 'package:memoire/widgets/profile_widgets/parcours_section.dart';
 import 'package:memoire/widgets/profile_widgets/user_publication_list.dart';
-import 'package:memoire/screens/event/events_main_screen.dart';
 import 'package:memoire/screens/profile/edit_parcours_screen.dart';
-import 'package:memoire/screens/group/group_list_screen.dart';
-import 'package:memoire/home_screen.dart';
 import 'package:memoire/widgets/profile_widgets/parcours_display_section.dart';
 import 'create_publication_screen.dart';
-import '../messaging/conversations_main_screen.dart';
+
 
 
 class ProfileScreen extends StatefulWidget {
@@ -32,9 +27,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   List<Map<String, dynamic>>     _parcoursA = [];
   List<Map<String, dynamic>>     _parcoursP = [];
   bool                           _isLoading = true;
-  late final List<BottomNavigationBarItem> _navItems;
-  late final List<VoidCallback>           _navActions;
-  int                            _currentIndex = 3;
 
   @override
   void initState() {
@@ -47,20 +39,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user     = await _authService.getUserInfo();
     final isAlumni = user.role.toUpperCase() == 'ALUMNI';
 
-    // construire la nav
-    _navItems = [
-      const BottomNavigationBarItem(icon: Icon(Icons.home),    label: 'Accueil'),
-      const BottomNavigationBarItem(icon: Icon(Icons.event),   label: 'Évènements'),
-      const BottomNavigationBarItem(icon: Icon(Icons.message), label: 'Messages'),
-      const BottomNavigationBarItem(icon: Icon(Icons.person),  label: 'Profil'),
-    ];
-    _navActions = [
-          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeScreen()),),
-          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EventsMainScreen()),),
-          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConversationsMainScreen()),),
-      if (isAlumni) () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EditParcoursScreen()),),
-          () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()),),
-    ];
 
     // charger parcours
     List<Map<String, dynamic>> acad = [], prof = [];
@@ -187,9 +165,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             UserPublicationsList(username: _user!.username),
             const SizedBox(height: 24),
 
-
-
-
           ],
         ),
       ),
@@ -204,18 +179,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: const Icon(Icons.add, color: Colors.white),
         tooltip: 'Créer une publication',
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.white,
-        selectedItemColor: const Color(0xFF2196F3),
-        unselectedItemColor: Colors.grey[600],
-        currentIndex: _currentIndex,
-        onTap: (i) {
-          setState(() => _currentIndex = i);
-          _navActions[i]();
-        },
-        items: _navItems,
-        type: BottomNavigationBarType.fixed,
-      ),
+
     );
   }
 }

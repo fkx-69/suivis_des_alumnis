@@ -1,14 +1,13 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Input } from "@/components/ui/Input";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import {
   createParcoursProfessionnel,
   updateParcoursProfessionnel,
   deleteParcoursProfessionnel,
 } from "@/lib/api/parcours";
 import { ParcoursProfessionnel } from "@/types/parcours";
-import { motion } from "framer-motion";
 
 interface Props {
   items: ParcoursProfessionnel[];
@@ -24,7 +23,6 @@ const contrats = [
 ];
 
 export default function ParcoursProfessionnelSection({ items, onChanged }: Props) {
-  const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<ParcoursProfessionnel | null>(null);
   const [form, setForm] = useState({
     poste: "",
@@ -32,13 +30,14 @@ export default function ParcoursProfessionnelSection({ items, onChanged }: Props
     date_debut: "",
     type_contrat: contrats[0].value,
   });
-  const firstFieldRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   const openCreate = () => {
     setEditing(null);
     setForm({ poste: "", entreprise: "", date_debut: "", type_contrat: contrats[0].value });
-    setShowModal(true);
+    dialogRef.current?.showModal();
   };
+
   const openEdit = (item: ParcoursProfessionnel) => {
     setEditing(item);
     setForm({
@@ -47,7 +46,7 @@ export default function ParcoursProfessionnelSection({ items, onChanged }: Props
       date_debut: item.date_debut,
       type_contrat: item.type_contrat,
     });
-    setShowModal(true);
+    dialogRef.current?.showModal();
   };
 
   const handleChange = (
@@ -65,7 +64,7 @@ export default function ParcoursProfessionnelSection({ items, onChanged }: Props
     } else {
       await createParcoursProfessionnel(payload);
     }
-    setShowModal(false);
+    dialogRef.current?.close();
     onChanged();
   };
 
@@ -74,114 +73,63 @@ export default function ParcoursProfessionnelSection({ items, onChanged }: Props
     onChanged();
   };
 
-  useEffect(() => {
-    if (showModal) firstFieldRef.current?.focus();
-  }, [showModal]);
-
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Professionnel</h2>
-        <button className="btn btn-sm btn-primary" onClick={openCreate}>
+    <div className="bg-base-100 p-6 rounded-2xl shadow-lg">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Parcours Professionnel</h2>
+        <button className="btn btn-primary btn-sm" onClick={openCreate}>
+          <Plus size={18} className="mr-1" />
           Ajouter
         </button>
       </div>
-      <ul className="space-y-1">
+      <div className="space-y-4">
         {items.map((p) => (
-          <li
-            key={p.id}
-            className="bg-base-200 rounded-md p-2 flex justify-between items-center"
-          >
-            <span>
-              {p.poste} - {p.entreprise}
-            </span>
-            <span className="flex gap-2">
-              <button
-                className="btn btn-xs btn-circle"
-                onClick={() => openEdit(p)}
-              >
-                <Pencil size={14} />
+          <div key={p.id} className="p-4 rounded-lg bg-base-200 flex justify-between items-start">
+            <div>
+              <p className="font-semibold text-lg">{p.poste}</p>
+              <p className="text-base-content/80">{p.entreprise}</p>
+              <p className="text-sm text-base-content/60">Depuis {new Date(p.date_debut).toLocaleDateString()} - {p.type_contrat}</p>
+            </div>
+            <div className="flex gap-2 items-center">
+              <button className="btn btn-ghost btn-sm btn-circle" onClick={() => openEdit(p)}>
+                <Pencil size={16} />
               </button>
-              <button
-                className="btn btn-xs btn-circle btn-error"
-                onClick={() => handleDelete(p.id)}
-              >
-                <Trash2 size={14} />
-              </button>
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      {showModal && (
-        <div
-          className="absolute inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setShowModal(false)}
-        >
-          <motion.form
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.25 }}
-            className="bg-base-100 p-6 rounded-lg space-y-4 w-full max-w-sm"
-            onClick={(e) => e.stopPropagation()}
-            onSubmit={handleSubmit}
-          >
-            <h3 className="text-lg font-semibold mb-2">
-              {editing ? "Modifier" : "Ajouter"} un parcours professionnel
-            </h3>
-            <Input
-              name="poste"
-              value={form.poste}
-              onChange={handleChange}
-              placeholder="Poste"
-              ref={firstFieldRef}
-              required
-            />
-            <Input
-              name="entreprise"
-              value={form.entreprise}
-              onChange={handleChange}
-              placeholder="Entreprise"
-              required
-            />
-            <Input
-              name="date_debut"
-              type="date"
-              value={form.date_debut}
-              onChange={handleChange}
-              placeholder="Date début"
-              required
-            />
-            <label className="block text-base-content">
-              <span>Type de contrat</span>
-              <select
-                name="type_contrat"
-                value={form.type_contrat}
-                onChange={handleChange}
-                className="select select-bordered w-full mt-1"
-              >
-                {contrats.map((c) => (
-                  <option key={c.value} value={c.value}>
-                    {c.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm"
-                onClick={() => setShowModal(false)}
-              >
-                Annuler
-              </button>
-              <button type="submit" className="btn btn-primary btn-sm">
-                {editing ? "Modifier" : "Créer"}
+              <button className="btn btn-ghost btn-sm btn-circle text-error" onClick={() => handleDelete(p.id)}>
+                <Trash2 size={16} />
               </button>
             </div>
-          </motion.form>
+          </div>
+        ))}
+        {items.length === 0 && (
+          <p className="text-center text-base-content/60 py-4">Aucun parcours professionnel n'a été ajouté pour le moment.</p>
+        )}
+      </div>
+
+      <dialog ref={dialogRef} className="modal">
+        <div className="modal-box">
+          <form method="dialog">
+            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+          </form>
+          <h3 className="font-bold text-lg mb-4">
+            {editing ? "Modifier le parcours" : "Ajouter un parcours"} professionnel
+          </h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input name="poste" value={form.poste} onChange={handleChange} placeholder="Poste" required />
+            <Input name="entreprise" value={form.entreprise} onChange={handleChange} placeholder="Entreprise" required />
+            <Input name="date_debut" type="date" value={form.date_debut} onChange={handleChange} placeholder="Date de début" required />
+            <select name="type_contrat" value={form.type_contrat} className="select select-bordered w-full" onChange={handleChange}>
+              {contrats.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </select>
+            <div className="modal-action">
+              <button type="submit" className="btn btn-primary">
+                {editing ? "Enregistrer" : "Ajouter"}
+              </button>
+            </div>
+          </form>
         </div>
-      )}
+      </dialog>
     </div>
   );
 }

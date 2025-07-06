@@ -1,11 +1,27 @@
 "use client";
 
+import { useEffect, useState } from 'react';
 import ProfileDetails from '@/components/profile/ProfileDetails';
 import UserPublicationsList from '@/components/profile/UserPublicationsList';
 import NotificationsList from '@/components/profile/NotificationsList';
 import MentoratRequests from '@/components/profile/MentoratRequests';
+import ParcoursSection from '@/components/profile/ParcoursSection';
+import { fetchParcoursAcademiques, fetchParcoursProfessionnels } from '@/lib/api/parcours';
+import { ParcoursAcademique, ParcoursProfessionnel } from '@/types/parcours';
 
 export default function ProfilePage() {
+  const [parcoursAcad, setParcoursAcad] = useState<ParcoursAcademique[]>([]);
+  const [parcoursPro, setParcoursPro] = useState<ParcoursProfessionnel[]>([]);
+
+  const refreshParcours = () => {
+    fetchParcoursAcademiques().then(setParcoursAcad);
+    fetchParcoursProfessionnels().then(setParcoursPro);
+  };
+
+  useEffect(() => {
+    refreshParcours();
+  }, []);
+
   return (
     <div className="p-4 md:p-8">
       <h1 className="text-3xl font-bold mb-8">Mon Espace Personnel</h1>
@@ -14,6 +30,7 @@ export default function ProfilePage() {
         {/* Colonne principale pour les détails du profil et les publications */}
         <div className="lg:col-span-2 space-y-8">
           <ProfileDetails />
+          <ParcoursSection academicItems={parcoursAcad} professionalItems={parcoursPro} onChanged={refreshParcours} />
           <UserPublicationsList />
         </div>
 

@@ -1,45 +1,52 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Input } from "@/components/ui/Input";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import {
   createParcoursAcademique,
   updateParcoursAcademique,
   deleteParcoursAcademique,
 } from "@/lib/api/parcours";
-import { ParcoursAcademique } from "@/types/parcours";
-import { motion } from "framer-motion";
+import type { ParcoursAcademique } from "@/types/parcours";
+import { Mention, Mentions } from "@/lib/constants/parcours";
 
 interface Props {
   items: ParcoursAcademique[];
   onChanged: () => void;
 }
 
+interface ParcoursAcademiqueForm {
+  diplome: string;
+  institution: string;
+  annee_obtention: string;
+  mention: Mention | "";
+}
+
 export default function ParcoursAcademiqueSection({ items, onChanged }: Props) {
-  const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<ParcoursAcademique | null>(null);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<ParcoursAcademiqueForm>({
     diplome: "",
     institution: "",
     annee_obtention: "",
     mention: "",
   });
-  const firstFieldRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   const openCreate = () => {
     setEditing(null);
     setForm({ diplome: "", institution: "", annee_obtention: "", mention: "" });
-    setShowModal(true);
+    dialogRef.current?.showModal();
   };
+
   const openEdit = (item: ParcoursAcademique) => {
     setEditing(item);
     setForm({
       diplome: item.diplome,
       institution: item.institution,
       annee_obtention: String(item.annee_obtention),
-      mention: item.mention ?? "",
+      mention: item.mention ? `mention_${item.mention}` : "",
     });
-    setShowModal(true);
+    dialogRef.current?.showModal();
   };
 
   const handleChange = (
@@ -62,7 +69,7 @@ export default function ParcoursAcademiqueSection({ items, onChanged }: Props) {
     } else {
       await createParcoursAcademique(payload);
     }
-    setShowModal(false);
+    dialogRef.current?.close();
     onChanged();
   };
 
@@ -71,67 +78,69 @@ export default function ParcoursAcademiqueSection({ items, onChanged }: Props) {
     onChanged();
   };
 
-  useEffect(() => {
-    if (showModal) firstFieldRef.current?.focus();
-  }, [showModal]);
-
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Académique</h2>
-        <button className="btn btn-sm btn-primary" onClick={openCreate}>
+    <div className="bg-base-100 p-6 rounded-2xl shadow-lg">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Parcours Académique</h2>
+        <button className="btn btn-primary btn-sm" onClick={openCreate}>
+          <Plus size={18} className="mr-1" />
           Ajouter
         </button>
       </div>
-      <ul className="space-y-1">
+      <div className="space-y-4">
         {items.map((p) => (
-          <li
+          <div
             key={p.id}
-            className="bg-base-200 rounded-md p-2 flex justify-between items-center"
+            className="p-4 rounded-lg bg-base-200 flex justify-between items-start"
           >
-            <span>
-              {p.diplome} - {p.institution} ({p.annee_obtention})
-            </span>
-            <span className="flex gap-2">
+            <div>
+              <p className="font-semibold text-lg">{p.diplome}</p>
+              <p className="text-base-content/80">{p.institution}</p>
+              <p className="text-sm text-base-content/60">
+                Obtenu en {p.annee_obtention}{" "}
+                {p.mention && `- Mention ${Mentions[`mention_${p.mention}` as keyof typeof Mentions]}`}
+              </p>
+            </div>
+            <div className="flex gap-2 items-center">
               <button
-                className="btn btn-xs btn-circle"
+                className="btn btn-ghost btn-sm btn-circle"
                 onClick={() => openEdit(p)}
               >
-                <Pencil size={14} />
+                <Pencil size={16} />
               </button>
               <button
-                className="btn btn-xs btn-circle btn-error"
+                className="btn btn-ghost btn-sm btn-circle text-error"
                 onClick={() => handleDelete(p.id)}
               >
-                <Trash2 size={14} />
+                <Trash2 size={16} />
               </button>
-            </span>
-          </li>
+            </div>
+          </div>
         ))}
-      </ul>
+        {items.length === 0 && (
+          <p className="text-center text-base-content/60 py-4">
+            Aucun parcours académique n'a été ajouté pour le moment.
+          </p>
+        )}
+      </div>
 
-      {showModal && (
-        <div
-          className="absolute inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setShowModal(false)}
-        >
-          <motion.form
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.25 }}
-            className="bg-base-100 p-6 rounded-lg space-y-4 w-full max-w-sm"
-            onClick={(e) => e.stopPropagation()}
-            onSubmit={handleSubmit}
-          >
-            <h3 className="text-lg font-semibold mb-2">
-              {editing ? "Modifier" : "Ajouter"} un parcours académique
-            </h3>
+      <dialog ref={dialogRef} className="modal">
+        <div className="modal-box">
+          <form method="dialog">
+            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+              ✕
+            </button>
+          </form>
+          <h3 className="font-bold text-lg mb-4">
+            {editing ? "Modifier le parcours" : "Ajouter un parcours"}{" "}
+            académique
+          </h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               name="diplome"
               value={form.diplome}
               onChange={handleChange}
               placeholder="Diplôme"
-              ref={firstFieldRef}
               required
             />
             <Input
@@ -149,27 +158,27 @@ export default function ParcoursAcademiqueSection({ items, onChanged }: Props) {
               placeholder="Année d'obtention"
               required
             />
-            <Input
+            <select
               name="mention"
               value={form.mention}
+              className="select select-bordered w-full"
               onChange={handleChange}
-              placeholder="Mention"
-            />
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm"
-                onClick={() => setShowModal(false)}
-              >
-                Annuler
-              </button>
-              <button type="submit" className="btn btn-primary btn-sm">
-                {editing ? "Modifier" : "Créer"}
+            >
+              <option value="">Sélectionnez une mention (optionnel)</option>
+              {Object.entries(Mentions).map(([key, value]) => (
+                <option key={key} value={key}>
+                  {value}
+                </option>
+              ))}
+            </select>
+            <div className="modal-action">
+              <button type="submit" className="btn btn-primary">
+                {editing ? "Enregistrer" : "Ajouter"}
               </button>
             </div>
-          </motion.form>
+          </form>
         </div>
-      )}
+      </dialog>
     </div>
   );
 }

@@ -1,6 +1,101 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: all;
+  themes:
+    [ "itma",
+    "itma-dark"];
+}
+
+/* -------------------------------------------------
+   THEMES DAISY-UI – ITMA (clair) & ITMA-DARK (sombre)
+   Copie ce bloc sous tes directives @tailwind
+   ------------------------------------------------- */
+
+@plugin "daisyui/theme" {
+  /* ---------- Thème clair ---------- */
+  name: "itma";
+  default: true;
+  prefersdark: false;
+  color-scheme: "light";
+
+  /* Bases */
+  --color-base-100: #ffffff; /* fond principal */
+  --color-base-200: #f5f5f4; /* cartes */
+  --color-base-300: #e7e5e4;
+  --color-base-content: #0f0f0f; /* texte principal */
+
+  /* Couleurs marque ITMA */
+  --color-primary: #c6a13f; /* doré – boutons, liens */
+  --color-primary-content: #ffffff;
+  --color-secondary: #0f0f0f; /* noir profond – en-têtes */
+  --color-secondary-content: #ffffff;
+  --color-accent: #f7d87e; /* doré clair – survol/état actif */
+  --color-accent-content: #0f0f0f;
+  --color-neutral: #1a1a1a; /* gris-noir */
+  --color-neutral-content: #ffffff;
+
+  /* Feedback */
+  --color-info: #2094f3;
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-error: #dc2626;
+  --color-info-content: #ffffff;
+  --color-success-content: #ffffff;
+  --color-warning-content: #ffffff;
+  --color-error-content: #ffffff;
+
+  /* Rayons & bordures (optionnel, adapte si besoin) */
+  --radius-selector: 0.25rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 2px;
+  --depth: 1;
+  --noise: 0;
+}
+
+/* ---------- Thème sombre ---------- */
+@plugin "daisyui/theme" {
+  name: "itma-dark";
+  default: false;
+  prefersdark: true;
+  color-scheme: "dark";
+
+  /* Bases inversées */
+  --color-base-100: #0f0f0f;
+  --color-base-200: #1a1a1a;
+  --color-base-300: #2a2a2a;
+  --color-base-content: #ffffff;
+
+  /* Couleurs marque ITMA (inchangées) */
+  --color-primary: #c6a13f;
+  --color-primary-content: #0f0f0f;
+  --color-secondary: #ffffff;
+  --color-secondary-content: #0f0f0f;
+  --color-accent: #f7d87e;
+  --color-accent-content: #0f0f0f;
+  --color-neutral: #262626;
+  --color-neutral-content: #ffffff;
+
+  /* Feedback */
+  --color-info: #2094f3;
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-error: #dc2626;
+  --color-info-content: #0f0f0f;
+  --color-success-content: #0f0f0f;
+  --color-warning-content: #0f0f0f;
+  --color-error-content: #0f0f0f;
+
+  /* Rayons & bordures identiques */
+  --radius-selector: 0.25rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 2px;
+  --depth: 1;
+  --noise: 0;
 }
 
 :root {

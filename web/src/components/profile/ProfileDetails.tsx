@@ -8,47 +8,27 @@ import EditProfileModal from "./EditProfileModal";
 export default function ProfileDetails() {
   const { user } = useAuth();
   const [isModalOpen, setModalOpen] = useState(false);
-  const [saved, setSaved] = useState(false);
 
   if (!user) {
     return (
-      <div className="p-6 bg-base-100 rounded-2xl shadow-lg animate-pulse space-y-4">
-        <div className="h-40 bg-base-200 rounded w-full" />
-        <div className="flex items-center space-x-4 mt-4">
-          <div className="w-20 h-20 rounded-full bg-base-200" />
-          <div className="flex-1 space-y-2">
-            <div className="h-4 bg-base-200 rounded w-1/3" />
-            <div className="h-3 bg-base-200 rounded w-1/4" />
-          </div>
-        </div>
-        <div className="space-y-2">
-          <div className="h-3 bg-base-200 rounded" />
-          <div className="h-3 bg-base-200 rounded w-5/6" />
-        </div>
+      <div className="flex justify-center items-center h-full">
+        <span className="loading loading-spinner"></span>
       </div>
     );
   }
 
-  const photoUrl = user.photo_profil
-    ? `http://127.0.0.1:8000/${user.photo_profil}`
+  const photoUrl = user.photo_profil 
+    ? `http://127.0.0.1:8000/${user.photo_profil}` 
     : `https://ui-avatars.com/api/?name=${user.prenom}+${user.nom}&background=random`;
-  const coverUrl = user.photo_couverture
-    ? `http://127.0.0.1:8000/${user.photo_couverture}`
-    : 'https://source.unsplash.com/1600x900/?abstract,gradient';
 
   return (
     <>
       <div className="relative bg-base-100 rounded-2xl shadow-lg overflow-hidden">
         {/* -- Background Image -- */}
-        <div
+        <div 
           className="h-40 bg-cover bg-center"
-          style={{ backgroundImage: `url(${coverUrl})` }}
+          style={{ backgroundImage: 'url(https://source.unsplash.com/1600x900/?abstract,gradient)' }}
         ></div>
-        {saved && (
-          <div className="badge badge-success absolute top-2 left-2 animate-bounce">
-            Sauvegardé !
-          </div>
-        )}
 
         {/* -- Edit Button -- */}
         <button 
@@ -85,15 +65,7 @@ export default function ProfileDetails() {
         </div>
       </div>
 
-      {isModalOpen && (
-        <EditProfileModal
-          onClose={() => setModalOpen(false)}
-          onSaved={() => {
-            setSaved(true);
-            setTimeout(() => setSaved(false), 3000);
-          }}
-        />
-      )}
+      {isModalOpen && <EditProfileModal onClose={() => setModalOpen(false)} />}
     </>
   );
 }

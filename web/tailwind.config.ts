@@ -1,11 +1,14 @@
 // tailwind.config.ts or .js
 import type { Config } from 'tailwindcss'
 
-const config: Config = {
+module.exports = {
   content: [
     './app/**/*.{js,ts,jsx,tsx}',
     './pages/**/*.{js,ts,jsx,tsx}',
     './components/**/*.{js,ts,jsx,tsx}',
   ],
   plugins: [require('daisyui')],
-} satisfies Config
+  daisyui: {
+    themes: ["itma", "itma-dark"], // Use our two custom themes
+  },
+};

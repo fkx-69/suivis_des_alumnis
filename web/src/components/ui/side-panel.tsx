@@ -23,7 +23,7 @@ import {
 
 const navItems = [
   {
-    label: "Actualités",
+    label: "Acceuil",
     icon: <NewspaperIcon size={20} />,
     href: "/",
   },

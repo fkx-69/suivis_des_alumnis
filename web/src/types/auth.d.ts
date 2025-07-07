@@ -6,7 +6,6 @@ export interface User {
   prenom:       string;
   role:         string;
   photo_profil: null;
-  photo_couverture?: string | null;
   biographie:   null;
 }
 
@@ -56,7 +55,6 @@ export interface UpdateProfilePayload {
   nom?: string;
   prenom?: string;
   photo_profil?: string;
-  photo_couverture?: string;
   biographie?: string;
 }
 

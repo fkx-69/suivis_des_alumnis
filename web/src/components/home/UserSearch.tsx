@@ -30,10 +30,10 @@ export default function UserSearch() {
   }, [query]);
 
   return (
-    <div className="relative w-full max-w-md">
+    <div className="relative w-full max-w-md mx-auto">
       <input
         type="text"
-        className="input input-bordered w-full"
+        className="input input-primary w-full"
         placeholder="Rechercher un utilisateur..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
@@ -42,7 +42,9 @@ export default function UserSearch() {
         <ul className="absolute z-10 mt-1 w-full bg-base-100 shadow-lg rounded-b-lg max-h-60 overflow-auto">
           {results.map((u) => (
             <li key={u.username} className="px-4 py-2 hover:bg-base-200">
-              <Link href={`/profile/${u.username}`}>{u.prenom} {u.nom} (@{u.username})</Link>
+              <Link href={`/profile/${u.username}`}>
+                {u.prenom} {u.nom} (@{u.username})
+              </Link>
             </li>
           ))}
         </ul>

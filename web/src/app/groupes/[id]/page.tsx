@@ -1,22 +1,26 @@
 "use client";
-import { useEffect, useState, useRef } from 'react';
-import { useParams } from 'next/navigation';
-import { fetchGroups, fetchGroupMessages, sendGroupMessage } from '@/lib/api/group';
-import { Group, GroupMessage } from '@/types/group';
-import { useAuth } from '@/lib/api/authContext';
-import { Send } from 'lucide-react';
-import { formatTimeAgo } from '@/lib/utils';
+import { useEffect, useState, useRef } from "react";
+import { useParams } from "next/navigation";
+import {
+  fetchGroups,
+  fetchGroupMessages,
+  sendGroupMessage,
+} from "@/lib/api/group";
+import { Group, GroupMessage } from "@/types/group";
+import { useAuth } from "@/lib/api/authContext";
+import { Send } from "lucide-react";
+import { formatTimeAgo } from "@/lib/utils";
 
 export default function GroupeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const [group, setGroup] = useState<Group | null>(null);
   const [messages, setMessages] = useState<GroupMessage[]>([]);
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -39,7 +43,7 @@ export default function GroupeDetailPage() {
     try {
       const newMessage = await sendGroupMessage(Number(id), content);
       setMessages((prev) => [...prev, newMessage]);
-      setContent('');
+      setContent("");
     } catch (error) {
       console.error("Failed to send message:", error);
     }
@@ -69,10 +73,16 @@ export default function GroupeDetailPage() {
           {messages.map((m) => {
             const isCurrentUser = user.username === m.auteur;
             return (
-              <div key={m.id} className={`chat ${isCurrentUser ? 'chat-end' : 'chat-start'}`}>
+              <div
+                key={m.id}
+                className={`chat ${isCurrentUser ? "chat-end" : "chat-start"}`}
+              >
                 <div className="chat-image avatar">
                   <div className="w-10 rounded-full">
-                    <img src={`https://ui-avatars.com/api/?name=${m.auteur}&background=random`} alt={m.auteur} />
+                    <img
+                      src={`https://ui-avatars.com/api/?name=${m.auteur}&background=random`}
+                      alt={m.auteur}
+                    />
                   </div>
                 </div>
                 <div className="chat-header">
@@ -98,7 +108,11 @@ export default function GroupeDetailPage() {
             value={content}
             onChange={(e) => setContent(e.target.value)}
           />
-          <button type="submit" className="btn btn-primary btn-square" disabled={!content.trim()}>
+          <button
+            type="submit"
+            className="btn btn-primary btn-square"
+            disabled={!content.trim()}
+          >
             <Send size={20} />
           </button>
         </form>

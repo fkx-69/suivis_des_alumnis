@@ -78,22 +78,24 @@ export default function ExternalProfileModal({
         </button>
 
         <div className="flex flex-col items-center text-center">
-          <div className="mb-3">
-            <img
-              className="mb-1 w-28 h-28 rounded-full shadow-lg object-cover"
-              src={
-                user.photo_profil ||
-                `https://ui-avatars.com/api/?name=${user.prenom}+${user.nom}&background=random`
-              }
-              alt={`Profil de ${user.prenom}`}
-            />
-            <span className="text-sm text-base-content/70">
-              @{user.username} ({user.role})
-            </span>
-          </div>
-          <h3 className="mb-1 text-2xl font-bold text-base-content">
-            {user.prenom} {user.nom}{" "}
-          </h3>
+          <Link href={`/profile/${user.username}`} onClick={onClose}>
+            <div className="mb-3">
+              <img
+                className="mb-1 w-28 h-28 rounded-full shadow-lg object-cover"
+                src={
+                  user.photo_profil ||
+                  `https://ui-avatars.com/api/?name=${user.prenom}+${user.nom}&background=random`
+                }
+                alt={`Profil de ${user.prenom}`}
+              />
+              <span className="text-sm text-base-content/70">
+                @{user.username} ({user.role})
+              </span>
+            </div>
+            <h3 className="mb-1 text-2xl font-bold text-base-content hover:underline">
+              {user.prenom} {user.nom}{" "}
+            </h3>
+          </Link>
 
           {user.biographie && (
             <p className="text-base-content/80 mt-4">{user.biographie}</p>

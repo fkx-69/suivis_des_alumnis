@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api/axios";
-import Link from "next/link";
+import ProfileCard from "./ProfileCard";
 
 interface SuggestedUser {
   username: string;
@@ -18,50 +18,30 @@ export default function ProfileSuggestions() {
   useEffect(() => {
     api
       .get<SuggestedUser[]>("/accounts/suggestions/")
-      .then((res) => setSuggestions(res.data))
+      .then((res) => setSuggestions(res.data.slice(0, 3))) // Affiche 3 suggestions
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center p-4">
-        <span className="loading loading-spinner" />
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-base-100 p-6 rounded-2xl shadow-lg">
-      <h3 className="text-xl font-bold mb-4">Suggestions de profils</h3>
-      {suggestions.length ? (
-        <ul className="space-y-4">
-          {suggestions.map((u) => {
-            const photoUrl = u.photo_profil
-              ? `http://127.0.0.1:8000/${u.photo_profil}`
-              : `https://ui-avatars.com/api/?name=${u.prenom}+${u.nom}&background=random`;
-            return (
-              <li key={u.username} className="flex items-center gap-4">
-                <div className="avatar">
-                  <div className="w-10 h-10 rounded-full">
-                    <img src={photoUrl} alt={u.username} />
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-sm">
-                    {u.prenom} {u.nom}
-                  </p>
-                  <p className="text-xs text-base-content/70">@{u.username}</p>
-                </div>
-                <Link href={`/profile/${u.username}`} className="btn btn-xs btn-primary">
-                  Voir
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+    <div className="space-y-4">
+      <h3 className="text-xl font-bold">Suggestions de profils</h3>
+      {loading ? (
+        <div className="flex justify-center p-4">
+          <span className="loading loading-spinner" />
+        </div>
+      ) : suggestions.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {suggestions.map((user) => (
+            <ProfileCard key={user.username} user={user} />
+          ))}
+        </div>
       ) : (
-        <p className="text-base-content/70">Aucune suggestion pour le moment.</p>
+        <div className="bg-base-200 p-6 rounded-2xl shadow-inner text-center">
+          <p className="text-base-content/70">
+            Aucune suggestion pour le moment.
+          </p>
+        </div>
       )}
     </div>
   );

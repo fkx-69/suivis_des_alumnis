@@ -1,4 +1,3 @@
-
 import UserSearch from "@/components/home/UserSearch";
 import ProfileSuggestions from "@/components/home/ProfileSuggestions";
 import PublicationsFeed from "@/components/home/PublicationsFeed";
@@ -6,28 +5,22 @@ import UpcomingEvents from "@/components/home/UpcomingEvents";
 
 export default function Home() {
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 space-y-8">
-      <div className="flex flex-col items-center gap-4">
-        <h1 className="text-3xl font-bold">Bienvenue sur la plateforme</h1>
+    <div className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-12">
+      <div className="mb-4">
         <UserSearch />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Suggestions */}
-        <div className="space-y-8 order-2 lg:order-1">
-          <ProfileSuggestions />
-        </div>
+      <section>
+        <PublicationsFeed />
+      </section>
 
-        {/* Publications Feed */}
-        <div className="order-1 lg:order-2">
-          <PublicationsFeed />
-        </div>
+      <section>
+        <UpcomingEvents />
+      </section>
 
-        {/* Upcoming Events */}
-        <div className="space-y-8 order-3">
-          <UpcomingEvents />
-        </div>
-      </div>
+      <section className="max-w-md mx-auto">
+        <ProfileSuggestions />
+      </section>
     </div>
   );
 }

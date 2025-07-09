@@ -57,12 +57,16 @@ export default function GroupesPage() {
         {groups.map((g) => (
           <div
             key={g.id}
-            className="card bg-base-100 shadow-xl border border-base-300 transition-shadow hover:shadow-2xl cursor-pointer"
+            className="card bg-base-100 shadow-xl border border-primary transition-shadow hover:shadow-2xl cursor-pointer"
             onClick={() => router.push(`/groupes/${g.id}`)}
           >
             {g.image && (
               <figure>
-                <img src={g.image} alt={g.nom_groupe} className="w-full h-48 object-cover" />
+                <img
+                  src={g.image}
+                  alt={g.nom_groupe}
+                  className="w-full h-48 object-cover"
+                />
               </figure>
             )}
             <div className="card-body">
@@ -80,13 +84,22 @@ export default function GroupesPage() {
               >
                 {g.description}
               </p>
-              <div className="card-actions justify-end mt-4" onClick={(e) => e.stopPropagation()}>
+              <div
+                className="card-actions justify-end mt-4"
+                onClick={(e) => e.stopPropagation()}
+              >
                 {g.est_membre ? (
-                  <button className="btn btn-error" onClick={() => handleLeave(g.id)}>
+                  <button
+                    className="btn btn-error"
+                    onClick={() => handleLeave(g.id)}
+                  >
                     Quitter
                   </button>
                 ) : (
-                  <button className="btn btn-primary" onClick={() => handleJoin(g.id)}>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => handleJoin(g.id)}
+                  >
                     Rejoindre
                   </button>
                 )}
@@ -95,14 +108,19 @@ export default function GroupesPage() {
           </div>
         ))}
       </div>
-      {showForm && <AddGroupModal onClose={() => setShowForm(false)} onCreated={handleCreated} />}
-      {selectedGroup && (
-        <GroupDetailModal 
-          group={selectedGroup} 
-          onClose={() => setSelectedGroup(null)} 
+      {showForm && (
+        <AddGroupModal
+          onClose={() => setShowForm(false)}
+          onCreated={handleCreated}
         />
       )}
-      <button 
+      {selectedGroup && (
+        <GroupDetailModal
+          group={selectedGroup}
+          onClose={() => setSelectedGroup(null)}
+        />
+      )}
+      <button
         className="btn btn-primary btn-circle fixed bottom-8 right-8 shadow-lg"
         onClick={() => setShowForm(true)}
       >

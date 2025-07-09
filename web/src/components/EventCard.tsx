@@ -13,6 +13,7 @@ export interface EventCardProps {
   showActions?: boolean;
   onEdit?(): void;
   onDelete?(): void;
+  className?: string;
 }
 
 export default function EventCard({
@@ -22,10 +23,11 @@ export default function EventCard({
   showActions,
   onEdit,
   onDelete,
+  className,
 }: EventCardProps) {
   return (
     <div
-      className={`relative card card-lg w-full bg-base-100 ${event.image ? "" : "card-xl"} shadow-sm overflow-hidden`}
+      className={`relative card card-lg w-full bg-base-200 ${event.image ? "" : "card-xl"} shadow-sm overflow-hidden ${className}`}
       onClick={onToggle}
     >
       {showActions && (

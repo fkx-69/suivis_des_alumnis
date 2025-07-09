@@ -15,7 +15,6 @@ import {
 } from "@/lib/api/evenement";
 import { Plus } from "lucide-react";
 
-
 export default function Page() {
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,33 +89,45 @@ export default function Page() {
   const filteredEvents = showMyEvents
     ? events.filter((e) => e.is_owner)
     : showPendingEvents
-    ? events.filter((e) => !e.valide)
-    : events.filter((e) => e.valide);
+      ? events.filter((e) => !e.valide)
+      : events.filter((e) => e.valide);
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-4 lg:py-8">
       <div className="mb-4 flex gap-2">
         <button
-          className={`btn btn-secondary ${!showMyEvents && !showPendingEvents ? "btn-active" : "btn-soft"}`}
-          onClick={() => {setShowMyEvents(false); setShowPendingEvents(false)}}
+          className={`btn btn-primary ${!showMyEvents && !showPendingEvents ? "btn-active" : "btn-soft"}`}
+          onClick={() => {
+            setShowMyEvents(false);
+            setShowPendingEvents(false);
+          }}
         >
           Tous les évènements
         </button>
         <button
-          className={`btn btn-secondary ${showMyEvents ? "btn-active" : "btn-soft"}`}
-          onClick={() => {setShowMyEvents(true); setShowPendingEvents(false)}}
+          className={`btn btn-primary ${showMyEvents ? "btn-active" : "btn-soft"}`}
+          onClick={() => {
+            setShowMyEvents(true);
+            setShowPendingEvents(false);
+          }}
         >
           Mes évènements
         </button>
         <button
-          className={`btn btn-secondary ${showPendingEvents ? "btn-active" : "btn-soft"}`}
-          onClick={() => {setShowMyEvents(false); setShowPendingEvents(true)}}
+          className={`btn btn-primary ${showPendingEvents ? "btn-active" : "btn-soft"}`}
+          onClick={() => {
+            setShowMyEvents(false);
+            setShowPendingEvents(true);
+          }}
         >
           En attente
         </button>
       </div>
       {showForm && (
-        <AddEventModal onCreated={handleCreated} onClose={() => setShowForm(false)} />
+        <AddEventModal
+          onCreated={handleCreated}
+          onClose={() => setShowForm(false)}
+        />
       )}
       {editingEvent && (
         <EditEventModal
@@ -125,7 +136,7 @@ export default function Page() {
           onClose={() => setEditingEvent(null)}
         />
       )}
-      
+
       {filteredEvents.length === 0 ? (
         <div className="alert alert-info max-w-lg mx-auto mt-10">
           <span>Aucun futur événement pour le moment.</span>
@@ -168,7 +179,7 @@ export default function Page() {
         aria-label="Ajouter une publication"
       >
         <Plus size={28} />
-      </button> 
+      </button>
     </main>
   );
 }

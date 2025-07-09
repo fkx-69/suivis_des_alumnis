@@ -3,6 +3,7 @@ import { User } from "@/types/auth";
 import { useAuth } from "@/lib/api/authContext";
 import { envoyerDemande } from "@/lib/api/mentorat";
 import { toast } from "@/components/ui/toast";
+import Link from "next/link";
 
 interface UserCardProps {
   user: User;
@@ -39,14 +40,16 @@ export default function UserCard({ user }: UserCardProps) {
             )}
           </div>
         </div>
-        <div>
-          <h2 className="font-semibold">
-            {user.prenom} {user.nom}
-          </h2>
-          <p className="text-sm opacity-70">
-            @{user.username} - {user.role}
-          </p>
-        </div>
+        <Link href={`/profile/${user.username}`} className="flex-grow">
+          <div>
+            <h2 className="font-semibold hover:underline">
+              {user.prenom} {user.nom}
+            </h2>
+            <p className="text-sm opacity-70">
+              @{user.username} - {user.role}
+            </p>
+          </div>
+        </Link>
         {canRequest && (
           <button
             className="btn btn-sm ml-auto"

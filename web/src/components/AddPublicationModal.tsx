@@ -87,7 +87,6 @@ export default function AddPublicationModal({
                   width={400}
                   height={300}
                   className="w-full h-auto object-cover"
-                  unoptimized
                 />
               ) : (
                 <video src={mediaPreview} controls className="w-full h-auto" />

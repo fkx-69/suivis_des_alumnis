@@ -27,7 +27,7 @@ export default function PublicationModal({ publication, onClose }: PublicationMo
         <div className="flex items-center gap-3 mb-4">
           <div className="avatar">
               <div className="w-10 h-10 rounded-full">
-                  <Image src={avatarUrl} alt={`Avatar de ${publication.auteur_username}`} width={40} height={40} unoptimized />
+                  <Image src={avatarUrl} alt={`Avatar de ${publication.auteur_username}`} width={40} height={40} />
               </div>
           </div>
           <div>
@@ -41,7 +41,7 @@ export default function PublicationModal({ publication, onClose }: PublicationMo
           
           {publication.photo && (
             <figure className="mt-2">
-              <Image src={publication.photo} alt="Image de la publication" width={800} height={600} className="w-full h-auto rounded-lg object-contain" unoptimized />
+              <Image src={publication.photo} alt="Image de la publication" width={800} height={600} className="w-full h-auto rounded-lg object-contain" />
             </figure>
           )}
 

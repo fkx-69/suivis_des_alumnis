@@ -53,7 +53,6 @@ export default function PublicationCard({
                 width={44}
                 height={44}
                 className="object-cover w-full h-full"
-                unoptimized
               />
             ) : (
               <span className="flex items-center justify-center h-full text-lg font-semibold">
@@ -98,7 +97,6 @@ export default function PublicationCard({
               width={640}
               height={320}
               className="w-full h-full object-cover"
-              unoptimized
             />
           </div>
         )}
@@ -151,7 +149,6 @@ export default function PublicationCard({
                             width={32}
                             height={32}
                             className="object-cover w-full h-full"
-                            unoptimized
                           />
                         ) : (
                           <span className="text-xs font-semibold">

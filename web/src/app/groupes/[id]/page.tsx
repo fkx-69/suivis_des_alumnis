@@ -9,7 +9,6 @@ import {
 import { Group, GroupMessage } from "@/types/group";
 import { useAuth } from "@/lib/api/authContext";
 import { Send } from "lucide-react";
-import { formatTimeAgo } from "@/lib/utils";
 
 export default function GroupeDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -58,48 +57,60 @@ export default function GroupeDetailPage() {
   }
 
   return (
-    <main className="flex h-screen flex-col">
-      <header className="flex items-center gap-4 border-b bg-base-100 p-4 shadow-sm">
-        <div className="avatar placeholder">
-          <div className="w-12 rounded-full bg-neutral-focus text-neutral-content">
+    <div className="flex flex-col h-full bg-base-200">
+      <header className="bg-base-100 p-4 text-base-content border-b border-base-300 shadow-sm flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full overflow-hidden bg-neutral-focus text-neutral-content flex items-center justify-center">
+          {group.image ? (
+            <img src={group.image} alt={group.nom_groupe} className="object-cover w-10 h-10" />
+          ) : (
             <span>{group.nom_groupe.substring(0, 2)}</span>
-          </div>
+          )}
         </div>
-        <h1 className="text-xl font-bold">{group.nom_groupe}</h1>
+        <h1 className="text-xl font-semibold">{group.nom_groupe}</h1>
       </header>
 
-      <div className="flex-1 overflow-y-auto bg-base-200 p-4">
-        <div className="space-y-4">
-          {messages.map((m) => {
-            const isCurrentUser = user.username === m.auteur;
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((m) => {
+          const isCurrentUser = user.username === m.auteur;
+
+          if (isCurrentUser) {
             return (
-              <div
-                key={m.id}
-                className={`chat ${isCurrentUser ? "chat-end" : "chat-start"}`}
-              >
-                <div className="chat-image avatar">
-                  <div className="w-10 rounded-full">
+              <div key={m.id} className="flex items-end justify-end gap-3">
+                <div className="chat-bubble chat-bubble-primary shadow">{m.contenu}</div>
+                <div className="avatar">
+                  <div className="w-9 rounded-full">
                     <img
-                      src={`https://ui-avatars.com/api/?name=${m.auteur}&background=random`}
-                      alt={m.auteur}
+                      src={
+                        user.photo_profil
+                          ? `http://127.0.0.1:8000/${user.photo_profil}`
+                          : `https://ui-avatars.com/api/?name=${user.prenom}+${user.nom}&background=random`
+                      }
+                      alt="My Avatar"
                     />
                   </div>
                 </div>
-                <div className="chat-header">
-                  {m.auteur}
-                  <time className="ml-2 text-xs opacity-50">
-                    {formatTimeAgo(m.date_envoi)}
-                  </time>
-                </div>
-                <div className="chat-bubble bg-primary">{m.contenu}</div>
               </div>
             );
-          })}
-          <div ref={messagesEndRef} />
-        </div>
+          }
+
+          return (
+            <div key={m.id} className="flex items-end gap-3">
+              <div className="avatar">
+                <div className="w-9 rounded-full">
+                  <img
+                    src={`https://ui-avatars.com/api/?name=${m.auteur}&background=random`}
+                    alt={m.auteur}
+                  />
+                </div>
+              </div>
+              <div className="chat-bubble bg-base-100 text-base-content shadow">{m.contenu}</div>
+            </div>
+          );
+        })}
+        <div ref={messagesEndRef} />
       </div>
 
-      <footer className="mt-auto border-t bg-base-100 p-4">
+      <footer className="bg-base-100 border-t border-base-300 p-4">
         <form onSubmit={handleSend} className="flex items-center gap-2">
           <input
             type="text"
@@ -110,13 +121,13 @@ export default function GroupeDetailPage() {
           />
           <button
             type="submit"
-            className="btn btn-primary btn-square"
+            className="btn btn-primary"
             disabled={!content.trim()}
           >
             <Send size={20} />
           </button>
         </form>
       </footer>
-    </main>
+    </div>
   );
 }

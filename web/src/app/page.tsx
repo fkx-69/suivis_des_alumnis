@@ -11,11 +11,11 @@ export default function Home() {
       </div>
 
       <section>
-        <PublicationsFeed />
+        <UpcomingEvents />
       </section>
 
       <section>
-        <UpcomingEvents />
+        <PublicationsFeed />
       </section>
 
       <section className="max-w-md mx-auto">

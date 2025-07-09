@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Edit2 as Pencil, CameraIcon } from "lucide-react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/api/authContext";
 import { updateProfile, changeEmail } from "@/lib/api/auth";
@@ -78,14 +79,17 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
         <div className="flex flex-col items-center text-center">
           <div className="avatar">
             <div className="w-24 rounded-full relative group overflow-hidden">
-              <img
+              <Image
                 src={
                   (user?.photo_profil &&
                     "http://127.0.0.1:8000/" + user?.photo_profil) ||
                   `https://ui-avatars.com/api/?name=${user?.prenom}+${user?.nom}&background=random`
                 }
                 alt="Profile"
+                width={96}
+                height={96}
                 className="object-cover w-full h-full"
+                unoptimized
               />
               <label
                 htmlFor="photo-upload"

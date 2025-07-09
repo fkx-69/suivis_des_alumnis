@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Edit2 as Pencil } from "lucide-react";
+import Image from "next/image";
 import { useAuth } from "@/lib/api/authContext";
 import EditProfileModal from "./EditProfileModal";
 
@@ -42,7 +43,7 @@ export default function ProfileDetails() {
         <div className="absolute top-24 left-6">
           <div className="avatar">
             <div className="w-28 h-28 rounded-full ring-4 ring-base-100">
-              <img src={photoUrl} alt={`${user.prenom} ${user.nom}`} />
+              <Image src={photoUrl} alt={`${user.prenom} ${user.nom}`} width={112} height={112} unoptimized />
             </div>
           </div>
         </div>

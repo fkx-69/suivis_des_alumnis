@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { fetchMesDemandes, repondreDemande } from "@/lib/api/mentorat";
 import { DemandeMentorat } from "@/types/mentorat";
 import { useAuth } from "@/lib/api/authContext";
@@ -104,9 +105,12 @@ export default function MentoratRequests() {
                   <div className="flex items-center space-x-4">
                     <div className="avatar">
                       <div className="w-16 h-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                        <img
+                        <Image
                           src={photoUrl}
                           alt={`Photo de ${demande.profile.prenom}`}
+                          width={64}
+                          height={64}
+                          unoptimized
                         />
                       </div>
                     </div>

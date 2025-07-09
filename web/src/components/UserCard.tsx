@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { User } from "@/types/auth";
+import Image from "next/image";
 import { useAuth } from "@/lib/api/authContext";
 import { envoyerDemande } from "@/lib/api/mentorat";
 import { toast } from "@/components/ui/toast";
@@ -31,8 +32,7 @@ export default function UserCard({ user }: UserCardProps) {
         <div className="avatar">
           <div className="w-12 rounded-full bg-base-200 overflow-hidden">
             {user.photo_profil ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={user.photo_profil} alt={user.username} />
+              <Image src={user.photo_profil} alt={user.username} width={48} height={48} unoptimized />
             ) : (
               <span className="flex items-center justify-center w-full h-full font-semibold">
                 {user.username.charAt(0).toUpperCase()}

@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import {
   fetchMessages,
@@ -127,11 +128,16 @@ export default function ConversationPage() {
                 </div>
                 <div className="avatar">
                   <div className="w-9 rounded-full">
-                    <img
+                    <Image
                       src={
-                        (user?.photo_profil ? `http://127.0.0.1:8000/${user.photo_profil}` : `https://ui-avatars.com/api/?name=${user?.prenom}+${user?.nom}&background=random`)
+                        user?.photo_profil
+                          ? `http://127.0.0.1:8000/${user.photo_profil}`
+                          : `https://ui-avatars.com/api/?name=${user?.prenom}+${user?.nom}&background=random`
                       }
                       alt="My Avatar"
+                      width={36}
+                      height={36}
+                      unoptimized
                     />
                   </div>
                 </div>
@@ -143,12 +149,15 @@ export default function ConversationPage() {
               <div key={m.id} className="flex items-end gap-3">
                 <div className="avatar">
                   <div className="w-9 rounded-full">
-                    <img
+                    <Image
                       src={
                         conversation.photo_profil ||
                         `https://ui-avatars.com/api/?name=${conversation.prenom}+${conversation.nom}&background=random`
                       }
                       alt="User Avatar"
+                      width={36}
+                      height={36}
+                      unoptimized
                     />
                   </div>
                 </div>

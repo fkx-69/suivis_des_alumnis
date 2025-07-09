@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { fetchGroups, joinGroup, leaveGroup } from "@/lib/api/group";
@@ -62,10 +63,13 @@ export default function GroupesPage() {
           >
             {g.image && (
               <figure>
-                <img
+                <Image
                   src={g.image}
                   alt={g.nom_groupe}
+                  width={500}
+                  height={192}
                   className="w-full h-48 object-cover"
+                  unoptimized
                 />
               </figure>
             )}

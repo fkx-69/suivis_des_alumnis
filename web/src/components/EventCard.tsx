@@ -1,4 +1,5 @@
 import { CalendarIcon, Edit2 as Pencil, Trash } from "lucide-react";
+import Image from "next/image";
 
 export interface EventCardProps {
   event: {
@@ -54,10 +55,13 @@ export default function EventCard({
       )}
       {event.image && (
         <figure>
-          <img
+          <Image
             src={event.image}
             alt={event.titre}
+            width={768}
+            height={192}
             className="h-48 w-full object-cover"
+            unoptimized
           />
         </figure>
       )}

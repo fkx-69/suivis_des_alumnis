@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { UserProfile, fetchUserProfile } from "@/lib/api/users";
 import { Publication } from "@/types/publication";
@@ -80,14 +81,16 @@ export default function UserProfilePage() {
       <div className="bg-base-100 rounded-2xl shadow-lg p-8 mb-8">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
           <div className="avatar w-32 h-32 rounded-full overflow-hidden border-4 border-primary">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={
                 user.photo_profil ||
                 `https://ui-avatars.com/api/?name=${user.prenom}+${user.nom}&background=random`
               }
               alt={user.username}
+              width={128}
+              height={128}
               className="object-cover w-full h-full"
+              unoptimized
             />
           </div>
           <div className="text-center md:text-left">

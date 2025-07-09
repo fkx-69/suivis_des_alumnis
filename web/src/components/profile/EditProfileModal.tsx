@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { CameraIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/api/authContext";
@@ -119,10 +120,13 @@ export default function EditProfileModal({ onClose }: EditProfileModalProps) {
         <div className="flex flex-col items-center mb-6">
             <div className="avatar">
                 <div className="w-24 rounded-full relative group overflow-hidden">
-                    <img
+                    <Image
                         src={previewUrl || `https://ui-avatars.com/api/?name=${user?.prenom}+${user?.nom}&background=random`}
                         alt="Profile Preview"
+                        width={96}
+                        height={96}
                         className="object-cover w-full h-full"
+                        unoptimized
                     />
                     <label
                         htmlFor="photo-upload-modal"

@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { XIcon } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/lib/api/authContext";
 import { envoyerDemande } from "@/lib/api/mentorat";
@@ -80,13 +81,16 @@ export default function ExternalProfileModal({
         <div className="flex flex-col items-center text-center">
           <Link href={`/profile/${user.username}`} onClick={onClose}>
             <div className="mb-3">
-              <img
+              <Image
                 className="mb-1 w-28 h-28 rounded-full shadow-lg object-cover"
                 src={
                   user.photo_profil ||
                   `https://ui-avatars.com/api/?name=${user.prenom}+${user.nom}&background=random`
                 }
                 alt={`Profil de ${user.prenom}`}
+                width={112}
+                height={112}
+                unoptimized
               />
               <span className="text-sm text-base-content/70">
                 @{user.username} ({user.role})

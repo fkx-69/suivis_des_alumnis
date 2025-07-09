@@ -1,4 +1,5 @@
 import { CalendarIcon, XIcon } from "lucide-react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { ApiEvent } from "@/types/evenement";
@@ -29,10 +30,13 @@ export default function EventModal({ event, onClose }: EventModalProps) {
       >
         {event.image && (
           <figure>
-            <img
+            <Image
               src={event.image}
               alt={event.titre}
+              width={768}
+              height={256}
               className="w-full h-64 object-cover"
+              unoptimized
             />
           </figure>
         )}

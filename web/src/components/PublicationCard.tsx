@@ -3,6 +3,7 @@ import { useProfileModal } from "@/contexts/ProfileModalContext";
 import { Publication } from "@/types/publication";
 import { MessageCircle } from "lucide-react";
 import { useState } from "react";
+import Image from "next/image";
 import { formatTimeAgo } from "@/lib/utils";
 
 interface PublicationCardProps {
@@ -46,10 +47,13 @@ export default function PublicationCard({
         <div className="avatar">
           <div className="w-11 rounded-full bg-base-300 overflow-hidden">
             {publication.auteur_photo_profil ? (
-              <img
+              <Image
                 src={publication.auteur_photo_profil}
                 alt={publication.auteur_username}
+                width={44}
+                height={44}
                 className="object-cover w-full h-full"
+                unoptimized
               />
             ) : (
               <span className="flex items-center justify-center h-full text-lg font-semibold">
@@ -88,10 +92,13 @@ export default function PublicationCard({
 
         {publication.photo && (
           <div className="mt-3 rounded-lg overflow-hidden border border-base-300/20 h-64 sm:h-80">
-            <img
+            <Image
               src={publication.photo}
               alt="Contenu de la publication"
+              width={640}
+              height={320}
               className="w-full h-full object-cover"
+              unoptimized
             />
           </div>
         )}
@@ -138,10 +145,13 @@ export default function PublicationCard({
                     <div className="avatar">
                       <div className="w-8 rounded-full bg-base-200 overflow-hidden flex items-center justify-center">
                         {c.auteur_photo_profil ? (
-                          <img
+                          <Image
                             src={c.auteur_photo_profil}
                             alt={c.auteur_username}
+                            width={32}
+                            height={32}
                             className="object-cover w-full h-full"
+                            unoptimized
                           />
                         ) : (
                           <span className="text-xs font-semibold">

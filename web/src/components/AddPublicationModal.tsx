@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { X, Image as ImageIcon, Video as VideoIcon } from "lucide-react";
+import Image from "next/image";
 
 interface AddPublicationModalProps {
   isOpen: boolean;
@@ -80,10 +81,13 @@ export default function AddPublicationModal({
           {mediaPreview && (
             <div className="rounded-lg overflow-hidden border border-base-300/50">
               {mediaType === "image" ? (
-                <img
+                <Image
                   src={mediaPreview}
                   alt="Aperçu"
+                  width={400}
+                  height={300}
                   className="w-full h-auto object-cover"
+                  unoptimized
                 />
               ) : (
                 <video src={mediaPreview} controls className="w-full h-auto" />

@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { XIcon, Users, Calendar } from "lucide-react";
+import Image from "next/image";
 import { Group } from "@/types/group";
 
 interface GroupDetailModalProps {
@@ -42,10 +43,13 @@ export default function GroupDetailModal({
       >
         {group.image && (
           <figure>
-            <img
+            <Image
               src={group.image}
               alt={group.nom_groupe}
+              width={768}
+              height={256}
               className="w-full h-64 object-cover"
+              unoptimized
             />
           </figure>
         )}

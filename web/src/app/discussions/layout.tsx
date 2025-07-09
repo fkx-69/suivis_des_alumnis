@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -88,10 +89,13 @@ export default function DiscussionsLayout({
                 <Link key={conv.id} href={`/discussions/${conv.username}`}>
                   <div className={`flex items-center mb-4 cursor-pointer p-2 rounded-md ${isActive ? "bg-base-300" : "hover:bg-base-200"}`}>
                     <div className="w-12 h-12 bg-gray-300 rounded-full mr-3 overflow-hidden cursor-pointer" onClick={(e) => handleProfileClick(e, conv.username)} >
-                      <img 
+                      <Image
                         src={conv.photo_profil || `https://ui-avatars.com/api/?name=${conv.prenom}+${conv.nom}&background=random`}
-                        alt="User Avatar" 
+                        alt="User Avatar"
+                        width={48}
+                        height={48}
                         className="w-12 h-12 rounded-full"
+                        unoptimized
                       />
                     </div>
                     <div className="flex-1 overflow-hidden">

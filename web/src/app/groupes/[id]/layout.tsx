@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { fetchGroups } from "@/lib/api/group";
@@ -41,7 +42,7 @@ export default function GroupLayout({
                   >
                     <div className="w-12 h-12 rounded-full overflow-hidden mr-3 bg-gray-300 flex items-center justify-center">
                       {g.image ? (
-                        <img src={g.image} alt={g.nom_groupe} className="w-12 h-12 object-cover" />
+                        <Image src={g.image} alt={g.nom_groupe} width={48} height={48} className="w-12 h-12 object-cover" unoptimized />
                       ) : (
                         <span className="text-sm font-bold text-neutral-content bg-neutral-focus w-full h-full flex items-center justify-center">
                           {g.nom_groupe.substring(0, 2)}

@@ -2,6 +2,10 @@ from rest_framework import generics, status, permissions, viewsets, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
+
+
 from .models import Etudiant, Alumni, ParcoursAcademique, ParcoursProfessionnel, CustomUser
 from .serializers import (
     RegisterEtudiantSerializer, RegisterAlumniSerializer,
@@ -116,16 +120,42 @@ class RegisterEtudiantAPIView(APIView):
     def post(self, request):
         serializer = RegisterEtudiantSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({"message": "Étudiant inscrit avec succès"}, status=status.HTTP_201_CREATED)
+        etudiant = serializer.save()
+        user = etudiant.user  # Accès au CustomUser
+
+        # Générer les tokens
+        token_serializer = TokenObtainPairSerializer(data={
+            "email": user.email,
+            "password": request.data["user"]["password"],
+        })
+        token_serializer.is_valid(raise_exception=True)
+        tokens = token_serializer.validated_data
+
+        return Response({
+            "message": "Étudiant inscrit avec succès",
+            "access": tokens["access"],
+            "refresh": tokens["refresh"],
+            "user": UserSerializer(user).data,
+        }, status=status.HTTP_201_CREATED)
 
 class RegisterAlumniAPIView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = RegisterAlumniSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({"message": "Alumni inscrit avec succès"}, status=status.HTTP_201_CREATED)
+        user = serializer.save()
+
+        # Génère les tokens JWT pour l'utilisateur créé
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+        refresh_token = str(refresh)
+
+        return Response({
+            "message": "Alumni inscrit avec succès",
+            "access": access_token,
+            "refresh": refresh_token
+        }, status=status.HTTP_201_CREATED)
 
 # === LISTES POUR ADMIN ===
 class ListEtudiantsAPIView(generics.ListAPIView):

@@ -1,7 +1,8 @@
-import { XIcon } from "lucide-react";
+import { XIcon, Image as ImageIcon } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useEffect, useState, useRef } from "react";
 import { createGroup } from "@/lib/api/group";
 import { Group } from "@/types/group";
 
@@ -16,6 +17,8 @@ export default function AddGroupModal({
 }: AddGroupModalProps) {
   const [form, setForm] = useState({ nom_groupe: "", description: "" });
   const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,8 +30,14 @@ export default function AddGroupModal({
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setImage(e.target.files[0]);
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -41,6 +50,7 @@ export default function AddGroupModal({
       onCreated?.(group);
       setForm({ nom_groupe: "", description: "" });
       setImage(null);
+      setImagePreview(null);
       onClose();
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -80,6 +90,19 @@ export default function AddGroupModal({
           <XIcon size={18} />
         </button>
         {error && <div className="alert alert-error">{error}</div>}
+
+        {imagePreview && (
+          <div className="rounded-lg overflow-hidden border border-base-300/50">
+            <Image
+              src={imagePreview}
+              alt="Aperçu"
+              width={500}
+              height={192}
+              className="w-full h-48 object-cover"
+            />
+          </div>
+        )}
+
         <Input
           name="nom_groupe"
           value={form.nom_groupe}
@@ -96,15 +119,31 @@ export default function AddGroupModal({
           required
           className="textarea textarea-ghost w-full h-32"
         />
-        <Input
+
+        <div className="modal-action justify-between items-center mt-4">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="btn btn-ghost btn-sm gap-2"
+          >
+            <ImageIcon size={18} /> Photo
+          </button>
+          <button
+            className="btn btn-primary"
+            disabled={submitting}
+            type="submit"
+          >
+            {submitting ? <span className="loading loading-spinner"></span> : "Créer le groupe"}
+          </button>
+        </div>
+
+        <input
           type="file"
-          name="image"
+          ref={fileInputRef}
+          className="hidden"
+          accept="image/*"
           onChange={handleImageChange}
-          className="file-input file-input-bordered w-full"
         />
-        <button className="btn btn-primary" disabled={submitting} type="submit">
-          Créer le groupe
-        </button>
       </motion.form>
     </div>
   );

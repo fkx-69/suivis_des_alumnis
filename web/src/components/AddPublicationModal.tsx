@@ -64,13 +64,16 @@ export default function AddPublicationModal({
       className="modal modal-open modal-bottom sm:modal-middle"
       onClick={onClose}
     >
-      <div
-        className="modal-box relative"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="modal-box relative" onClick={(e) => e.stopPropagation()}>
         <h3 className="font-bold text-lg mb-4">Créer une publication</h3>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <textarea
+            className="textarea textarea-bordered w-full h-28"
+            placeholder="Exprimez-vous..."
+            value={texte}
+            onChange={(e) => setTexte(e.target.value)}
+          ></textarea>
           {mediaPreview && (
             <div className="relative rounded-lg overflow-hidden border border-base-300/50">
               <button
@@ -97,14 +100,6 @@ export default function AddPublicationModal({
               )}
             </div>
           )}
-
-          <textarea
-            className="textarea textarea-bordered w-full h-28"
-            placeholder="Exprimez-vous..."
-            value={texte}
-            onChange={(e) => setTexte(e.target.value)}
-          ></textarea>
-
           <div className="modal-action justify-between items-center mt-6">
             <div className="flex gap-4">
               <button

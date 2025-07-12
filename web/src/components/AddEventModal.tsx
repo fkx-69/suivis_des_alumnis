@@ -101,24 +101,6 @@ export default function AddEventModal({
         <h2 id="add-event-modal-title" className="sr-only">
           Créer un évènement
         </h2>
-        {error && <div className="alert alert-error">{error}</div>}
-        <Input
-          name="titre"
-          value={form.titre}
-          onChange={handleChange}
-          placeholder="Titre"
-          required
-          className="input-ghost text-2xl font-bold"
-          ref={firstFieldRef}
-        />
-        <textarea
-          name="description"
-          value={form.description}
-          onChange={handleChange}
-          placeholder="Description"
-          required
-          className="textarea textarea-ghost w-full text-sm opacity-80 h-32"
-        />
         {imagePreview && (
           <div className="relative rounded-lg overflow-hidden border border-base-300/50">
             <button
@@ -141,6 +123,25 @@ export default function AddEventModal({
             />
           </div>
         )}
+        {error && <div className="alert alert-error">{error}</div>}
+        <Input
+          name="titre"
+          value={form.titre}
+          onChange={handleChange}
+          placeholder="Titre"
+          required
+          className="input-ghost text-2xl font-bold"
+          ref={firstFieldRef}
+        />
+        <textarea
+          name="description"
+          value={form.description}
+          onChange={handleChange}
+          placeholder="Description"
+          required
+          className="textarea textarea-ghost w-full text-sm opacity-80 h-32"
+        />
+
         <div className="flex justify-between items-center text-sm gap-4 flex-wrap">
           <div className="flex items-center gap-2 flex-1 min-w-[10rem]">
             <CalendarIcon size={18} />
@@ -173,7 +174,11 @@ export default function AddEventModal({
           >
             <ImageIcon size={18} /> Photo
           </button>
-          <button className="btn btn-primary" disabled={submitting} type="submit">
+          <button
+            className="btn btn-primary"
+            disabled={submitting}
+            type="submit"
+          >
             {submitting ? (
               <span className="loading loading-spinner"></span>
             ) : (

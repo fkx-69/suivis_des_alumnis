@@ -34,22 +34,22 @@ export default function EventCard({
       {showActions && (
         <>
           <button
-            className="btn btn-xs btn-circle absolute top-2 left-2 z-10"
+            className="btn btn-xs btn-primary absolute top-2 left-2 z-10"
             onClick={(e) => {
               e.stopPropagation();
               onEdit?.();
             }}
           >
-            <Pencil size={12} />
+            <Pencil size={20} />
           </button>
           <button
-            className="btn btn-xs btn-circle btn-error absolute top-2 right-2 z-10"
+            className="btn btn-xs btn-error absolute top-2 right-2 z-10"
             onClick={(e) => {
               e.stopPropagation();
               onDelete?.();
             }}
           >
-            <Trash size={12} />
+            <Trash size={20} />
           </button>
         </>
       )}

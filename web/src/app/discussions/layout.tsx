@@ -94,15 +94,15 @@ export default function DiscussionsLayout({
                         <Image
                           src={conv.photo_profil}
                           alt="User Avatar"
-                          width={48}
-                          height={48}
-                          className="w-12 h-12 rounded-full"
+                          width={96}
+                          height={96}
+                          className="object-cover w-full h-full"
                         />
                       ) : (
                         <img
                           src={`https://ui-avatars.com/api/?name=${conv.prenom}+${conv.nom}&background=random`}
                           alt="User Avatar"
-                          className="w-12 h-12 rounded-full"
+                          className="object-cover w-full h-full"
                         />
                       )}
                     </div>

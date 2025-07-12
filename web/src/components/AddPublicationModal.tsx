@@ -71,13 +71,6 @@ export default function AddPublicationModal({
         <h3 className="font-bold text-lg mb-4">Créer une publication</h3>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <textarea
-            className="textarea textarea-bordered w-full h-28"
-            placeholder="Exprimez-vous..."
-            value={texte}
-            onChange={(e) => setTexte(e.target.value)}
-          ></textarea>
-
           {mediaPreview && (
             <div className="rounded-lg overflow-hidden border border-base-300/50">
               {mediaType === "image" ? (
@@ -86,13 +79,20 @@ export default function AddPublicationModal({
                   alt="Aperçu"
                   width={400}
                   height={300}
-                  className="w-full h-auto object-cover"
+                  className="w-full h-48 object-cover"
                 />
               ) : (
                 <video src={mediaPreview} controls className="w-full h-auto" />
               )}
             </div>
           )}
+
+          <textarea
+            className="textarea textarea-bordered w-full h-28"
+            placeholder="Exprimez-vous..."
+            value={texte}
+            onChange={(e) => setTexte(e.target.value)}
+          ></textarea>
 
           <div className="modal-action justify-between items-center mt-6">
             <div className="flex gap-4">

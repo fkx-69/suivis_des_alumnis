@@ -16,6 +16,7 @@ import { Plus } from "lucide-react";
 
 export default function Page() {
   const [events, setEvents] = useState<ApiEvent[]>([]);
+  const [pendingEvents, setPendingEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<ApiEvent | null>(null);
@@ -26,27 +27,48 @@ export default function Page() {
   const [eventToDelete, setEventToDelete] = useState<ApiEvent | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    const fetcher = showPendingEvents ? fetchPendingEvents : fetchEvents;
-    fetcher()
-      .then(setEvents)
-      .catch((err: unknown) => {
+    async function load() {
+      setLoading(true);
+      try {
+        const data = showPendingEvents
+          ? await fetchPendingEvents()
+          : await fetchEvents();
+        if (showPendingEvents) {
+          setPendingEvents(data);
+        } else {
+          setEvents(data);
+        }
+      } catch (err: unknown) {
         if (err instanceof Error) {
           setError(err.message);
         } else {
           setError("Erreur inconnue");
         }
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
   }, [showPendingEvents]);
 
   const handleCreated = (ev: ApiEvent) => {
-    setEvents((prev) => [...prev, ev]);
+    if (ev.valide) {
+      setEvents((prev) => [...prev, ev]);
+    } else {
+      setPendingEvents((prev) => [...prev, ev]);
+    }
     setShowForm(false);
   };
 
   const handleUpdated = (ev: ApiEvent) => {
-    setEvents((prev) => prev.map((e) => (e.id === ev.id ? ev : e)));
+    const update = (list: ApiEvent[]) => list.map((e) => (e.id === ev.id ? ev : e));
+    if (ev.valide) {
+      setEvents(update);
+      setPendingEvents((prev) => prev.filter((e) => e.id !== ev.id));
+    } else {
+      setPendingEvents(update);
+      setEvents((prev) => prev.filter((e) => e.id !== ev.id));
+    }
     setEditingEvent(null);
   };
 
@@ -59,6 +81,7 @@ export default function Page() {
     try {
       await deleteEvent(eventToDelete.id);
       setEvents((prev) => prev.filter((e) => e.id !== eventToDelete.id));
+      setPendingEvents((prev) => prev.filter((e) => e.id !== eventToDelete.id));
     } catch (err) {
       console.error(err);
     } finally {
@@ -82,11 +105,10 @@ export default function Page() {
     );
   }
 
+  const list = showPendingEvents ? pendingEvents : events;
   const filteredEvents = showMyEvents
-    ? events.filter((e) => e.is_owner)
-    : showPendingEvents
-      ? events.filter((e) => !e.valide)
-      : events.filter((e) => e.valide);
+    ? list.filter((e) => e.is_owner)
+    : list;
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-4 lg:py-8">

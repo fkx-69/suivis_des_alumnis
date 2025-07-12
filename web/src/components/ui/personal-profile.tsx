@@ -89,7 +89,6 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
                 width={96}
                 height={96}
                 className="object-cover w-full h-full"
-                unoptimized
               />
               <label
                 htmlFor="photo-upload"

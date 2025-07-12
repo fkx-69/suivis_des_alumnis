@@ -110,7 +110,6 @@ export default function MentoratRequests() {
                           alt={`Photo de ${demande.profile.prenom}`}
                           width={64}
                           height={64}
-                          unoptimized
                         />
                       </div>
                     </div>

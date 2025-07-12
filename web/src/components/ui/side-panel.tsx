@@ -1,4 +1,3 @@
-"use client";
 import React, { useState, ReactNode, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/api/authContext";

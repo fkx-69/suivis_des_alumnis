@@ -36,7 +36,6 @@ export default function EventModal({ event, onClose }: EventModalProps) {
               width={768}
               height={256}
               className="w-full h-64 object-cover"
-              unoptimized
             />
           </figure>
         )}

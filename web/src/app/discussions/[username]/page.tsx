@@ -34,7 +34,9 @@ export default function ConversationPage() {
     const setupConversation = async () => {
       try {
         const allConversations = await fetchConversations();
-        const existingConv = allConversations.find((c) => c.username === username);
+        const existingConv = allConversations.find(
+          (c) => c.username === username
+        );
 
         if (existingConv) {
           setConversation(existingConv);
@@ -135,9 +137,9 @@ export default function ConversationPage() {
                           : `https://ui-avatars.com/api/?name=${user?.prenom}+${user?.nom}&background=random`
                       }
                       alt="My Avatar"
-                      width={36}
                       height={36}
-                      unoptimized
+                      width={36}
+                      sizes="220px"
                     />
                   </div>
                 </div>
@@ -157,7 +159,7 @@ export default function ConversationPage() {
                       alt="User Avatar"
                       width={36}
                       height={36}
-                      unoptimized
+                      sizes="220px"
                     />
                   </div>
                 </div>

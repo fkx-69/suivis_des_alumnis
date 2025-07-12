@@ -90,7 +90,6 @@ export default function UserProfilePage() {
               width={128}
               height={128}
               className="object-cover w-full h-full"
-              unoptimized
             />
           </div>
           <div className="text-center md:text-left">

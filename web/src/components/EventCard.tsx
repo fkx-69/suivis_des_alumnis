@@ -61,7 +61,6 @@ export default function EventCard({
             width={768}
             height={192}
             className="h-48 w-full object-cover"
-            unoptimized
           />
         </figure>
       )}

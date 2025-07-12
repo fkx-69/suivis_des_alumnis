@@ -35,9 +35,9 @@ export default function EditProfileModal({ onClose }: EditProfileModalProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
-      if (user?.photo_profil) {
-          setPreviewUrl("http://127.0.0.1:8000/" + user.photo_profil);
-      }
+    if (user?.photo_profil) {
+      setPreviewUrl("http://127.0.0.1:8000/" + user.photo_profil);
+    }
   }, [user]);
 
   const handleChange = (label: string, newValue: string) => {
@@ -50,11 +50,11 @@ export default function EditProfileModal({ onClose }: EditProfileModalProps) {
     const file = e.target.files?.[0] || null;
     setSelectedFile(file);
     if (file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setPreviewUrl(reader.result as string);
-        };
-        reader.readAsDataURL(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -67,12 +67,8 @@ export default function EditProfileModal({ onClose }: EditProfileModalProps) {
         data.username = f.value;
       if (f.label === "Prenoms" && f.value !== user.prenom)
         data.prenom = f.value;
-      if (f.label === "Nom" && f.value !== user.nom)
-        data.nom = f.value;
-      if (
-        f.label === "Biographie" &&
-        f.value !== (user.biographie ?? "")
-      )
+      if (f.label === "Nom" && f.value !== user.nom) data.nom = f.value;
+      if (f.label === "Biographie" && f.value !== (user.biographie ?? ""))
         data.biographie = f.value;
     });
 
@@ -118,40 +114,42 @@ export default function EditProfileModal({ onClose }: EditProfileModalProps) {
 
         {/* Form */}
         <div className="flex flex-col items-center mb-6">
-            <div className="avatar">
-                <div className="w-24 rounded-full relative group overflow-hidden">
-                    <Image
-                        src={previewUrl || `https://ui-avatars.com/api/?name=${user?.prenom}+${user?.nom}&background=random`}
-                        alt="Profile Preview"
-                        width={96}
-                        height={96}
-                        className="object-cover w-full h-full"
-                        unoptimized
-                    />
-                    <label
-                        htmlFor="photo-upload-modal"
-                        className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 cursor-pointer"
-                    >
-                        <CameraIcon className="text-white h-6 w-6" />
-                    </label>
-                    <input
-                        id="photo-upload-modal"
-                        type="file"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                    />
-                </div>
+          <div className="avatar">
+            <div className="w-24 rounded-full relative group overflow-hidden">
+              <Image
+                src={
+                  previewUrl ||
+                  `https://ui-avatars.com/api/?name=${user?.prenom}+${user?.nom}&background=random`
+                }
+                alt="Profile Preview"
+                width={96}
+                height={96}
+                className="object-cover w-full h-full"
+              />
+              <label
+                htmlFor="photo-upload-modal"
+                className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 cursor-pointer"
+              >
+                <CameraIcon className="text-white h-6 w-6" />
+              </label>
+              <input
+                id="photo-upload-modal"
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
             </div>
+          </div>
         </div>
-        
+
         <div className="space-y-4">
           {fields.map((field) => (
             <div key={field.label}>
               <label className="label">
                 <span className="label-text">{field.label}</span>
               </label>
-              {field.label === 'Biographie' ? (
+              {field.label === "Biographie" ? (
                 <textarea
                   className="textarea textarea-bordered w-full"
                   value={field.value}
@@ -160,7 +158,7 @@ export default function EditProfileModal({ onClose }: EditProfileModalProps) {
                 />
               ) : (
                 <input
-                  type={field.label === 'Email' ? 'email' : 'text'}
+                  type={field.label === "Email" ? "email" : "text"}
                   className="input input-bordered w-full"
                   value={field.value}
                   onChange={(e) => handleChange(field.label, e.target.value)}

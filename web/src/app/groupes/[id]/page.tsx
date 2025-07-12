@@ -62,7 +62,13 @@ export default function GroupeDetailPage() {
       <header className="bg-base-100 p-4 text-base-content border-b border-base-300 shadow-sm flex items-center gap-3">
         <div className="w-10 h-10 rounded-full overflow-hidden bg-neutral-focus text-neutral-content flex items-center justify-center">
           {group.image ? (
-            <Image src={group.image} alt={group.nom_groupe} width={40} height={40} className="object-cover w-10 h-10" unoptimized />
+            <Image
+              src={group.image}
+              alt={group.nom_groupe}
+              width={40}
+              height={40}
+              className="object-cover w-10 h-10"
+            />
           ) : (
             <span>{group.nom_groupe.substring(0, 2)}</span>
           )}
@@ -77,25 +83,26 @@ export default function GroupeDetailPage() {
           if (isCurrentUser) {
             return (
               <div key={m.id} className="flex items-end justify-end gap-3">
-                <div className="chat-bubble chat-bubble-primary shadow">{m.contenu}</div>
+                <div className="chat-bubble chat-bubble-primary shadow">
+                  {m.contenu}
+                </div>
                 <div className="avatar">
                   <div className="w-9 rounded-full">
-                  <Image
-                    src={
-                      user.photo_profil
-                        ? `http://127.0.0.1:8000/${user.photo_profil}`
-                        : `https://ui-avatars.com/api/?name=${user.prenom}+${user.nom}&background=random`
-                    }
-                    alt="My Avatar"
-                    width={36}
-                    height={36}
-                    unoptimized
-                  />
+                    <Image
+                      src={
+                        user.photo_profil
+                          ? `http://127.0.0.1:8000/${user.photo_profil}`
+                          : `https://ui-avatars.com/api/?name=${user.prenom}+${user.nom}&background=random`
+                      }
+                      alt="My Avatar"
+                      width={36}
+                      height={36}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        }
+            );
+          }
 
           return (
             <div key={m.id} className="flex items-end gap-3">
@@ -106,11 +113,12 @@ export default function GroupeDetailPage() {
                     alt={m.auteur}
                     width={36}
                     height={36}
-                    unoptimized
                   />
                 </div>
               </div>
-              <div className="chat-bubble bg-base-100 text-base-content shadow">{m.contenu}</div>
+              <div className="chat-bubble bg-base-100 text-base-content shadow">
+                {m.contenu}
+              </div>
             </div>
           );
         })}

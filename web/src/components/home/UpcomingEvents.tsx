@@ -27,21 +27,24 @@ export default function UpcomingEvents() {
 
   return (
     <div className="w-full">
-        <h2 className="text-3xl font-bold text-center mb-2">Évènements à venir</h2>
-        {events.length > 0 ? (
-            <Carousel>
-                {events.map((event) => (
-                    <EventCard
-                      event={event}
-                      className="carousel-card snap-center w-full md:w-[450px] flex-shrink-0 transition-all duration-300"
-                    />
-                ))}
-            </Carousel>
-        ) : (
-            <div className="text-center text-base-content/70 p-8 bg-base-200 rounded-2xl">
-                <p>Aucun évènement prévu pour le moment.</p>
-            </div>
-        )}
+      <h2 className="text-3xl font-bold text-center mb-2">
+        Évènements à venir
+      </h2>
+      {events.length > 0 ? (
+        <Carousel>
+          {events.map((event) => (
+            <EventCard
+              event={event}
+              key={event.id}
+              className="carousel-card snap-center w-full md:w-[450px] flex-shrink-0 transition-all duration-300"
+            />
+          ))}
+        </Carousel>
+      ) : (
+        <div className="text-center text-base-content/70 p-8 bg-base-200 rounded-2xl">
+          <p>Aucun évènement prévu pour le moment.</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api/axios";
 import ProfileCard from "./ProfileCard";
+import { Carousel } from "../ui/carousel";
 
 interface SuggestedUser {
   username: string;
@@ -31,11 +32,11 @@ export default function ProfileSuggestions() {
           <span className="loading loading-spinner" />
         </div>
       ) : suggestions.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Carousel>
           {suggestions.map((user) => (
             <ProfileCard key={user.username} user={user} />
           ))}
-        </div>
+        </Carousel>
       ) : (
         <div className="bg-base-200 p-6 rounded-2xl shadow-inner text-center">
           <p className="text-base-content/70">

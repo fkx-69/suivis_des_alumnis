@@ -38,8 +38,8 @@ export default function PublicationCard({
   };
 
   return (
-    <article 
-      className={`bg-base-100 border border-base-300/50 rounded-xl p-4 sm:p-5 mb-4 shadow-md flex flex-col ${onCardClick ? 'cursor-pointer hover:border-primary/50 transition-colors' : ''}`}
+    <article
+      className={`bg-base-100 border border-base-300/50 rounded-xl p-4 sm:p-5 mb-4 shadow-md flex flex-col ${onCardClick ? "cursor-pointer hover:border-primary/50 transition-colors" : ""}`}
       onClick={onCardClick}
     >
       {/* En-tête de la publication */}
@@ -53,6 +53,7 @@ export default function PublicationCard({
                 width={44}
                 height={44}
                 className="object-cover w-full h-full"
+                sizes="132px"
               />
             ) : (
               <span className="flex items-center justify-center h-full text-lg font-semibold">
@@ -80,7 +81,9 @@ export default function PublicationCard({
       </div>
 
       {/* Contenu de la publication */}
-      <div className={`mt-4 flex-1 ${!publication.photo && !publication.video ? 'flex items-center' : ''}`}>
+      <div
+        className={`mt-4 flex-1 ${!publication.photo && !publication.video ? "flex items-center" : ""}`}
+      >
         <div className="min-h-[3rem]">
           {publication.texte && (
             <p className="text-base-content/90 line-clamp-2">
@@ -103,7 +106,11 @@ export default function PublicationCard({
 
         {publication.video && (
           <div className="mt-3 rounded-lg overflow-hidden border border-base-300/20">
-            <video src={publication.video} controls className="w-full h-auto max-h-[400px]" />
+            <video
+              src={publication.video}
+              controls
+              className="w-full h-auto max-h-[400px]"
+            />
           </div>
         )}
       </div>
@@ -158,7 +165,9 @@ export default function PublicationCard({
                       </div>
                     </div>
                     <div className="bg-base-200/60 rounded-lg px-3 py-2 w-full">
-                      <span className="font-bold mr-2">{c.auteur_username}</span>
+                      <span className="font-bold mr-2">
+                        {c.auteur_username}
+                      </span>
                       <span>{c.contenu}</span>
                     </div>
                   </div>

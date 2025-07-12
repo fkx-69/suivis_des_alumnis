@@ -90,7 +90,6 @@ export default function ExternalProfileModal({
                 alt={`Profil de ${user.prenom}`}
                 width={112}
                 height={112}
-                unoptimized
               />
               <span className="text-sm text-base-content/70">
                 @{user.username} ({user.role})

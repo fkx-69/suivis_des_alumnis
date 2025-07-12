@@ -15,7 +15,7 @@ export default function DiscussionsLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-    const { user } = useAuth();
+  const { user } = useAuth();
   const { showProfile } = useProfileModal();
 
   const handleProfileClick = (e: React.MouseEvent, username: string) => {
@@ -27,7 +27,7 @@ export default function DiscussionsLayout({
   const [loading, setLoading] = useState(true);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
+
   const menuDropdownRef = React.useRef<HTMLDivElement>(null);
   const menuButtonRef = React.useRef<HTMLButtonElement>(null);
 
@@ -44,7 +44,7 @@ export default function DiscussionsLayout({
     if (!menuButton || !menuDropdown) return;
 
     const handleMenuClick = () => {
-      menuDropdown.classList.toggle('hidden');
+      menuDropdown.classList.toggle("hidden");
     };
 
     const handleClickOutside = (event: MouseEvent) => {
@@ -54,16 +54,16 @@ export default function DiscussionsLayout({
         menuButton &&
         !menuButton.contains(event.target as Node)
       ) {
-        menuDropdown.classList.add('hidden');
+        menuDropdown.classList.add("hidden");
       }
     };
 
-    menuButton.addEventListener('click', handleMenuClick);
-    document.addEventListener('click', handleClickOutside);
+    menuButton.addEventListener("click", handleMenuClick);
+    document.addEventListener("click", handleClickOutside);
 
     return () => {
-      menuButton.removeEventListener('click', handleMenuClick);
-      document.removeEventListener('click', handleClickOutside);
+      menuButton.removeEventListener("click", handleMenuClick);
+      document.removeEventListener("click", handleClickOutside);
     };
   }, []);
 
@@ -87,26 +87,42 @@ export default function DiscussionsLayout({
               const isActive = pathname === `/discussions/${conv.username}`;
               return (
                 <Link key={conv.id} href={`/discussions/${conv.username}`}>
-                  <div className={`flex items-center mb-4 cursor-pointer p-2 rounded-md ${isActive ? "bg-base-300" : "hover:bg-base-200"}`}>
-                    <div className="w-12 h-12 bg-gray-300 rounded-full mr-3 overflow-hidden cursor-pointer" onClick={(e) => handleProfileClick(e, conv.username)} >
-                      <Image
-                        src={conv.photo_profil || `https://ui-avatars.com/api/?name=${conv.prenom}+${conv.nom}&background=random`}
-                        alt="User Avatar"
-                        width={48}
-                        height={48}
-                        className="w-12 h-12 rounded-full"
-                        unoptimized
-                      />
+                  <div
+                    className={`flex items-center mb-4 cursor-pointer p-2 rounded-md ${isActive ? "bg-base-300" : "hover:bg-base-200"}`}
+                  >
+                    <div
+                      className="w-12 h-12 bg-gray-300 rounded-full mr-3 overflow-hidden cursor-pointer"
+                      onClick={(e) => handleProfileClick(e, conv.username)}
+                    >
+                      {conv.photo_profil ? (
+                        <Image
+                          src={conv.photo_profil}
+                          alt="User Avatar"
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 rounded-full"
+                        />
+                      ) : (
+                        <img
+                          src={`https://ui-avatars.com/api/?name=${conv.prenom}+${conv.nom}&background=random`}
+                          alt="User Avatar"
+                          className="w-12 h-12 rounded-full"
+                        />
+                      )}
                     </div>
                     <div className="flex-1 overflow-hidden">
-                      <p 
-                        className="font-semibold cursor-pointer hover:underline transition-all duration-200" 
+                      <p
+                        className="font-semibold cursor-pointer hover:underline transition-all duration-200"
                         onClick={(e) => handleProfileClick(e, conv.username)}
                       >
                         {conv.prenom} {conv.nom}
                       </p>
                       <p className="text-base-content/70 truncate">
-                        {conv.last_message ? conv.last_message : <span className="italic">Aucun message</span>}
+                        {conv.last_message ? (
+                          conv.last_message
+                        ) : (
+                          <span className="italic">Aucun message</span>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -118,10 +134,7 @@ export default function DiscussionsLayout({
       </div>
 
       {/* Main Chat Area */}
-      <main className="flex-1 h-full overflow-y-auto">
-        {children}
-      </main>
-      
+      <main className="flex-1 h-full overflow-y-auto">{children}</main>
     </div>
   );
 }

@@ -40,7 +40,16 @@ export default function SignIn() {
     },
   });
 
-  const { register, handleSubmit, formState: { errors }, control, watch, setValue, setError, trigger } = methods;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    control,
+    watch,
+    setValue,
+    setError,
+    trigger,
+  } = methods;
   const userType = watch("userType");
 
   useEffect(() => {
@@ -121,6 +130,8 @@ export default function SignIn() {
         );
         router.push("/auth/login");
       }
+      await login({ email, password });
+      router.push("/");
     } catch (err) {
       if (axios.isAxiosError(err) && err.response) {
         const { status, data: errorData } = err.response;
@@ -193,7 +204,11 @@ export default function SignIn() {
                 >
                   Précédent
                 </button>
-                <button type="submit" className="btn btn-primary flex-1">
+                <button
+                  type="submit"
+                  className="btn btn-primary flex-1"
+                  onClick={() => handleSubmit(onSubmit)()}
+                >
                   S'inscrire
                 </button>
               </div>

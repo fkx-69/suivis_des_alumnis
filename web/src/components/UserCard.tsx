@@ -32,7 +32,12 @@ export default function UserCard({ user }: UserCardProps) {
         <div className="avatar">
           <div className="w-12 rounded-full bg-base-200 overflow-hidden">
             {user.photo_profil ? (
-              <Image src={user.photo_profil} alt={user.username} width={48} height={48} unoptimized />
+              <Image
+                src={user.photo_profil}
+                alt={user.username}
+                width={48}
+                height={48}
+              />
             ) : (
               <span className="flex items-center justify-center w-full h-full font-semibold">
                 {user.username.charAt(0).toUpperCase()}

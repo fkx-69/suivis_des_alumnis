@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchAllEvents } from "@/lib/api/evenement";
+import { fetchEvents } from "@/lib/api/evenement";
 import { ApiEvent } from "@/types/evenement";
 import { Carousel } from "@/components/ui/carousel";
 import EventCard from "@/components/EventCard";
@@ -11,7 +11,7 @@ export default function UpcomingEvents() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAllEvents()
+    fetchEvents()
       .then((e) => setEvents(e.slice(0, 5))) // Affiche les 5 prochains
       .catch(console.error)
       .finally(() => setLoading(false));

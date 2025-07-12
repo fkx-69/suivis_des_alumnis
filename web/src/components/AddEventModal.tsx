@@ -98,13 +98,6 @@ export default function AddEventModal({
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
       >
-        <button
-          className="btn btn-sm btn-circle absolute top-2 right-2 z-10"
-          type="button"
-          onClick={onClose}
-        >
-          <XIcon size={18} />
-        </button>
         <h2 id="add-event-modal-title" className="sr-only">
           Créer un évènement
         </h2>
@@ -127,7 +120,18 @@ export default function AddEventModal({
           className="textarea textarea-ghost w-full text-sm opacity-80 h-32"
         />
         {imagePreview && (
-          <div className="rounded-lg overflow-hidden border border-base-300/50">
+          <div className="relative rounded-lg overflow-hidden border border-base-300/50">
+            <button
+              type="button"
+              className="btn btn-sm btn-circle absolute top-2 right-2 z-10"
+              onClick={() => {
+                setForm((f) => ({ ...f, image: undefined }));
+                setImagePreview(null);
+                if (fileInputRef.current) fileInputRef.current.value = "";
+              }}
+            >
+              <XIcon size={18} />
+            </button>
             <Image
               src={imagePreview}
               alt="Aperçu"

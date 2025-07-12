@@ -1,4 +1,4 @@
-import { CalendarIcon, XIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
@@ -89,13 +89,6 @@ export default function EditEventModal({
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
       >
-        <button
-          className="btn btn-sm btn-circle absolute top-2 right-2 z-10"
-          type="button"
-          onClick={onClose}
-        >
-          <XIcon size={18} />
-        </button>
         <h2 id="edit-event-modal-title" className="sr-only">
           Modifier l&apos;évènement
         </h2>

@@ -1,4 +1,4 @@
-import { CalendarIcon, XIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
@@ -70,12 +70,6 @@ export default function EventModal({ event, onClose }: EventModalProps) {
             </div>
           </div>
         </div>
-        <button
-          className="btn btn-sm btn-circle absolute top-2 right-2 z-10"
-          onClick={onClose}
-        >
-          <XIcon size={18} />
-        </button>
       </motion.div>
     </div>
   );

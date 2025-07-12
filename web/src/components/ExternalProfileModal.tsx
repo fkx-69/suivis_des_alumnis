@@ -1,6 +1,5 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { XIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/lib/api/authContext";
@@ -70,13 +69,6 @@ export default function ExternalProfileModal({
         className="relative w-full max-w-sm bg-base-100 rounded-2xl p-8 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          className="btn btn-sm btn-circle btn-ghost absolute top-3 right-3 z-10"
-          type="button"
-          onClick={onClose}
-        >
-          <XIcon size={20} />
-        </button>
 
         <div className="flex flex-col items-center text-center">
           <Link href={`/profile/${user.username}`} onClick={onClose}>

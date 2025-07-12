@@ -107,9 +107,6 @@ export default function ParcoursProfessionnelSection({ items, onChanged }: Props
 
       <dialog ref={dialogRef} className="modal">
         <div className="modal-box">
-          <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-          </form>
           <h3 className="font-bold text-lg mb-4">
             {editing ? "Modifier le parcours" : "Ajouter un parcours"} professionnel
           </h3>

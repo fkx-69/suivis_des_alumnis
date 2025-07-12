@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { XIcon, Users, Calendar } from "lucide-react";
+import { Users, Calendar } from "lucide-react";
 import Image from "next/image";
 import { Group } from "@/types/group";
 
@@ -70,13 +70,6 @@ export default function GroupDetailModal({
             </div>
           </div>
         </div>
-        <button
-          className="btn btn-sm btn-circle btn-ghost absolute top-3 right-3 z-10"
-          type="button"
-          onClick={onClose}
-        >
-          <XIcon size={20} />
-        </button>
       </motion.div>
     </div>
   );

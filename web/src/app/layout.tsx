@@ -1,5 +1,4 @@
 "use client";
-import type { Metadata } from "next";
 // Disabled next/font usage to avoid network font fetching during build
 import "./globals.css";
 import SidePanel from "../components/ui/side-bar";

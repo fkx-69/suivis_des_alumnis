@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 
 import { ApiEvent } from "@/types/evenement";
 import AddEventModal from "@/components/AddEventModal";
-import EditEventModal from "@/components/EditEventModal";
 import EventCard from "@/components/EventCard";
 import EventModal from "@/components/EventModal";
 import ConfirmModal from "@/components/ConfirmModal";
@@ -134,7 +133,7 @@ export default function Page() {
         />
       )}
       {editingEvent && (
-        <EditEventModal
+        <AddEventModal
           event={editingEvent}
           onUpdated={handleUpdated}
           onClose={() => setEditingEvent(null)}
@@ -152,7 +151,7 @@ export default function Page() {
               key={ev.id}
               event={ev}
               onToggle={() => setSelectedEvent(ev)}
-              showActions={showMyEvents || showPendingEvents}
+              showActions={showPendingEvents}
               onEdit={() => setEditingEvent(ev)}
               onDelete={() => requestDelete(ev)}
             />

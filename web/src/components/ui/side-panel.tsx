@@ -1,11 +1,10 @@
-import React, { useState, ReactNode, useEffect, useRef } from "react";
+import React, { useState, ReactNode } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/api/authContext";
 import { useRouter, usePathname } from "next/navigation";
 import ThemeToggle from "./theme-toggle";
 
 import {
-  HomeIcon,
   MessageCircleMore,
   CalendarIcon,
   UserCircleIcon,
@@ -14,10 +13,7 @@ import {
   Menu,
   Users,
   NewspaperIcon,
-  BellIcon,
   BarChart2Icon,
-  FileWarningIcon,
-  MapIcon,
   FileTextIcon,
 } from "lucide-react";
 

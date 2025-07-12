@@ -130,7 +130,7 @@ export default function UserProfilePage() {
             ))}
           </ul>
         ) : (
-          <p>Cet utilisateur n'a aucune publication.</p>
+          <p>Cet utilisateur n&apos;a aucune publication.</p>
         )}
       </div>
     </div>

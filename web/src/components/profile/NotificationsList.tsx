@@ -27,7 +27,7 @@ export default function NotificationsList() {
           ))}
         </ul>
       ) : (
-        <p className="text-base-content/70">Vous n'avez aucune nouvelle notification.</p>
+        <p className="text-base-content/70">Vous n&apos;avez aucune nouvelle notification.</p>
       )}
     </div>
   );

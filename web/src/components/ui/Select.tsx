@@ -4,7 +4,7 @@ export interface SelectOption<T = string> {
   label: string;
 }
 
-interface SelectProps<T = string>
+export interface SelectProps<T = string>
   extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   options: SelectOption<T>[];

@@ -101,7 +101,7 @@ export default function ParcoursProfessionnelSection({ items, onChanged }: Props
           </div>
         ))}
         {items.length === 0 && (
-          <p className="text-center text-base-content/60 py-4">Aucun parcours professionnel n'a été ajouté pour le moment.</p>
+          <p className="text-center text-base-content/60 py-4">Aucun parcours professionnel n&apos;a été ajouté pour le moment.</p>
         )}
       </div>
 

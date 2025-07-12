@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { X, Image as ImageIcon, Video as VideoIcon } from "lucide-react";
+import { Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 
 interface AddPublicationModalProps {

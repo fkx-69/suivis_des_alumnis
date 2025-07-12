@@ -4,7 +4,7 @@ import EventCard from "./EventCard";
 import { Input } from "@/components/ui/Input";
 
 export interface AddEventFormProps {
-  onCreated?: (event: any) => void;
+  onCreated?: (event: unknown) => void;
 }
 
 export default function AddEventForm({ onCreated }: AddEventFormProps) {
@@ -36,8 +36,12 @@ export default function AddEventForm({ onCreated }: AddEventFormProps) {
       } else {
         setError("Erreur lors de la création.");
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Une erreur inconnue est survenue.");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -80,7 +84,7 @@ export default function AddEventForm({ onCreated }: AddEventFormProps) {
         required
       />
       <button className="btn btn-primary" disabled={submitting} type="submit">
-        Créer l'évènement
+        Créer l&apos;évènement
       </button>
       <div className="mt-6">
         <span className="font-bold mb-2 block">Prévisualisation :</span>

@@ -52,8 +52,12 @@ export default function EditEventModal({
       const updatedEvent = await updateEvent(event.id, form);
       onUpdated?.(updatedEvent);
       onClose();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Une erreur inconnue est survenue.");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -93,7 +97,7 @@ export default function EditEventModal({
           <XIcon size={18} />
         </button>
         <h2 id="edit-event-modal-title" className="sr-only">
-          Modifier l'évènement
+          Modifier l&apos;évènement
         </h2>
         {error && <div className="alert alert-error">{error}</div>}
         <Input
@@ -138,7 +142,7 @@ export default function EditEventModal({
           </div>
         </div>
         <button className="btn btn-primary" disabled={submitting} type="submit">
-          Modifier l'évènement
+          Modifier l&apos;évènement
         </button>
       </motion.form>
     </div>

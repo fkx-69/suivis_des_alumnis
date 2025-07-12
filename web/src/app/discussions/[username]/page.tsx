@@ -42,7 +42,7 @@ export default function ConversationPage() {
           setConversation(existingConv);
           const msgs = await fetchMessages(username);
           setMessages(msgs);
-          openSocket(existingConv.id);
+          openSocket();
         } else {
           const userProfile = await fetchUserProfile(username);
           const placeholderConv = {
@@ -68,7 +68,7 @@ export default function ConversationPage() {
     };
   }, [username]);
 
-  function openSocket(userId: number) {
+  function openSocket() {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
     const ws = new WebSocket(
       `${protocol}://${window.location.host}/ws/notifications/`
@@ -93,7 +93,7 @@ export default function ConversationPage() {
         const newConv = allConversations.find((c) => c.username === username);
         if (newConv) {
           setConversation(newConv);
-          openSocket(newConv.id);
+          openSocket();
         }
       }
     } catch (error) {

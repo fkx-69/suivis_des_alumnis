@@ -42,8 +42,12 @@ export default function AddGroupModal({
       setForm({ nom_groupe: "", description: "" });
       setImage(null);
       onClose();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Une erreur inconnue est survenue.");
+      }
     } finally {
       setSubmitting(false);
     }

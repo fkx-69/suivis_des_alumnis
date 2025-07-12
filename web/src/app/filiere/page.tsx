@@ -34,7 +34,7 @@ export default function FilierePage() {
         <button className="btn btn-primary" onClick={handleCreate}>Ajouter</button>
       </div>
       <ul className="space-y-2">
-        {filieres.map((f: any) => (
+        {filieres.map((f: Filiere) => (
           <li key={f.id} className="p-2 bg-base-200 rounded-md flex justify-between">
             <span>
               {f.code} - {f.nom_complet}

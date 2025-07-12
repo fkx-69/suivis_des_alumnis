@@ -1,12 +1,11 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { fetchConversations } from "@/lib/api/messaging";
 import { Conversation } from "@/types/messaging";
-import { useAuth } from "@/lib/api/authContext";
 import { useProfileModal } from "@/contexts/ProfileModalContext";
 
 export default function DiscussionsLayout({
@@ -15,7 +14,6 @@ export default function DiscussionsLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { user } = useAuth();
   const { showProfile } = useProfileModal();
 
   const handleProfileClick = (e: React.MouseEvent, username: string) => {
@@ -25,8 +23,6 @@ export default function DiscussionsLayout({
   };
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const menuDropdownRef = React.useRef<HTMLDivElement>(null);
   const menuButtonRef = React.useRef<HTMLButtonElement>(null);

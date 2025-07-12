@@ -14,7 +14,6 @@ import PersonalInfoForm from "@/components/auth/PersonalInfoForm";
 import AlumniForm from "@/components/auth/AlumniForm";
 import StudentForm from "@/components/auth/StudentForm";
 import { registerFormSchema, RegisterFormValues } from "@/lib/validators/auth";
-import { niveau_etude } from "@/lib/constants";
 
 export default function SignIn() {
   const { login } = useAuth();
@@ -22,10 +21,6 @@ export default function SignIn() {
   const [step, setStep] = useState(1);
   const [filieres, setFilieres] = useState<Filiere[]>([]);
 
-  const years = Array.from(
-    { length: new Date().getFullYear() - 2017 + 1 },
-    (_, i) => 2017 + i
-  );
 
   const methods = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
@@ -43,8 +38,6 @@ export default function SignIn() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
-    control,
     watch,
     setValue,
     setError,
@@ -90,29 +83,13 @@ export default function SignIn() {
 
       let response;
       if (formData.userType === "alumni") {
-        const {
-          nom,
-          prenom,
-          email,
-          username,
-          password,
-          confirmPassword,
-          userType,
-          ...alumniData
-        } = formData;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { confirmPassword, userType, ...alumniData } = formData;
         const payload = { ...alumniData, user };
         response = await registerAlumni(payload);
       } else {
-        const {
-          nom,
-          prenom,
-          email,
-          username,
-          password,
-          confirmPassword,
-          userType,
-          ...studentData
-        } = formData;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { confirmPassword, userType, ...studentData } = formData;
         const payload = {
           ...studentData,
           annee_entree: Number(studentData.annee_entree),
@@ -167,7 +144,7 @@ export default function SignIn() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="form-control">
               <label className="block mb-1 text-base-content">
-                Type d'utilisateur
+                Type d&apos;utilisateur
               </label>
               <select
                 className="select select-primary w-full"
@@ -209,7 +186,7 @@ export default function SignIn() {
                   className="btn btn-primary flex-1"
                   onClick={() => handleSubmit(onSubmit)()}
                 >
-                  S'inscrire
+                  S&apos;inscrire
                 </button>
               </div>
             )}

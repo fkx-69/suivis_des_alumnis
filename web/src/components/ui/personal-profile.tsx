@@ -11,7 +11,9 @@ interface ProfileField {
   value: string;
 }
 
-function buildFields(user: any): ProfileField[] {
+import type { User } from "@/types/auth";
+
+function buildFields(user: User | null): ProfileField[] {
   if (!user) return [];
   return [
     { label: "Username", value: user.username },
@@ -48,8 +50,7 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
   };
 
   const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
-    label: string
+    e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     if (e.key === "Enter") setEditing(null);
   };
@@ -167,7 +168,7 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
                     value={field.value}
                     onChange={(e) => handleChange(field.label, e.target.value)}
                     onBlur={() => setEditing(null)}
-                    onKeyDown={(e) => handleKeyDown(e, field.label)}
+                    onKeyDown={handleKeyDown}
                   />
                 ) : (
                   <span className="flex items-center gap-1">
@@ -192,7 +193,7 @@ export default function PersonalProfile({ onClose }: PersonalProfileProps) {
                 setShowButton(false);
                 if (!user) return;
 
-                const data: Record<string, any> = {};
+                const data: Record<string, string | File | null | undefined> = {};
                 fields.forEach((f) => {
                   if (f.label === "Username" && f.value !== user.username)
                     data.username = f.value;

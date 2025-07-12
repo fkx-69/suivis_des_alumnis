@@ -6,6 +6,7 @@ import { CameraIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/api/authContext";
 import { updateProfile, changeEmail } from "@/lib/api/auth";
+import type { User } from "@/types/auth";
 import { toast } from "@/components/ui/toast";
 
 interface ProfileField {
@@ -13,7 +14,7 @@ interface ProfileField {
   value: string;
 }
 
-function buildFields(user: any): ProfileField[] {
+function buildFields(user: User | null): ProfileField[] {
   if (!user) return [];
   return [
     { label: "Username", value: user.username },
@@ -61,7 +62,7 @@ export default function EditProfileModal({ onClose }: EditProfileModalProps) {
   const handleSubmit = async () => {
     if (!user) return;
 
-    const data: Record<string, any> = {};
+    const data: Record<string, string | File | null | undefined> = {};
     fields.forEach((f) => {
       if (f.label === "Username" && f.value !== user.username)
         data.username = f.value;

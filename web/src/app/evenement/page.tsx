@@ -34,8 +34,12 @@ export default function Page() {
           ? await fetchPendingEvents()
           : await fetchAllEvents();
         setEvents(data);
-      } catch (err: any) {
-        setError(err.message ?? "Erreur inconnue");
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Erreur inconnue");
+        }
       } finally {
         setLoading(false);
       }

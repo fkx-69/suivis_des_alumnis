@@ -52,7 +52,7 @@ export default function AlumniForm({ filieres }: AlumniFormProps) {
             {...register('situation_pro')}
             className="select select-primary w-full"
           >
-            <option value="chomage">En recherche d'emploi</option>
+            <option value="chomage">En recherche d&apos;emploi</option>
             <option value="stage">En stage</option>
             <option value="emploi">En emploi</option>
             <option value="formation">En formation</option>
@@ -64,7 +64,7 @@ export default function AlumniForm({ filieres }: AlumniFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block mb-1 text-base-content">Secteur d'activité</label>
+          <label className="block mb-1 text-base-content">Secteur d&apos;activité</label>
           <select
             className="select select-primary w-full"
             {...register('secteur_activite')}
@@ -94,7 +94,7 @@ export default function AlumniForm({ filieres }: AlumniFormProps) {
       </div>
 
       <Input
-        label="Nom de l'entreprise"
+        label="Nom de l&apos;entreprise"
         {...register('nom_entreprise')}
         className="input input-primary"
         disabled={isJobSeeking}

@@ -10,7 +10,6 @@ interface CarouselProps {
 export function Carousel({ children }: CarouselProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [cardElements, setCardElements] = useState<HTMLElement[]>([]);
-  const [currentActiveIndex, setCurrentActiveIndex] = useState(0);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -53,7 +52,6 @@ export function Carousel({ children }: CarouselProps) {
         closestIndex = index;
       }
     });
-    setCurrentActiveIndex(closestIndex);
     return closestIndex;
   }, [cardElements]);
 
@@ -72,7 +70,6 @@ export function Carousel({ children }: CarouselProps) {
       left: scrollLeft,
       behavior: "smooth",
     });
-    setCurrentActiveIndex(index);
   };
 
   const handlePrev = () => {
@@ -111,7 +108,7 @@ export function Carousel({ children }: CarouselProps) {
       }
       clearTimeout(timer1);
     };
-  }, [cardElements, updateCardStyles]);
+  }, [cardElements, updateCardStyles, scrollToCard]);
 
   return (
     <div className="relative">

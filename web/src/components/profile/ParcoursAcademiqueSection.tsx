@@ -119,7 +119,7 @@ export default function ParcoursAcademiqueSection({ items, onChanged }: Props) {
         ))}
         {items.length === 0 && (
           <p className="text-center text-base-content/60 py-4">
-            Aucun parcours académique n'a été ajouté pour le moment.
+            Aucun parcours académique n&apos;a été ajouté pour le moment.
           </p>
         )}
       </div>
@@ -155,7 +155,7 @@ export default function ParcoursAcademiqueSection({ items, onChanged }: Props) {
               type="number"
               value={form.annee_obtention}
               onChange={handleChange}
-              placeholder="Année d'obtention"
+              placeholder="Année d&apos;obtention"
               required
             />
             <select

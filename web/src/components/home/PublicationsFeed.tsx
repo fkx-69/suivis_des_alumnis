@@ -42,7 +42,7 @@ export default function PublicationsFeed() {
 
   return (
     <div className="w-full">
-      <h2 className="text-3xl font-bold text-center mb-2">Fil d'actualité</h2>
+      <h2 className="text-3xl font-bold text-center mb-2">Fil d&apos;actualité</h2>
       {publications.length > 0 ? (
         <Carousel>
           {publications.map((p) => (

@@ -151,7 +151,7 @@ export default function SidePanel({ children }: { children: ReactNode }) {
             </ul>
           </div>
           <div className="p-2 flex flex-col gap-2">
-            <ThemeToggle />
+            <ThemeToggle collapsed={collapsed} />
             <button
               onClick={handleLogout}
               className={`flex items-center p-2 w-full hover:bg-base-300 rounded-md ${collapsed ? "justify-center" : "gap-3"}`}

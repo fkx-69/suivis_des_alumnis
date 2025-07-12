@@ -2,7 +2,11 @@ import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
-export default function ThemeToggle() {
+export default function ThemeToggle({
+  collapsed = false,
+}: {
+  collapsed?: boolean;
+}) {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -22,7 +26,7 @@ export default function ThemeToggle() {
   return (
     <button
       aria-label="Toggle Theme"
-      className="btn btn-ghost w-full flex items-center justify-center gap-3"
+      className="btn btn-ghost w-full flex items-center justify-center"
       onClick={toggle}
       type="button"
       data-testid="theme-toggle-button"
@@ -32,7 +36,7 @@ export default function ThemeToggle() {
       ) : (
         <Moon size={20} />
       )}
-      <span className="hidden sm:inline">Thème</span>
+      {!collapsed && <span className="hidden sm:inline">Thème</span>}
     </button>
   );
 }

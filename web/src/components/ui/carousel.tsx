@@ -19,18 +19,26 @@ export function Carousel({ children }: CarouselProps) {
     }
   }, [children]);
 
+  // Fonction avec l'effet de loupe réduit
   const updateCardStyles = useCallback(() => {
     if (!containerRef.current) return;
     const containerCenter =
       containerRef.current.scrollLeft + containerRef.current.offsetWidth / 2;
-    const influenceZone = containerRef.current.offsetWidth / 1.5;
+    // Zone d'influence ajustée pour une transition plus douce
+    const influenceZone = containerRef.current.offsetWidth / 1.75;
 
     cardElements.forEach((card) => {
       const cardCenter = card.offsetLeft + card.offsetWidth / 2;
       const distance = Math.abs(containerCenter - cardCenter);
 
-      const scaleValue = Math.max(0.9, 1 - (distance / influenceZone) * 0.1);
-      const opacityValue = Math.max(0.7, 1 - (distance / influenceZone) * 0.3);
+      // Échelle modérée : 115% au centre, 80% au minimum
+      const scaleValue = Math.max(
+        0.8,
+        1.15 - (distance / influenceZone) * 0.35
+      );
+
+      // Opacité modérée : 100% au centre, 60% au minimum
+      const opacityValue = Math.max(0.6, 1 - (distance / influenceZone) * 0.4);
 
       card.style.transform = `scale(${scaleValue})`;
       card.style.opacity = `${opacityValue}`;

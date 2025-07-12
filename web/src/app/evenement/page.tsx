@@ -1,98 +1,107 @@
+/* app/(dashboard)/evenements/page.tsx */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { Plus } from "lucide-react";
 
-import { ApiEvent } from "@/types/evenement";
 import AddEventModal from "@/components/AddEventModal";
 import EventCard from "@/components/EventCard";
 import EventModal from "@/components/EventModal";
 import ConfirmModal from "@/components/ConfirmModal";
+import { ApiEvent } from "@/types/evenement";
+
 import {
-  fetchEvents,
-  fetchPendingEvents,
+  fetchEvents, // tous les événements validés
+  fetchPendingEvents, // événements en attente de validation pour l’utilisateur
   deleteEvent,
 } from "@/lib/api/evenement";
-import { Plus } from "lucide-react";
 
-export default function Page() {
+type Tab = "all" | "pending";
+export default function EventsPage() {
+  const [tab, setTab] = useState<"all" | "pending">("all");
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [pendingEvents, setPendingEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<ApiEvent | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [showMyEvents, setShowMyEvents] = useState(false);
-  const [showPendingEvents, setShowPendingEvents] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<ApiEvent | null>(null);
-  const [eventToDelete, setEventToDelete] = useState<ApiEvent | null>(null);
+  const [editing, setEditing] = useState<ApiEvent | null>(null);
+  const [selected, setSelected] = useState<ApiEvent | null>(null);
+  const [toDelete, setToDelete] = useState<ApiEvent | null>(null);
 
+  // Chargement initial des événements validés
   useEffect(() => {
-    async function load() {
+    (async () => {
       setLoading(true);
       try {
-        const data = showPendingEvents
-          ? await fetchPendingEvents()
-          : await fetchEvents();
-        if (showPendingEvents) {
-          setPendingEvents(data);
-        } else {
-          setEvents(data);
-        }
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("Erreur inconnue");
-        }
+        setEvents(await fetchEvents());
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Erreur inconnue");
       } finally {
         setLoading(false);
       }
-    }
-    load();
-  }, [showPendingEvents]);
+    })();
+  }, []);
 
+  // Chargement des en attente à chaque bascule sur tab="pending"
+  useEffect(() => {
+    if (tab !== "pending") return;
+    (async () => {
+      setLoading(true);
+      try {
+        setPendingEvents(await fetchPendingEvents());
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Erreur inconnue");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [tab]);
+
+  // Création
   const handleCreated = (ev: ApiEvent) => {
     if (ev.valide) {
       setEvents((prev) => [...prev, ev]);
+      setTab("all");
     } else {
       setPendingEvents((prev) => [...prev, ev]);
+      setTab("pending");
     }
     setShowForm(false);
   };
 
+  // Mise à jour
   const handleUpdated = (ev: ApiEvent) => {
-    const update = (list: ApiEvent[]) => list.map((e) => (e.id === ev.id ? ev : e));
+    const patch = (arr: ApiEvent[]) =>
+      arr.map((e) => (e.id === ev.id ? ev : e));
     if (ev.valide) {
-      setEvents(update);
+      setEvents(patch);
       setPendingEvents((prev) => prev.filter((e) => e.id !== ev.id));
     } else {
-      setPendingEvents(update);
+      setPendingEvents(patch);
       setEvents((prev) => prev.filter((e) => e.id !== ev.id));
     }
-    setEditingEvent(null);
+    setEditing(null);
   };
 
-  const requestDelete = (ev: ApiEvent) => {
-    setEventToDelete(ev);
-  };
-
+  // Suppression
   const confirmDelete = async () => {
-    if (!eventToDelete) return;
+    if (!toDelete) return;
     try {
-      await deleteEvent(eventToDelete.id);
-      setEvents((prev) => prev.filter((e) => e.id !== eventToDelete.id));
-      setPendingEvents((prev) => prev.filter((e) => e.id !== eventToDelete.id));
-    } catch (err) {
-      console.error(err);
+      await deleteEvent(toDelete.id);
+      setEvents((prev) => prev.filter((e) => e.id !== toDelete.id));
+      setPendingEvents((prev) => prev.filter((e) => e.id !== toDelete.id));
     } finally {
-      setEventToDelete(null);
+      setToDelete(null);
     }
   };
+
+  // Choix de la liste à afficher
+  const list = tab === "pending" ? pendingEvents : events;
 
   if (loading) {
     return (
       <div className="flex justify-center mt-10">
-        <span className="loading loading-spinner loading-lg"></span>
+        <span className="loading loading-spinner loading-lg" />
       </div>
     );
   }
@@ -105,96 +114,86 @@ export default function Page() {
     );
   }
 
-  const list = showPendingEvents ? pendingEvents : events;
-  const filteredEvents = showMyEvents
-    ? list.filter((e) => e.is_owner)
-    : list;
-
   return (
     <main className="mx-auto max-w-7xl px-4 py-4 lg:py-8">
-      <div className="mb-4 flex gap-2">
+      {/* Onglets */}
+      <div className="mb-6 flex gap-2">
         <button
-          className={`btn btn-primary ${!showMyEvents && !showPendingEvents ? "btn-active" : "btn-soft"}`}
-          onClick={() => {
-            setShowMyEvents(false);
-            setShowPendingEvents(false);
-          }}
+          className={`btn btn-primary ${tab === "all" ? "btn-active" : "btn-soft"}`}
+          onClick={() => setTab("all")}
         >
-          Tous les évènements
+          Tous les événements
         </button>
         <button
-          className={`btn btn-primary ${showMyEvents ? "btn-active" : "btn-soft"}`}
+          className={`btn btn-primary ${tab === "pending" ? "btn-active" : "btn-soft"}`}
           onClick={() => {
-            setShowMyEvents(true);
-            setShowPendingEvents(false);
-          }}
-        >
-          Mes évènements
-        </button>
-        <button
-          className={`btn btn-primary ${showPendingEvents ? "btn-active" : "btn-soft"}`}
-          onClick={() => {
-            setShowMyEvents(false);
-            setShowPendingEvents(true);
+            setLoading(true);
+            setTab("pending");
           }}
         >
           En attente
         </button>
       </div>
+
+      {/* Modales création / édition */}
       {showForm && (
         <AddEventModal
           onCreated={handleCreated}
           onClose={() => setShowForm(false)}
         />
       )}
-      {editingEvent && (
+      {editing && (
         <AddEventModal
-          event={editingEvent}
+          event={editing}
           onUpdated={handleUpdated}
-          onClose={() => setEditingEvent(null)}
+          onClose={() => setEditing(null)}
         />
       )}
 
-      {filteredEvents.length === 0 ? (
+      {/* Liste */}
+      {list.length === 0 ? (
         <div className="alert alert-info max-w-lg mx-auto mt-10">
-          <span>Aucun futur événement pour le moment.</span>
+          <span>
+            {tab === "pending"
+              ? "Aucun événement en attente."
+              : "Aucun événement à afficher."}
+          </span>
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredEvents.map((ev) => (
+          {list.map((ev) => (
             <EventCard
               key={ev.id}
               event={ev}
-              onToggle={() => setSelectedEvent(ev)}
-              showActions={showPendingEvents}
-              onEdit={() => setEditingEvent(ev)}
-              onDelete={() => requestDelete(ev)}
+              onToggle={() => setSelected(ev)}
+              showActions={tab === "pending"}
+              onEdit={() => setEditing(ev)}
+              onDelete={() => setToDelete(ev)}
             />
           ))}
         </div>
       )}
 
-      {selectedEvent && (
-        <EventModal
-          event={selectedEvent}
-          onClose={() => setSelectedEvent(null)}
-        />
+      {/* Détails & suppression */}
+      {selected && (
+        <EventModal event={selected} onClose={() => setSelected(null)} />
       )}
-      {eventToDelete && (
+      {toDelete && (
         <ConfirmModal
-          title="Supprimer l'évènement"
-          message={`Supprimer "${eventToDelete.titre}" ?`}
+          title="Supprimer l'événement"
+          message={`Supprimer « ${toDelete.titre} » ?`}
           confirmText="Supprimer"
           cancelText="Annuler"
           onConfirm={confirmDelete}
-          onCancel={() => setEventToDelete(null)}
+          onCancel={() => setToDelete(null)}
         />
       )}
 
+      {/* Bouton Ajouter */}
       <button
-        onClick={() => setShowForm((s) => !s)}
+        onClick={() => setShowForm(true)}
         className="btn btn-primary btn-circle fixed bottom-10 right-10 shadow-lg z-50"
-        aria-label="Ajouter une publication"
+        aria-label="Ajouter un événement"
       >
         <Plus size={28} />
       </button>

@@ -91,8 +91,8 @@ export default function AddPublicationModal({
                 <Image
                   src={mediaPreview}
                   alt="Aperçu"
-                  width={400}
-                  height={300}
+                  width={640}
+                  height={320}
                   className="w-full h-48 object-cover"
                 />
               ) : (

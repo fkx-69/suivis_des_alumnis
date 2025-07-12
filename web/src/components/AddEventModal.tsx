@@ -29,6 +29,19 @@ export default function AddEventModal({
     const minutes = date.getMinutes().toString().padStart(2, "0");
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
+  const formatForInput = (date: Date) => {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+  const minStartDate = formatForInput(tomorrow);
 
   const [form, setForm] = useState({
     titre: event?.titre ?? "",
@@ -68,6 +81,25 @@ export default function AddEventModal({
     e.preventDefault();
     setSubmitting(true);
     setError(null);
+    const start = new Date(form.date_debut);
+    const end = new Date(form.date_fin);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      setSubmitting(false);
+      setError("Dates invalides");
+      return;
+    }
+    if (start < tomorrow) {
+      setSubmitting(false);
+      setError(
+        "La date de début doit être au moins le lendemain du jour courant."
+      );
+      return;
+    }
+    if (end <= start) {
+      setSubmitting(false);
+      setError("La date de fin doit être après la date de début.");
+      return;
+    }
     try {
       if (event) {
         const updated = await updateEvent(event.id, {
@@ -179,6 +211,7 @@ export default function AddEventModal({
               onChange={handleChange}
               required
               className="input-ghost"
+              min={minStartDate}
             />
           </div>
           <div className="flex items-center gap-2 flex-1 min-w-[10rem]">
@@ -190,6 +223,7 @@ export default function AddEventModal({
               onChange={handleChange}
               required
               className="input-ghost"
+              min={form.date_debut || minStartDate}
             />
           </div>
         </div>
@@ -210,8 +244,10 @@ export default function AddEventModal({
           >
             {submitting ? (
               <span className="loading loading-spinner"></span>
+            ) : event ? (
+              "Modifier l'évènement"
             ) : (
-              event ? "Modifier l'évènement" : "Créer l'évènement"
+              "Créer l'évènement"
             )}
           </button>
         </div>

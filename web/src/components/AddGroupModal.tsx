@@ -82,17 +82,21 @@ export default function AddGroupModal({
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
       >
-        <button
-          type="button"
-          className="btn btn-sm btn-circle absolute top-2 right-2 z-10"
-          onClick={onClose}
-        >
-          <XIcon size={18} />
-        </button>
         {error && <div className="alert alert-error">{error}</div>}
 
         {imagePreview && (
-          <div className="rounded-lg overflow-hidden border border-base-300/50">
+          <div className="relative rounded-lg overflow-hidden border border-base-300/50">
+            <button
+              type="button"
+              className="btn btn-sm btn-circle absolute top-2 right-2 z-10"
+              onClick={() => {
+                setImage(null);
+                setImagePreview(null);
+                if (fileInputRef.current) fileInputRef.current.value = "";
+              }}
+            >
+              <XIcon size={18} />
+            </button>
             <Image
               src={imagePreview}
               alt="Aperçu"

@@ -1,6 +1,5 @@
 import { Publication } from "@/types/publication";
 import { formatTimeAgo } from "@/lib/utils";
-import { X } from "lucide-react";
 import Image from "next/image";
 
 interface PublicationModalProps {
@@ -23,12 +22,6 @@ export default function PublicationModal({
   return (
     <div className={`modal ${publication ? "modal-open" : ""}`}>
       <div className="modal-box w-11/12 max-w-3xl relative">
-        <button
-          onClick={onClose}
-          className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-10"
-        >
-          <X size={24} />
-        </button>
 
         <div className="flex items-center gap-3 mb-4">
           <div className="avatar">
@@ -81,9 +74,7 @@ export default function PublicationModal({
           )}
         </div>
       </div>
-      <form method="dialog" className="modal-backdrop">
-        <button onClick={onClose}>close</button>
-      </form>
+      <form method="dialog" className="modal-backdrop" onClick={onClose}></form>
     </div>
   );
 }

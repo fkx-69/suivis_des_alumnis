@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Image as ImageIcon } from "lucide-react";
+import { Image as ImageIcon, X as XIcon } from "lucide-react";
 import Image from "next/image";
 
 interface AddPublicationModalProps {
@@ -60,19 +60,30 @@ export default function AddPublicationModal({
   const mediaType = media?.type.startsWith("video/") ? "video" : "image";
 
   return (
-    <div className="modal modal-open modal-bottom sm:modal-middle">
-      <div className="modal-box relative">
-        <button
-          onClick={onClose}
-          className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-10"
-        >
-          ✕
-        </button>
+    <div
+      className="modal modal-open modal-bottom sm:modal-middle"
+      onClick={onClose}
+    >
+      <div
+        className="modal-box relative"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h3 className="font-bold text-lg mb-4">Créer une publication</h3>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {mediaPreview && (
-            <div className="rounded-lg overflow-hidden border border-base-300/50">
+            <div className="relative rounded-lg overflow-hidden border border-base-300/50">
+              <button
+                type="button"
+                className="btn btn-sm btn-circle absolute top-2 right-2 z-10"
+                onClick={() => {
+                  setMedia(null);
+                  setMediaPreview(null);
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                }}
+              >
+                <XIcon size={18} />
+              </button>
               {mediaType === "image" ? (
                 <Image
                   src={mediaPreview}
@@ -125,9 +136,6 @@ export default function AddPublicationModal({
             onChange={handleMediaChange}
           />
         </form>
-      </div>
-      <div className="modal-backdrop">
-        <button onClick={onClose}>close</button>
       </div>
     </div>
   );

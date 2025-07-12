@@ -118,18 +118,13 @@ export default function ParcoursAcademiqueSection({ items, onChanged }: Props) {
         ))}
         {items.length === 0 && (
           <p className="text-center text-base-content/60 py-4">
-            Aucun parcours académique n'a été ajouté pour le moment.
+            Aucun parcours académique n&apos;a été ajouté pour le moment.
           </p>
         )}
       </div>
 
       <dialog ref={dialogRef} className="modal">
         <div className="modal-box">
-          <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-              ✕
-            </button>
-          </form>
           <h3 className="font-bold text-lg mb-4">
             {editing ? "Modifier le parcours" : "Ajouter un parcours"}{" "}
             académique

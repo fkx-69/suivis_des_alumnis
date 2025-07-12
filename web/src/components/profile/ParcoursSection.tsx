@@ -237,11 +237,6 @@ export default function ParcoursSection({ academicItems, professionalItems, onCh
 
       <dialog ref={dialogRef} className="modal">
         <div className="modal-box">
-          <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onClick={() => dialogRef.current?.close()}>
-              ✕
-            </button>
-          </form>
           <h3 className="font-bold text-lg mb-4">
             {editing ? 'Modifier le' : 'Ajouter un'} parcours {formType === 'academic' ? 'académique' : 'professionnel'}
           </h3>

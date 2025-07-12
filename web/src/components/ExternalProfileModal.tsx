@@ -82,7 +82,7 @@ export default function ExternalProfileModal({
           <Link href={`/profile/${user.username}`} onClick={onClose}>
             <div className="mb-3">
               <Image
-                className="mb-1 w-28 h-28 rounded-full shadow-lg object-cover"
+                className="mb-1 w-28 h-28 rounded-full justify-self-center shadow-lg object-cover"
                 src={
                   user.photo_profil ||
                   `https://ui-avatars.com/api/?name=${user.prenom}+${user.nom}&background=random`

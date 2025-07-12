@@ -2,14 +2,13 @@
 import type { Metadata } from "next";
 // Disabled next/font usage to avoid network font fetching during build
 import "./globals.css";
-import SidePanel from "../components/ui/side-panel";
+import SidePanel from "../components/ui/side-bar";
 import { usePathname, useRouter } from "next/navigation";
 import { AuthProvider, useAuth } from "@/lib/api/authContext";
 import { ProfileModalProvider } from "@/contexts/ProfileModalContext";
 
 import { useEffect } from "react";
 import { ThemeProvider } from "next-themes";
-
 
 export default function RootLayout({
   children,

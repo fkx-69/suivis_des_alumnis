@@ -24,8 +24,14 @@ export default function ThemeToggle() {
       aria-label="Toggle Theme"
       className="btn btn-ghost w-full flex items-center justify-center gap-3"
       onClick={toggle}
+      type="button"
+      data-testid="theme-toggle-button"
     >
-      {(resolvedTheme || theme) === "itma" ? <Sun size={20} /> : <Moon size={20} />}
+      {(resolvedTheme || theme) === "itma" ? (
+        <Sun size={20} />
+      ) : (
+        <Moon size={20} />
+      )}
       <span className="hidden sm:inline">Thème</span>
     </button>
   );

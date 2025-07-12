@@ -7,8 +7,7 @@ import {
   updateParcoursAcademique,
   deleteParcoursAcademique,
 } from "@/lib/api/parcours";
-import type { ParcoursAcademique } from "@/types/parcours";
-import { Mention, Mentions } from "@/lib/constants/parcours";
+import { ParcoursAcademique, Mention, Mentions } from "@/types/parcours";
 
 interface Props {
   items: ParcoursAcademique[];
@@ -44,7 +43,7 @@ export default function ParcoursAcademiqueSection({ items, onChanged }: Props) {
       diplome: item.diplome,
       institution: item.institution,
       annee_obtention: String(item.annee_obtention),
-      mention: item.mention ? `mention_${item.mention}` : "",
+      mention: item.mention ?? "",
     });
     dialogRef.current?.showModal();
   };
@@ -98,7 +97,7 @@ export default function ParcoursAcademiqueSection({ items, onChanged }: Props) {
               <p className="text-base-content/80">{p.institution}</p>
               <p className="text-sm text-base-content/60">
                 Obtenu en {p.annee_obtention}{" "}
-                {p.mention && `- Mention ${Mentions[`mention_${p.mention}` as keyof typeof Mentions]}`}
+                {p.mention && `- Mention ${Mentions[p.mention]}`}
               </p>
             </div>
             <div className="flex gap-2 items-center">
@@ -119,7 +118,7 @@ export default function ParcoursAcademiqueSection({ items, onChanged }: Props) {
         ))}
         {items.length === 0 && (
           <p className="text-center text-base-content/60 py-4">
-            Aucun parcours académique n&apos;a été ajouté pour le moment.
+            Aucun parcours académique n'a été ajouté pour le moment.
           </p>
         )}
       </div>
@@ -155,7 +154,7 @@ export default function ParcoursAcademiqueSection({ items, onChanged }: Props) {
               type="number"
               value={form.annee_obtention}
               onChange={handleChange}
-              placeholder="Année d&apos;obtention"
+              placeholder="Année d'obtention"
               required
             />
             <select

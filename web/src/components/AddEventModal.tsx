@@ -1,6 +1,7 @@
-import { CalendarIcon, XIcon } from "lucide-react";
+import { CalendarIcon, XIcon, Image as ImageIcon } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { createEvent } from "@/lib/api/evenement";
 import { ApiEvent } from "@/types/evenement";
@@ -21,6 +22,8 @@ export default function AddEventModal({
     date_fin: "",
     image: undefined as File | undefined,
   });
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
@@ -33,8 +36,14 @@ export default function AddEventModal({
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setForm((f) => ({ ...f, image: e.target.files?.[0] }));
+    const file = e.target.files?.[0];
+    if (file) {
+      setForm((f) => ({ ...f, image: file }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -52,6 +61,8 @@ export default function AddEventModal({
         date_fin: "",
         image: undefined,
       });
+      setImagePreview(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
       onClose();
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -115,12 +126,17 @@ export default function AddEventModal({
           required
           className="textarea textarea-ghost w-full text-sm opacity-80 h-32"
         />
-        <Input
-          type="file"
-          name="image"
-          onChange={handleFileChange}
-          className="input-ghost"
-        />
+        {imagePreview && (
+          <div className="rounded-lg overflow-hidden border border-base-300/50">
+            <Image
+              src={imagePreview}
+              alt="Aperçu"
+              width={500}
+              height={192}
+              className="w-full h-48 object-cover"
+            />
+          </div>
+        )}
         <div className="flex justify-between items-center text-sm gap-4 flex-wrap">
           <div className="flex items-center gap-2 flex-1 min-w-[10rem]">
             <CalendarIcon size={18} />
@@ -145,9 +161,30 @@ export default function AddEventModal({
             />
           </div>
         </div>
-        <button className="btn btn-primary" disabled={submitting} type="submit">
-          Créer l&apos;évènement
-        </button>
+        <div className="modal-action justify-between items-center mt-4">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="btn btn-ghost btn-sm gap-2"
+          >
+            <ImageIcon size={18} /> Photo
+          </button>
+          <button className="btn btn-primary" disabled={submitting} type="submit">
+            {submitting ? (
+              <span className="loading loading-spinner"></span>
+            ) : (
+              "Créer l'évènement"
+            )}
+          </button>
+        </div>
+
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          accept="image/*"
+          onChange={handleFileChange}
+        />
       </motion.form>
     </div>
   );

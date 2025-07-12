@@ -3,26 +3,43 @@ import { Input } from "@/components/ui/Input";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { createEvent } from "@/lib/api/evenement";
+import { createEvent, updateEvent } from "@/lib/api/evenement";
 import { ApiEvent } from "@/types/evenement";
 
 interface AddEventModalProps {
+  event?: ApiEvent;
   onClose(): void;
   onCreated?: (event: ApiEvent) => void;
+  onUpdated?: (event: ApiEvent) => void;
 }
 
 export default function AddEventModal({
+  event,
   onClose,
   onCreated,
+  onUpdated,
 }: AddEventModalProps) {
+  const toDatetimeLocal = (dateStr: string) => {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return "";
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   const [form, setForm] = useState({
-    titre: "",
-    description: "",
-    date_debut: "",
-    date_fin: "",
+    titre: event?.titre ?? "",
+    description: event?.description ?? "",
+    date_debut: event ? toDatetimeLocal(event.date_debut) : "",
+    date_fin: event ? toDatetimeLocal(event.date_fin) : "",
     image: undefined as File | undefined,
   });
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    event?.image ?? null
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,17 +69,27 @@ export default function AddEventModal({
     setSubmitting(true);
     setError(null);
     try {
-      const newEvent = await createEvent(form);
-      onCreated?.(newEvent);
-      setForm({
-        titre: "",
-        description: "",
-        date_debut: "",
-        date_fin: "",
-        image: undefined,
-      });
-      setImagePreview(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (event) {
+        const updated = await updateEvent(event.id, {
+          titre: form.titre,
+          description: form.description,
+          date_debut: form.date_debut,
+          date_fin: form.date_fin,
+        });
+        onUpdated?.(updated);
+      } else {
+        const newEvent = await createEvent(form);
+        onCreated?.(newEvent);
+        setForm({
+          titre: "",
+          description: "",
+          date_debut: "",
+          date_fin: "",
+          image: undefined,
+        });
+        setImagePreview(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
       onClose();
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -99,7 +126,7 @@ export default function AddEventModal({
         onSubmit={handleSubmit}
       >
         <h2 id="add-event-modal-title" className="sr-only">
-          Créer un évènement
+          {event ? "Modifier l'évènement" : "Créer un évènement"}
         </h2>
         {imagePreview && (
           <div className="relative rounded-lg overflow-hidden border border-base-300/50">
@@ -167,13 +194,15 @@ export default function AddEventModal({
           </div>
         </div>
         <div className="modal-action justify-between items-center mt-4">
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="btn btn-ghost btn-sm gap-2"
-          >
-            <ImageIcon size={18} /> Photo
-          </button>
+          {!event && (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="btn btn-ghost btn-sm gap-2"
+            >
+              <ImageIcon size={18} /> Photo
+            </button>
+          )}
           <button
             className="btn btn-primary"
             disabled={submitting}
@@ -182,18 +211,19 @@ export default function AddEventModal({
             {submitting ? (
               <span className="loading loading-spinner"></span>
             ) : (
-              "Créer l'évènement"
+              event ? "Modifier l'évènement" : "Créer l'évènement"
             )}
           </button>
         </div>
-
-        <input
-          type="file"
-          ref={fileInputRef}
-          className="hidden"
-          accept="image/*"
-          onChange={handleFileChange}
-        />
+        {!event && (
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept="image/*"
+            onChange={handleFileChange}
+          />
+        )}
       </motion.form>
     </div>
   );

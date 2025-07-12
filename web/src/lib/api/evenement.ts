@@ -1,7 +1,7 @@
 import { api } from "./axios";
 import { ApiEvent } from "@/types/evenement";
 
-export const fetchAllEvents = async (): Promise<ApiEvent[]> => {
+export const fetchEvents = async (): Promise<ApiEvent[]> => {
     const res = await api.get<ApiEvent[]>("/events/evenements/");
     if (res.status < 200 || res.status >= 300) {
         throw new Error("Impossible de récupérer les événements");

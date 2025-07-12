@@ -8,7 +8,7 @@ import EventCard from "@/components/EventCard";
 import EventModal from "@/components/EventModal";
 import ConfirmModal from "@/components/ConfirmModal";
 import {
-  fetchAllEvents,
+  fetchEvents,
   fetchPendingEvents,
   deleteEvent,
 } from "@/lib/api/evenement";
@@ -26,25 +26,18 @@ export default function Page() {
   const [eventToDelete, setEventToDelete] = useState<ApiEvent | null>(null);
 
   useEffect(() => {
-    async function fetchEvents() {
-      setLoading(true);
-      try {
-        const data = showPendingEvents
-          ? await fetchPendingEvents()
-          : await fetchAllEvents();
-        setEvents(data);
-      } catch (err: unknown) {
+    setLoading(true);
+    const fetcher = showPendingEvents ? fetchPendingEvents : fetchEvents;
+    fetcher()
+      .then(setEvents)
+      .catch((err: unknown) => {
         if (err instanceof Error) {
           setError(err.message);
         } else {
           setError("Erreur inconnue");
         }
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchEvents();
+      })
+      .finally(() => setLoading(false));
   }, [showPendingEvents]);
 
   const handleCreated = (ev: ApiEvent) => {

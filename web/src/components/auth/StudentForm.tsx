@@ -34,7 +34,7 @@ export default function StudentForm({ filieres }: StudentFormProps) {
           {errors.filiere && <p className="text-error text-xs mt-1">{errors.filiere.message}</p>}
         </div>
         <div>
-          <label className="block mb-1 text-base-content">Niveau d'étude</label>
+          <label className="block mb-1 text-base-content">Niveau d&apos;étude</label>
           <select
             {...register('niveau_etude')}
             className="select select-primary w-full"
@@ -49,7 +49,7 @@ export default function StudentForm({ filieres }: StudentFormProps) {
         </div>
       </div>
       <div>
-        <label className="block mb-1 text-base-content">Année d'entrée</label>
+        <label className="block mb-1 text-base-content">Année d&apos;entrée</label>
         <select
           className="select select-primary w-full"
           {...register('annee_entree')}

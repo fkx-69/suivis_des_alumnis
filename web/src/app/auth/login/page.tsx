@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "@/lib/api/authContext";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/Input";
 import { toast } from "@/components/ui/toast";
@@ -18,7 +17,6 @@ type FormData = z.infer<typeof schema>;
 
 export default function LoginPage() {
   const { login } = useAuth();
-  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -63,7 +61,7 @@ export default function LoginPage() {
           </button>
         </form>
         <div className="mt-4 text-sm text-center text-gray-500">
-          Vous n'avez pas de compte ?{" "}
+          Vous n&apos;avez pas de compte ?{" "}
           <Link href="signIn" className="text-blue-600 hover:underline">
             Inscrivez-vous
           </Link>

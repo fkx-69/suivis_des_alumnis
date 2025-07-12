@@ -12,6 +12,7 @@ import {
 } from "@/lib/api/parcours";
 import type { ParcoursAcademique, ParcoursProfessionnel } from "@/types/parcours";
 import { Mentions } from "@/lib/constants/parcours";
+import type { Mention } from "@/types/parcours";
 
 interface Props {
   academicItems: ParcoursAcademique[];
@@ -31,7 +32,7 @@ const initialAcademicForm = {
   diplome: "",
   institution: "",
   annee_obtention: "",
-  mention: "",
+  mention: null as Mention | null,
 };
 
 const initialProfessionalForm = {
@@ -40,6 +41,22 @@ const initialProfessionalForm = {
   date_debut: "",
   type_contrat: contrats[0].value,
 };
+
+interface AcademicForm {
+  diplome: string;
+  institution: string;
+  annee_obtention: string;
+  mention: Mention | null;
+}
+
+interface ProfessionalForm {
+  poste: string;
+  entreprise: string;
+  date_debut: string;
+  type_contrat: string;
+}
+
+type FormValues = AcademicForm | ProfessionalForm;
 
 interface ParcoursItemProps {
   item: ParcoursAcademique | ParcoursProfessionnel;
@@ -88,7 +105,7 @@ const ParcoursItem = ({ item, onDelete, onEdit }: ParcoursItemProps) => {
 export default function ParcoursSection({ academicItems, professionalItems, onChanged }: Props) {
   const [editing, setEditing] = useState<ParcoursAcademique | ParcoursProfessionnel | null>(null);
   const [formType, setFormType] = useState<'academic' | 'professional' | null>(null);
-  const [form, setForm] = useState<any>(initialAcademicForm);
+  const [form, setForm] = useState<FormValues>(initialAcademicForm);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   const openCreate = (type: 'academic' | 'professional') => {
@@ -103,30 +120,40 @@ export default function ParcoursSection({ academicItems, professionalItems, onCh
     if ('diplome' in item) {
       setFormType('academic');
       setForm({
-        ...item,
+        diplome: item.diplome,
+        institution: item.institution,
         annee_obtention: String(item.annee_obtention),
+        mention: item.mention,
       });
     } else {
       setFormType('professional');
-      setForm(item);
+      setForm({
+        poste: item.poste,
+        entreprise: item.entreprise,
+        date_debut: item.date_debut,
+        type_contrat: item.type_contrat,
+      });
     }
     dialogRef.current?.showModal();
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setForm((prev: any) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       if (formType === 'academic') {
+        const academicForm = form as AcademicForm;
         const payload: Omit<ParcoursAcademique, 'id'> = {
-          diplome: form.diplome,
-          institution: form.institution,
-          annee_obtention: parseInt(form.annee_obtention, 10),
-          mention: form.mention || null,
+          diplome: academicForm.diplome,
+          institution: academicForm.institution,
+          annee_obtention: parseInt(academicForm.annee_obtention, 10),
+          mention: academicForm.mention || null,
         };
         if (editing) {
           await updateParcoursAcademique((editing as ParcoursAcademique).id, payload);
@@ -134,11 +161,12 @@ export default function ParcoursSection({ academicItems, professionalItems, onCh
           await createParcoursAcademique(payload);
         }
       } else if (formType === 'professional') {
+        const professionalForm = form as ProfessionalForm;
         const payload: Omit<ParcoursProfessionnel, 'id'> = {
-          poste: form.poste,
-          entreprise: form.entreprise,
-          date_debut: form.date_debut,
-          type_contrat: form.type_contrat,
+          poste: professionalForm.poste,
+          entreprise: professionalForm.entreprise,
+          date_debut: professionalForm.date_debut,
+          type_contrat: professionalForm.type_contrat,
         };
         if (editing) {
           await updateParcoursProfessionnel((editing as ParcoursProfessionnel).id, payload);
@@ -191,7 +219,7 @@ export default function ParcoursSection({ academicItems, professionalItems, onCh
           ))
         ) : (
           <p className="text-center text-base-content/60 py-4">
-            Aucun parcours académique n'a été ajouté pour le moment.
+            Aucun parcours académique n&apos;a été ajouté pour le moment.
           </p>
         )}
 
@@ -203,7 +231,7 @@ export default function ParcoursSection({ academicItems, professionalItems, onCh
             <ParcoursItem key={`pro-${p.id}`} item={p} onDelete={handleDelete} onEdit={openEdit} />
           ))
         ) : (
-          <p className="text-center text-base-content/60 py-4">Aucun parcours professionnel n'a été ajouté pour le moment.</p>
+          <p className="text-center text-base-content/60 py-4">Aucun parcours professionnel n&apos;a été ajouté pour le moment.</p>
         )}
       </div>
 
@@ -220,10 +248,10 @@ export default function ParcoursSection({ academicItems, professionalItems, onCh
           <form onSubmit={handleSubmit} className="space-y-4">
             {formType === 'academic' ? (
               <>
-                <Input name="diplome" value={form.diplome || ''} onChange={handleChange} placeholder="Diplôme" required />
-                <Input name="institution" value={form.institution || ''} onChange={handleChange} placeholder="Institution" required />
-                <Input name="annee_obtention" type="number" value={form.annee_obtention || ''} onChange={handleChange} placeholder="Année d'obtention" required />
-                <select name="mention" value={form.mention || ''} className="select select-bordered w-full" onChange={handleChange}>
+                <Input name="diplome" value={(form as AcademicForm).diplome || ''} onChange={handleChange} placeholder="Diplôme" required />
+                <Input name="institution" value={(form as AcademicForm).institution || ''} onChange={handleChange} placeholder="Institution" required />
+                <Input name="annee_obtention" type="number" value={(form as AcademicForm).annee_obtention || ''} onChange={handleChange} placeholder="Année d'obtention" required />
+                <select name="mention" value={(form as AcademicForm).mention || ''} className="select select-bordered w-full" onChange={handleChange}>
                   <option value="">Sélectionnez une mention (optionnel)</option>
                   {Object.keys(Mentions).map((key) => (
                     <option key={key.replace('mention_', '')} value={key.replace('mention_', '')}>
@@ -234,10 +262,10 @@ export default function ParcoursSection({ academicItems, professionalItems, onCh
               </>
             ) : (
               <>
-                <Input name="poste" value={form.poste || ''} onChange={handleChange} placeholder="Poste" required />
-                <Input name="entreprise" value={form.entreprise || ''} onChange={handleChange} placeholder="Entreprise" required />
-                <Input name="date_debut" type="date" value={form.date_debut || ''} onChange={handleChange} placeholder="Date de début" required />
-                <select name="type_contrat" value={form.type_contrat || ''} className="select select-bordered w-full" onChange={handleChange}>
+                <Input name="poste" value={(form as ProfessionalForm).poste || ''} onChange={handleChange} placeholder="Poste" required />
+                <Input name="entreprise" value={(form as ProfessionalForm).entreprise || ''} onChange={handleChange} placeholder="Entreprise" required />
+                <Input name="date_debut" type="date" value={(form as ProfessionalForm).date_debut || ''} onChange={handleChange} placeholder="Date de début" required />
+                <select name="type_contrat" value={(form as ProfessionalForm).type_contrat || ''} className="select select-bordered w-full" onChange={handleChange}>
                   {contrats.map((c) => (
                     <option key={c.value} value={c.value}>{c.label}</option>
                   ))}

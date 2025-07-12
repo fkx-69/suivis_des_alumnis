@@ -55,7 +55,7 @@ export default function UserPublicationsList() {
           ))}
         </ul>
       ) : (
-        <p className="text-neutral-500 text-center py-8">Vous n'avez encore rien publié.</p>
+        <p className="text-neutral-500 text-center py-8">Vous n&apos;avez encore rien publié.</p>
       )}
     </div>
   );

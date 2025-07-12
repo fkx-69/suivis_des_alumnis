@@ -38,8 +38,12 @@ export default function MentoratRequests() {
         );
 
         setDemandes(demandesWithProfiles);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Une erreur inconnue est survenue.");
+        }
       } finally {
         setLoading(false);
       }

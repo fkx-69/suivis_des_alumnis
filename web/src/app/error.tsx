@@ -14,7 +14,7 @@ export default function GlobalError({ error, reset }: { error: Error; reset: () 
         Réessayer
       </button>
       <Link href="/" className="btn btn-link mt-4">
-        Retour à l'accueil
+        Retour à l&apos;accueil
       </Link>
     </div>
   );

@@ -53,8 +53,12 @@ export default function AddEventModal({
         image: undefined,
       });
       onClose();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Une erreur inconnue est survenue.");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -142,7 +146,7 @@ export default function AddEventModal({
           </div>
         </div>
         <button className="btn btn-primary" disabled={submitting} type="submit">
-          Créer l'évènement
+          Créer l&apos;évènement
         </button>
       </motion.form>
     </div>

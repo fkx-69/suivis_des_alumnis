@@ -12,7 +12,7 @@ import PublicationCard from "@/components/PublicationCard";
 import AddPublicationModal from "@/components/AddPublicationModal";
 import PublicationModal from "@/components/PublicationModal";
 import { Plus } from "lucide-react";
-import ConfirmModal from "@/components/ConfirmModal";
+import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 
 export default function PublicationsPage() {
   const [publications, setPublications] = useState<Publication[]>([]);
@@ -89,12 +89,10 @@ export default function PublicationsPage() {
       />
 
       {toDelete && (
-        <ConfirmModal
+        <DeleteConfirmModal
           title="Supprimer la publication"
           message="Cette action est irreversible."
-          confirmText="Supprimer"
-          cancelText="Annuler"
-          onConfirm={confirmDelete}
+          onDelete={confirmDelete}
           onCancel={() => setToDelete(null)}
         />
       )}

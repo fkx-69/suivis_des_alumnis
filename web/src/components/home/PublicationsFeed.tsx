@@ -11,7 +11,7 @@ import { Carousel } from "@/components/ui/carousel";
 import PublicationCard from "../PublicationCard";
 import PublicationModal from "../PublicationModal";
 import { addComment } from "@/lib/api/publication";
-import ConfirmModal from "../ConfirmModal";
+import DeleteConfirmModal from "../DeleteConfirmModal";
 
 export default function PublicationsFeed() {
   const [publications, setPublications] = useState<Publication[]>([]);
@@ -111,12 +111,10 @@ export default function PublicationsFeed() {
       />
 
       {toDelete && (
-        <ConfirmModal
+        <DeleteConfirmModal
           title="Supprimer la publication"
           message="Cette action est irreversible."
-          confirmText="Supprimer"
-          cancelText="Annuler"
-          onConfirm={confirmDelete}
+          onDelete={confirmDelete}
           onCancel={() => setToDelete(null)}
         />
       )}

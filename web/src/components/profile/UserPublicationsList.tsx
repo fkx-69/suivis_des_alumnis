@@ -10,7 +10,7 @@ import {
 } from "@/lib/api/publication";
 import { Publication } from "@/types/publication";
 import PublicationCard from "@/components/PublicationCard";
-import ConfirmModal from "@/components/ConfirmModal";
+import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 
 export default function UserPublicationsList() {
   const { user } = useAuth();
@@ -90,12 +90,10 @@ export default function UserPublicationsList() {
       )}
 
       {toDelete && (
-        <ConfirmModal
+        <DeleteConfirmModal
           title="Supprimer la publication"
           message="Cette action est irreversible."
-          confirmText="Supprimer"
-          cancelText="Annuler"
-          onConfirm={confirmDelete}
+          onDelete={confirmDelete}
           onCancel={() => setToDelete(null)}
         />
       )}

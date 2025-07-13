@@ -1,7 +1,7 @@
 import { useAuth } from "@/lib/api/authContext";
 import { useProfileModal } from "@/contexts/ProfileModalContext";
 import { Publication } from "@/types/publication";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Trash2 } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import { formatTimeAgo } from "@/lib/utils";
@@ -10,12 +10,16 @@ interface PublicationCardProps {
   publication: Publication;
   onComment: (value: string) => void;
   onCardClick?: () => void;
+  onDelete?: () => void;
+  onDeleteComment?: (commentId: number) => void;
 }
 
 export default function PublicationCard({
   publication,
   onComment,
   onCardClick,
+  onDelete,
+  onDeleteComment,
 }: PublicationCardProps) {
   const { user } = useAuth();
   const { showProfile } = useProfileModal();
@@ -39,9 +43,20 @@ export default function PublicationCard({
 
   return (
     <article
-      className={`bg-base-100 border border-base-300/50 rounded-xl p-4 sm:p-5 mb-4 shadow-md flex flex-col ${onCardClick ? "cursor-pointer hover:border-primary/50 transition-colors" : ""}`}
+      className={`relative bg-base-100 border border-base-300/50 rounded-xl p-4 sm:p-5 mb-4 shadow-md flex flex-col ${onCardClick ? "cursor-pointer hover:border-primary/50 transition-colors" : ""}`}
       onClick={onCardClick}
     >
+      {user?.username === publication.auteur_username && onDelete && (
+        <button
+          className="btn btn-xs btn-error absolute top-2 right-2 z-10"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+        >
+          <Trash2 size={16} />
+        </button>
+      )}
       {/* En-tête de la publication */}
       <div className="flex items-start gap-3">
         <div className="avatar">
@@ -164,11 +179,22 @@ export default function PublicationCard({
                         )}
                       </div>
                     </div>
-                    <div className="bg-base-200/60 rounded-lg px-3 py-2 w-full">
+                    <div className="bg-base-200/60 rounded-lg px-3 py-2 w-full flex justify-between items-start">
                       <span className="font-bold mr-2">
                         {c.auteur_username}
                       </span>
-                      <span>{c.contenu}</span>
+                      <span className="flex-1 break-words">{c.contenu}</span>
+                      {onDeleteComment &&
+                        user &&
+                        (user.username === c.auteur_username ||
+                          user.username === publication.auteur_username) && (
+                          <button
+                            className="btn btn-ghost btn-xs text-error"
+                            onClick={() => onDeleteComment(c.id)}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                     </div>
                   </div>
                 ))

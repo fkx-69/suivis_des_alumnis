@@ -4,17 +4,21 @@ import {
   fetchPublications,
   createPublication,
   addComment,
+  deletePublication,
+  deleteComment,
 } from "@/lib/api/publication";
 import { Publication } from "@/types/publication";
 import PublicationCard from "@/components/PublicationCard";
 import AddPublicationModal from "@/components/AddPublicationModal";
 import PublicationModal from "@/components/PublicationModal";
 import { Plus } from "lucide-react";
+import ConfirmModal from "@/components/ConfirmModal";
 
 export default function PublicationsPage() {
   const [publications, setPublications] = useState<Publication[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPublication, setSelectedPublication] = useState<Publication | null>(null);
+  const [toDelete, setToDelete] = useState<Publication | null>(null);
 
   useEffect(() => {
     fetchPublications().then(setPublications);
@@ -33,6 +37,28 @@ export default function PublicationsPage() {
     );
   };
 
+  const handleDeleteComment = async (pubId: number, commentId: number) => {
+    await deleteComment(commentId);
+    setPublications((prev) =>
+      prev.map((p) =>
+        p.id === pubId
+          ? {
+              ...p,
+              commentaires: p.commentaires.filter((c) => c.id !== commentId),
+              nombres_commentaires: (p.nombres_commentaires || 1) - 1,
+            }
+          : p
+      )
+    );
+  };
+
+  const confirmDelete = async () => {
+    if (!toDelete) return;
+    await deletePublication(toDelete.id);
+    setPublications((prev) => prev.filter((p) => p.id !== toDelete.id));
+    setToDelete(null);
+  };
+
   return (
     <main className="mx-auto max-w-7xl px-4 py-4 space-y-4 relative min-h-screen">
       <h1 className="text-2xl font-semibold">Publications</h1>
@@ -44,6 +70,8 @@ export default function PublicationsPage() {
               publication={p}
               onComment={(v) => handleComment(p.id, v)}
               onCardClick={() => setSelectedPublication(p)}
+              onDelete={() => setToDelete(p)}
+              onDeleteComment={(cid) => handleDeleteComment(p.id, cid)}
             />
           </li>
         ))}
@@ -55,10 +83,21 @@ export default function PublicationsPage() {
         onPublish={handleCreate}
       />
 
-      <PublicationModal 
+      <PublicationModal
         publication={selectedPublication}
         onClose={() => setSelectedPublication(null)}
       />
+
+      {toDelete && (
+        <ConfirmModal
+          title="Supprimer la publication"
+          message="Cette action est irreversible."
+          confirmText="Supprimer"
+          cancelText="Annuler"
+          onConfirm={confirmDelete}
+          onCancel={() => setToDelete(null)}
+        />
+      )}
 
       <button
         onClick={() => setIsModalOpen(true)}

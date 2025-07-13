@@ -2,14 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/api/authContext";
-import { fetchUserPublications, addComment } from "@/lib/api/publication";
+import {
+  fetchUserPublications,
+  addComment,
+  deletePublication,
+  deleteComment,
+} from "@/lib/api/publication";
 import { Publication } from "@/types/publication";
 import PublicationCard from "@/components/PublicationCard";
+import ConfirmModal from "@/components/ConfirmModal";
 
 export default function UserPublicationsList() {
   const { user } = useAuth();
   const [publications, setPublications] = useState<Publication[]>([]);
   const [loading, setLoading] = useState(true);
+  const [toDelete, setToDelete] = useState<Publication | null>(null);
 
   useEffect(() => {
     if (user?.username) {
@@ -32,6 +39,28 @@ export default function UserPublicationsList() {
     }
   };
 
+  const handleDeleteComment = async (pubId: number, commentId: number) => {
+    await deleteComment(commentId);
+    setPublications((prev) =>
+      prev.map((p) =>
+        p.id === pubId
+          ? {
+              ...p,
+              commentaires: p.commentaires.filter((c) => c.id !== commentId),
+              nombres_commentaires: (p.nombres_commentaires || 1) - 1,
+            }
+          : p
+      )
+    );
+  };
+
+  const confirmDelete = async () => {
+    if (!toDelete) return;
+    await deletePublication(toDelete.id);
+    setPublications((prev) => prev.filter((p) => p.id !== toDelete.id));
+    setToDelete(null);
+  };
+
   if (loading) {
     return (
       <div className="text-center p-8">
@@ -50,12 +79,25 @@ export default function UserPublicationsList() {
               <PublicationCard
                 publication={p}
                 onComment={(v) => handleComment(p.id, v)}
+                onDelete={() => setToDelete(p)}
+                onDeleteComment={(cid) => handleDeleteComment(p.id, cid)}
               />
             </li>
           ))}
         </ul>
       ) : (
         <p className="text-neutral-500 text-center py-8">Vous n&apos;avez encore rien publié.</p>
+      )}
+
+      {toDelete && (
+        <ConfirmModal
+          title="Supprimer la publication"
+          message="Cette action est irreversible."
+          confirmText="Supprimer"
+          cancelText="Annuler"
+          onConfirm={confirmDelete}
+          onCancel={() => setToDelete(null)}
+        />
       )}
     </div>
   );

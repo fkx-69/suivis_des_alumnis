@@ -1,13 +1,13 @@
 /* app/(dashboard)/evenements/page.tsx */
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 
 import AddEventModal from "@/components/AddEventModal";
 import EventCard from "@/components/EventCard";
 import EventModal from "@/components/EventModal";
-import ConfirmModal from "@/components/ConfirmModal";
+import DeleteConfirmModal from "@/components/DeleteConfirmModal";
 import { ApiEvent } from "@/types/evenement";
 
 import {
@@ -18,7 +18,7 @@ import {
 
 type Tab = "all" | "pending";
 export default function EventsPage() {
-  const [tab, setTab] = useState<"all" | "pending">("all");
+  const [tab, setTab] = useState<Tab>("all");
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [pendingEvents, setPendingEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -179,12 +179,10 @@ export default function EventsPage() {
         <EventModal event={selected} onClose={() => setSelected(null)} />
       )}
       {toDelete && (
-        <ConfirmModal
+        <DeleteConfirmModal
           title="Supprimer l'événement"
           message={`Supprimer « ${toDelete.titre} » ?`}
-          confirmText="Supprimer"
-          cancelText="Annuler"
-          onConfirm={confirmDelete}
+          onDelete={confirmDelete}
           onCancel={() => setToDelete(null)}
         />
       )}

@@ -19,7 +19,7 @@ export default function ConfirmModal({
 }: ConfirmModalProps) {
   return (
     <div
-      className="absolute inset-0 z-50 flex items-center justify-center bg-black/40"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
       onClick={(e) => e.target === e.currentTarget && onCancel()}
     >
       <motion.div

@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/api/authContext";
 import { envoyerDemande } from "@/lib/api/mentorat";
 import { toast } from "@/components/ui/toast";
 import Link from "next/link";
+import ReportUserModal from "@/components/ReportUserModal";
 
 export default function UserProfilePage() {
   const params = useParams();
@@ -21,6 +22,7 @@ export default function UserProfilePage() {
   const [publications, setPublications] = useState<Publication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
 
   useEffect(() => {
     if (username) {
@@ -114,6 +116,12 @@ export default function UserProfilePage() {
                   Mentor
                 </button>
               )}
+              <button
+                onClick={() => setReportOpen(true)}
+                className="btn btn-error flex-1"
+              >
+                Signaler
+              </button>
             </div>
           </div>
         </div>
@@ -133,6 +141,12 @@ export default function UserProfilePage() {
           <p>Cet utilisateur n&apos;a aucune publication.</p>
         )}
       </div>
+      {reportOpen && user && (
+        <ReportUserModal
+          userId={user.id}
+          onClose={() => setReportOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useAuth } from "@/lib/api/authContext";
 import { envoyerDemande } from "@/lib/api/mentorat";
 import { toast } from "@/components/ui/toast";
+import ReportUserModal from "./ReportUserModal";
 
 interface UserProfile {
+  id: number;
   username: string;
   nom: string;
   prenom: string;
@@ -25,6 +27,7 @@ export default function ExternalProfileModal({
   onClose,
 }: ExternalProfileModalProps) {
   const { user: currentUser } = useAuth();
+  const [reportOpen, setReportOpen] = React.useState(false);
 
   const handleMentoratRequest = async () => {
     try {
@@ -112,8 +115,20 @@ export default function ExternalProfileModal({
                 Mentor
               </button>
             )}
+            <button
+              onClick={() => setReportOpen(true)}
+              className="btn btn-error flex-1"
+            >
+              Signaler
+            </button>
           </div>
         </div>
+        {reportOpen && (
+          <ReportUserModal
+            userId={user.id}
+            onClose={() => setReportOpen(false)}
+          />
+        )}
       </motion.div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { api } from "./axios";
 
 export interface UserProfile {
+  id: number;
   username: string;
   nom: string;
   prenom: string;

@@ -25,8 +25,8 @@ export default function ThemeToggle({
 
   return (
     <button
-      aria-label="Toggle Theme"
-      className="btn btn-ghost w-full flex items-center justify-center"
+      aria-label="Toggle Theme "
+      className="btn btn-xs btn-ghost"
       onClick={toggle}
       type="button"
       data-testid="theme-toggle-button"

@@ -48,7 +48,7 @@ export default function PublicationCard({
     >
       {user?.username === publication.auteur_username && onDelete && (
         <button
-          className="btn btn-xs btn-error absolute top-2 right-2 z-10"
+          className="btn btn-xs  btn-ghost text-error absolute top-2 right-2 z-10"
           onClick={(e) => {
             e.stopPropagation();
             onDelete();
@@ -78,20 +78,18 @@ export default function PublicationCard({
           </div>
         </div>
         <div className="flex-1">
-          <div className="flex justify-between items-center">
-            <p
-              className={`font-semibold text-base-content ${user && publication.auteur_username !== user.username ? "cursor-pointer hover:underline" : ""}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleProfileClick();
-              }}
-            >
-              {publication.auteur_username}
-            </p>
-            <p className="text-xs text-base-content/60">
-              {formatTimeAgo(publication.date_publication)}
-            </p>
-          </div>
+          <p
+            className={`font-semibold text-base-content ${user && publication.auteur_username !== user.username ? "cursor-pointer hover:underline" : ""}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleProfileClick();
+            }}
+          >
+            {publication.auteur_username}
+          </p>
+          <p className="text-xs text-base-content/60">
+            {formatTimeAgo(publication.date_publication)}
+          </p>
         </div>
       </div>
 

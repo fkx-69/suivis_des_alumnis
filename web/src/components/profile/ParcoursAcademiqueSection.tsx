@@ -108,7 +108,7 @@ export default function ParcoursAcademiqueSection({ items, onChanged }: Props) {
                 <Pencil size={16} />
               </button>
               <button
-                className="btn btn-ghost btn-sm btn-circle text-error"
+                className="btn  btn-ghost text-error btn-sm btn-circle text-error"
                 onClick={() => handleDelete(p.id)}
               >
                 <Trash2 size={16} />

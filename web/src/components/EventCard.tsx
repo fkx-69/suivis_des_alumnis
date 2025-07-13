@@ -34,7 +34,7 @@ export default function EventCard({
       {showActions && (
         <>
           <button
-            className="btn btn-xs btn-primary absolute top-2 left-2 z-10"
+            className="btn btn-xs btn-ghost text-primary absolute top-2 left-2 z-10"
             onClick={(e) => {
               e.stopPropagation();
               onEdit?.();
@@ -43,7 +43,7 @@ export default function EventCard({
             <Pencil size={20} />
           </button>
           <button
-            className="btn btn-xs btn-error absolute top-2 right-2 z-10"
+            className="btn btn-xs btn-ghost text-error absolute top-2 right-2 z-10"
             onClick={(e) => {
               e.stopPropagation();
               onDelete?.();

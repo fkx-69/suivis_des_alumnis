@@ -1,5 +1,5 @@
 import { api } from "./axios";
-import { Publication } from "@/types/publication";
+import { Publication, Commentaire } from "@/types/publication";
 
 export async function fetchPublications() {
   const res = await api.get<Publication[]>("/publications/fil/");
@@ -15,11 +15,12 @@ export async function deletePublication(id: number) {
   await api.delete(`/publications/${id}/supprimer/`);
 }
 
-export async function addComment(id: number, contenu: string) {
-  const res = await api.post(`/publications/${id}/commentaires/`, {
+export async function addComment(publication: number, contenu: string) {
+  const res = await api.post<Commentaire>("/publications/commenter/", {
+    publication,
     contenu,
   });
-  return res.data as Publication;
+  return res.data;
 }
 
 export async function deleteComment(id: number) {

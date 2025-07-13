@@ -31,9 +31,17 @@ export default function PublicationsPage() {
 
   const handleComment = async (id: number, value: string) => {
     if (!value.trim()) return;
-    const pub = await addComment(id, value);
+    const comment = await addComment(id, value);
     setPublications((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, ...pub } : p))
+      prev.map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              commentaires: [...p.commentaires, comment],
+              nombres_commentaires: (p.nombres_commentaires || 0) + 1,
+            }
+          : p
+      )
     );
   };
 

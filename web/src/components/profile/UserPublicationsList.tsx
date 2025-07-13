@@ -30,9 +30,17 @@ export default function UserPublicationsList() {
   const handleComment = async (id: number, value: string) => {
     if (!value.trim()) return;
     try {
-      const updatedPub = await addComment(id, value);
+      const comment = await addComment(id, value);
       setPublications((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, commentaires: updatedPub.commentaires } : p))
+        prev.map((p) =>
+          p.id === id
+            ? {
+                ...p,
+                commentaires: [...p.commentaires, comment],
+                nombres_commentaires: (p.nombres_commentaires || 0) + 1,
+              }
+            : p
+        )
       );
     } catch (error) {
       console.error("Failed to add comment:", error);

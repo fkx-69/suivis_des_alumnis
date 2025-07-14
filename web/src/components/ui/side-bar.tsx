@@ -156,7 +156,10 @@ export default function SidePanel({ children }: { children: ReactNode }) {
               onClick={handleLogout}
               className={`flex items-center p-2 w-full hover:bg-base-300 rounded-md ${collapsed ? "justify-center" : "gap-3"}`}
             >
-              <LogOutIcon size={20} />
+              <LogOutIcon
+                size={20}
+                className="cursor-pointer hover:underline"
+              />
               {!collapsed && <span className="text-content">Déconnexion</span>}
             </button>
           </div>

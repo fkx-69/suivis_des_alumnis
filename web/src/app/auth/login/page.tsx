@@ -5,6 +5,7 @@ import { z } from "zod";
 import { useAuth } from "@/lib/api/authContext";
 import Link from "next/link";
 import { Input } from "@/components/ui/Input";
+import axios from "axios";
 import { toast } from "@/components/ui/toast";
 import "@/app/globals.css";
 
@@ -17,6 +18,7 @@ type FormData = z.infer<typeof schema>;
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const [serverError, setServerError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -24,11 +26,20 @@ export default function LoginPage() {
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: FormData) => {
+    setServerError(null);
     try {
       await login(data);
       toast.success("Connexion réussie");
-    } catch {
-      toast.error("Identifiants incorrects");
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        const message =
+          err.response?.data?.detail ||
+          err.message ||
+          "Identifiants incorrects";
+        setServerError(message);
+      } else {
+        setServerError("Identifiants incorrects");
+      }
     }
   };
 
@@ -52,6 +63,7 @@ export default function LoginPage() {
               error={errors.password?.message}
             />
           </fieldset>
+          {serverError && <p className="text-error text-sm">{serverError}</p>}
           <button
             type="submit"
             disabled={isSubmitting}

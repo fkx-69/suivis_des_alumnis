@@ -20,7 +20,7 @@ export default function SignIn() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [filieres, setFilieres] = useState<Filiere[]>([]);
-
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const methods = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
@@ -35,14 +35,8 @@ export default function SignIn() {
     },
   });
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    setError,
-    trigger,
-  } = methods;
+  const { register, handleSubmit, watch, setValue, setError, trigger } =
+    methods;
   const userType = watch("userType");
 
   useEffect(() => {
@@ -62,6 +56,7 @@ export default function SignIn() {
   }, [setValue]);
 
   const handleNext = async () => {
+    setServerError(null);
     const fieldsToValidate: (keyof RegisterFormValues)[] = [
       "nom",
       "prenom",
@@ -77,6 +72,7 @@ export default function SignIn() {
   };
 
   const onSubmit = async (formData: RegisterFormValues) => {
+    setServerError(null);
     try {
       const { nom, prenom, email, username, password } = formData;
       const user = { nom, prenom, email, username, password };
@@ -103,7 +99,7 @@ export default function SignIn() {
         router.push("/");
       } else {
         alert(
-          "Inscription réussie, mais la connexion a échoué. Veuillez vous connecter manuellement."
+          "Inscription réussie, mais la connexion a échoué. Veuillez vous connecter manuellement.",
         );
         router.push("/auth/login");
       }
@@ -117,19 +113,30 @@ export default function SignIn() {
             string,
             string[]
           >;
+          const remainingErrors: string[] = [];
           Object.entries(serverErrors).forEach(([field, messages]) => {
             if (field in formData) {
               setError(field as keyof RegisterFormValues, {
                 type: "server",
                 message: messages.join(", "),
               });
+            } else {
+              remainingErrors.push(messages.join(", "));
             }
           });
+          if (remainingErrors.length) {
+            setServerError(remainingErrors.join(" \n"));
+          }
+          return;
+        }
+        const message = errorData.detail || errorData.message;
+        if (message) {
+          setServerError(message);
           return;
         }
       }
       console.error(err);
-      alert("Une erreur inattendue est survenue.");
+      setServerError("Une erreur inattendue est survenue.");
     }
   };
 
@@ -155,13 +162,21 @@ export default function SignIn() {
               </select>
             </div>
 
-            {step === 1 && <PersonalInfoForm />}
+            {step === 1 && (
+              <PersonalInfoForm error={serverError ?? undefined} />
+            )}
 
             {step === 2 &&
               (userType === "alumni" ? (
-                <AlumniForm filieres={filieres} />
+                <AlumniForm
+                  filieres={filieres}
+                  error={serverError ?? undefined}
+                />
               ) : (
-                <StudentForm filieres={filieres} />
+                <StudentForm
+                  filieres={filieres}
+                  error={serverError ?? undefined}
+                />
               ))}
 
             {step === 1 ? (

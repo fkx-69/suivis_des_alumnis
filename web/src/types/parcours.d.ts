@@ -1,17 +1,10 @@
-export const Mentions = {
-  passable: "Passable",
-  assez_bien: "Assez bien",
-  bien: "Bien",
-  tres_bien: "Très bien",
-};
-
-export const Mention_keys = Mentions.keys();
+import type { Mention } from "@/lib/constants/parcours";
 
 export interface ParcoursAcademique {
   id: number;
   diplome: string;
   institution: string;
-  annee_obtention: string;
+  annee_obtention: number;
   mention: Mention | null;
 }
 

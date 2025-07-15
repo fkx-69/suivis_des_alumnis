@@ -7,35 +7,39 @@ import {
   updateParcoursAcademique,
   deleteParcoursAcademique,
 } from "@/lib/api/parcours";
-import type { ParcoursAcademique } from "@/types/parcours";
-import { Mentions, Mention_keys } from "@/lib/constants";
-import type { Mention } from "@/lib/constants/parcours";
+import { ParcoursAcademique } from "@/types/parcours";
+import { Mention, Mentions } from "@/lib/constants/parcours";
 
 interface Props {
   items: ParcoursAcademique[];
   onChanged: () => void;
 }
 
-interface ParcoursAcademiqueForm {
+type ParcoursAcademiqueForm = {
   diplome: string;
   institution: string;
   annee_obtention: string;
-  mention: Mention | "";
-}
+  mention: string;
+};
 
 export default function ParcoursAcademiqueSection({ items, onChanged }: Props) {
   const [editing, setEditing] = useState<ParcoursAcademique | null>(null);
   const [form, setForm] = useState<ParcoursAcademiqueForm>({
     diplome: "",
     institution: "",
-    annee_obtention: "",
+    annee_obtention: new Date().getFullYear().toString(),
     mention: "",
   });
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ diplome: "", institution: "", annee_obtention: "", mention: "" });
+    setForm({
+      diplome: "",
+      institution: "",
+      annee_obtention: new Date().getFullYear().toString(),
+      mention: "",
+    });
     dialogRef.current?.showModal();
   };
 
@@ -62,9 +66,9 @@ export default function ParcoursAcademiqueSection({ items, onChanged }: Props) {
     const payload = {
       diplome: form.diplome,
       institution: form.institution,
-      annee_obtention: parseInt(form.annee_obtention, 10),
-      mention: form.mention || null,
-    } as Omit<ParcoursAcademique, "id">;
+      annee_obtention: Number(form.annee_obtention),
+      mention: form.mention ? (form.mention as Mention) : null,
+    };
     if (editing) {
       await updateParcoursAcademique(editing.id, payload);
     } else {
@@ -99,8 +103,7 @@ export default function ParcoursAcademiqueSection({ items, onChanged }: Props) {
               <p className="text-base-content/80">{p.institution}</p>
               <p className="text-sm text-base-content/60">
                 Obtenu en {p.annee_obtention}{" "}
-                {p.mention &&
-                  `- Mention ${Mentions[p.mention as keyof typeof Mentions]}`}
+                {p.mention && `- Mention ${Mentions[p.mention]}`}
               </p>
             </div>
             <div className="flex gap-2 items-center">
@@ -162,9 +165,9 @@ export default function ParcoursAcademiqueSection({ items, onChanged }: Props) {
               onChange={handleChange}
             >
               <option value="">Sélectionnez une mention (optionnel)</option>
-              {Mention_keys.map((key) => (
+              {Object.entries(Mentions).map(([key, value]) => (
                 <option key={key} value={key}>
-                  {Mentions[key]}
+                  {value}
                 </option>
               ))}
             </select>

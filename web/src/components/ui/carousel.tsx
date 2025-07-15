@@ -63,6 +63,7 @@ export function Carousel({ children }: CarouselProps) {
     return closestIndex;
   }, [cardElements]);
 
+  // Remplace la méthode scrollToCard pour une animation plus lente
   const scrollToCard = (index: number) => {
     if (index < 0) index = 0;
     if (index >= cardElements.length) index = cardElements.length - 1;
@@ -70,14 +71,30 @@ export function Carousel({ children }: CarouselProps) {
     const card = cardElements[index];
     if (!card || !containerRef.current) return;
 
-    const scrollLeft =
+    const targetScrollLeft =
       card.offsetLeft -
       containerRef.current.offsetWidth / 2 +
       card.offsetWidth / 2;
-    containerRef.current.scrollTo({
-      left: scrollLeft,
-      behavior: "smooth",
-    });
+
+    // Animation personnalisée pour ralentir le scroll
+    const duration = 700; // ms, plus grand = plus lent (valeur précédente implicite ~300ms)
+    const start = containerRef.current.scrollLeft;
+    const change = targetScrollLeft - start;
+    const startTime = performance.now();
+
+    function animateScroll(currentTime: number) {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease in-out
+      const ease = progress < 0.5
+        ? 2 * progress * progress
+        : -1 + (4 - 2 * progress) * progress;
+      containerRef.current!.scrollLeft = start + change * ease;
+      if (progress < 1) {
+        window.requestAnimationFrame(animateScroll);
+      }
+    }
+    window.requestAnimationFrame(animateScroll);
   };
 
   const handlePrev = () => {

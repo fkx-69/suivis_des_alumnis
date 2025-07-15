@@ -21,26 +21,27 @@ export default function SignIn() {
   const [step, setStep] = useState(1);
   const [filieres, setFilieres] = useState<Filiere[]>([]);
   const [serverError, setServerError] = useState<string | null>(null);
+  // Ajout d'un état pour stocker toutes les erreurs de validation
+  const [allErrors, setAllErrors] = useState<string[]>([]);
 
   const methods = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
       userType: "alumni",
       role: "alumni",
-      // Set default for select to avoid uncontrolled component warning
       filiere: "",
       situation_pro: "chomage",
       secteur_activite: "autres",
       poste_actuel: "Autres",
     },
+    mode: "onTouched", // pour afficher les erreurs dès qu'un champ est touché
+    criteriaMode: "all", // pour avoir toutes les erreurs
   });
 
-  const { register, handleSubmit, watch, setValue, setError, trigger } =
-    methods;
+  const { register, handleSubmit, watch, setValue, setError, trigger, formState, getValues } = methods;
   const userType = watch("userType");
 
   useEffect(() => {
-    // Update role when userType changes
     setValue("role", userType);
   }, [userType, setValue]);
 
@@ -49,14 +50,33 @@ export default function SignIn() {
       .then((data) => {
         setFilieres(data);
         if (data.length > 0) {
-          setValue("filiere", data[0].code, { shouldValidate: true });
+          setValue("filiere", String(data[0].id), { shouldValidate: true });
         }
       })
       .catch((err) => console.error("Failed to fetch filieres:", err));
   }, [setValue]);
 
+  // Fonction utilitaire pour extraire toutes les erreurs du formState
+  function extractAllErrors(errorsObj: any): string[] {
+    if (!errorsObj) return [];
+    let result: string[] = [];
+    for (const key in errorsObj) {
+      if (errorsObj[key]?.message) {
+        result.push(errorsObj[key].message);
+      }
+      if (errorsObj[key]?.types) {
+        result = result.concat(Object.values(errorsObj[key].types));
+      }
+      if (typeof errorsObj[key] === "object" && errorsObj[key] !== null) {
+        result = result.concat(extractAllErrors(errorsObj[key]));
+      }
+    }
+    return result;
+  }
+
   const handleNext = async () => {
     setServerError(null);
+    setAllErrors([]);
     const fieldsToValidate: (keyof RegisterFormValues)[] = [
       "nom",
       "prenom",
@@ -66,25 +86,32 @@ export default function SignIn() {
       "confirmPassword",
     ];
     const isValid = await trigger(fieldsToValidate);
-    if (isValid) {
+    if (!isValid) {
+      setAllErrors(extractAllErrors(formState.errors));
+    } else {
       setStep(2);
     }
   };
 
   const onSubmit = async (formData: RegisterFormValues) => {
     setServerError(null);
+    setAllErrors([]);
+    // Log pour debug
+    console.log("Form submit:", formData);
     try {
       const { nom, prenom, email, username, password } = formData;
       const user = { nom, prenom, email, username, password };
-
       let response;
       if (formData.userType === "alumni") {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { confirmPassword, userType, ...alumniData } = formData;
-        const payload = { ...alumniData, user };
+        // Suppression des champs si situation_pro === 'chomage'
+        let payload = { ...alumniData, user };
+        if (formData.situation_pro === "chomage") {
+          const { secteur_activite, poste_actuel, nom_entreprise, ...rest } = payload;
+          payload = { ...rest };
+        }
         response = await registerAlumni(payload);
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { confirmPassword, userType, ...studentData } = formData;
         const payload = {
           ...studentData,
@@ -93,14 +120,14 @@ export default function SignIn() {
         };
         response = await registerStudent(payload);
       }
-
-      if (response.data.user) {
-        updateUser(response.data.user);
+      try {
+        await login({ email, password });
+        if (response.data.user) {
+          updateUser(response.data.user);
+        }
         router.push("/");
-      } else {
-        alert(
-          "Inscription réussie, mais la connexion a échoué. Veuillez vous connecter manuellement."
-        );
+      } catch (loginError) {
+        console.error("Auto login failed:", loginError);
         router.push("/auth/login");
       }
       await login({ email, password });
@@ -109,10 +136,7 @@ export default function SignIn() {
       if (axios.isAxiosError(err) && err.response) {
         const { status, data: errorData } = err.response;
         if (status === 400) {
-          const serverErrors = (errorData.user ?? errorData) as Record<
-            string,
-            string[]
-          >;
+          const serverErrors = (errorData.user ?? errorData) as Record<string, string[]>;
           const remainingErrors: string[] = [];
           Object.entries(serverErrors).forEach(([field, messages]) => {
             if (field in formData) {
@@ -127,16 +151,19 @@ export default function SignIn() {
           if (remainingErrors.length) {
             setServerError(remainingErrors.join(" \n"));
           }
+          setAllErrors(extractAllErrors(formState.errors));
           return;
         }
         const message = errorData.detail || errorData.message;
         if (message) {
           setServerError(message);
+          setAllErrors([message]);
           return;
         }
       }
       console.error(err);
       setServerError("Une erreur inattendue est survenue.");
+      setAllErrors(["Une erreur inattendue est survenue."]);
     }
   };
 
@@ -146,6 +173,20 @@ export default function SignIn() {
         <h1 className="text-2xl font-semibold mb-6 text-center text-base-content">
           Inscription
         </h1>
+
+        {/* Affichage global des erreurs de validation */}
+        {(allErrors.length > 0 || serverError) && (
+          <div className="mb-4">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">
+              <ul className="list-disc pl-5">
+                {allErrors.map((err, i) => (
+                  <li key={i}>{err}</li>
+                ))}
+                {serverError && <li>{serverError}</li>}
+              </ul>
+            </div>
+          </div>
+        )}
 
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

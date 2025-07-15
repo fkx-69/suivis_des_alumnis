@@ -36,7 +36,7 @@ export default function UpcomingEvents() {
             <EventCard
               event={event}
               key={event.id}
-              className="carousel-card snap-center w-full md:w-[450px] flex-shrink-0 transition-all duration-300"
+              className="carousel-card snap-center w-full md:w-[450px] flex-shrink-0"
             />
           ))}
         </Carousel>

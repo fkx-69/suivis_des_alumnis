@@ -334,8 +334,8 @@ export default function ParcoursSection({
                   <option value="">Sélectionnez une mention (optionnel)</option>
                   {Object.keys(Mentions).map((key) => (
                     <option
-                      key={key.replace("mention_", "")}
-                      value={key.replace("mention_", "")}
+                      key={key}
+                      value={key}
                     >
                       {Mentions[key as keyof typeof Mentions]}
                     </option>

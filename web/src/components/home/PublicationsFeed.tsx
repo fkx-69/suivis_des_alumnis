@@ -104,7 +104,7 @@ export default function PublicationsFeed() {
       {publications.length > 0 ? (
         <Carousel>
           {publications.map((p) => (
-            <div key={p.id} className="w-full flex-shrink-0">
+            <div key={p.id} className="w-full snap-center flex-shrink-0">
               <PublicationCard
                 publication={p}
                 onComment={(v) => handleComment(p.id, v)}

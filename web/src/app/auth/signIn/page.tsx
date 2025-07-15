@@ -16,7 +16,7 @@ import StudentForm from "@/components/auth/StudentForm";
 import { registerFormSchema, RegisterFormValues } from "@/lib/validators/auth";
 
 export default function SignIn() {
-  const { login } = useAuth();
+  const { login, updateUser } = useAuth();
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [filieres, setFilieres] = useState<Filiere[]>([]);
@@ -95,7 +95,7 @@ export default function SignIn() {
       }
 
       if (response.data.user) {
-        login(response.data.user);
+        updateUser(response.data.user);
         router.push("/");
       } else {
         alert(

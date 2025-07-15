@@ -117,16 +117,23 @@ class UpdateProfileAPIView(APIView):
 # === REGISTREMENTS ===
 class RegisterEtudiantAPIView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = RegisterEtudiantSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         etudiant = serializer.save()
-        user = etudiant.user  # Accès au CustomUser
+        user = etudiant.user  # Récupération du CustomUser lié à l'étudiant
 
-        # Générer les tokens
+        # Sécurité : extraire le mot de passe de l'objet "user"
+        try:
+            password = request.data["user"]["password"]
+        except (KeyError, TypeError):
+            return Response({"error": "Le mot de passe est requis dans request.data['user']['password']."}, status=400)
+
+        # Génération des tokens JWT
         token_serializer = TokenObtainPairSerializer(data={
             "email": user.email,
-            "password": request.data["user"]["password"],
+            "password": password,
         })
         token_serializer.is_valid(raise_exception=True)
         tokens = token_serializer.validated_data
@@ -138,24 +145,37 @@ class RegisterEtudiantAPIView(APIView):
             "user": UserSerializer(user).data,
         }, status=status.HTTP_201_CREATED)
 
+
 class RegisterAlumniAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = RegisterAlumniSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        alumni = serializer.save()
+        user = alumni.user  # Récupération du CustomUser lié à l'alumni
 
-        # Génère les tokens JWT pour l'utilisateur créé
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
-        refresh_token = str(refresh)
+        # Sécurité : extraction du mot de passe depuis user
+        try:
+            password = request.data["user"]["password"]
+        except (KeyError, TypeError):
+            return Response({"error": "Le mot de passe est requis dans request.data['user']['password']."}, status=400)
+
+        # Génération des tokens JWT
+        token_serializer = TokenObtainPairSerializer(data={
+            "email": user.email,
+            "password": password,
+        })
+        token_serializer.is_valid(raise_exception=True)
+        tokens = token_serializer.validated_data
 
         return Response({
             "message": "Alumni inscrit avec succès",
-            "access": access_token,
-            "refresh": refresh_token
+            "access": tokens["access"],
+            "refresh": tokens["refresh"],
+            "user": UserSerializer(user).data,
         }, status=status.HTTP_201_CREATED)
+
 
 # === LISTES POUR ADMIN ===
 class ListEtudiantsAPIView(generics.ListAPIView):

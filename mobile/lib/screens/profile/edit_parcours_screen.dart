@@ -80,6 +80,12 @@ class _EditParcoursScreenState extends State<EditParcoursScreen> {
                     final created = await _service.createParcoursAcademique(data);
                     print('✨ Parcours créé: $created');
                     await _loadAll();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Parcours créé avec succès !'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
                   } catch (err) {
                     print('🚨 Erreur création parcours depuis UI: $err');
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -108,6 +114,12 @@ class _EditParcoursScreenState extends State<EditParcoursScreen> {
                     final created = await _service.createParcoursProfessionnel(data);
                     print('✨ Parcours PRO créé: $created');
                     await _loadAll();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Parcours professionnel créé avec succès !'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
                   } catch (err) {
                     print('🚨 Erreur création parcours PRO depuis UI: $err');
                     ScaffoldMessenger.of(context).showSnackBar(

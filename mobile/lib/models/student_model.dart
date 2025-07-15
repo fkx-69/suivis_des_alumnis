@@ -1,3 +1,5 @@
+import 'dart:io';
+
 class StudentModel {
   final String email;
   final String username;
@@ -16,7 +18,7 @@ class StudentModel {
     required this.password,
     required this.filiere,         // ID attendu par Django
     required this.niveauEtude,
-    required this.anneeEntree,
+    required this.anneeEntree, File? photo,
   });
 
   Map<String, dynamic> toJson() {

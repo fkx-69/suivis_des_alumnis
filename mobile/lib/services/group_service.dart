@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:memoire/constants/api_constants.dart';
 import 'package:memoire/models/group_model.dart';
 import 'package:memoire/services/dio_client.dart';
+import 'dart:io';
 
 class GroupeService {
   final Dio _dio = DioClient.dio;
@@ -32,17 +33,29 @@ class GroupeService {
     }
   }
 
-  /// Créer un groupe
   Future<GroupModel> createGroup({
     required String nomGroupe,
     required String description,
+    File? photoProfil,
   }) async {
+    final formData = FormData.fromMap({
+      'nom_groupe': nomGroupe,
+      'description': description,
+      if (photoProfil != null)
+        'photo_profil': await MultipartFile.fromFile(photoProfil.path),
+    });
+
     final resp = await _dio.post(
       ApiConstants.groupsCreate,
-      data: {'nom_groupe': nomGroupe, 'description': description},
+      data: formData,
+      options: Options(
+        contentType: 'multipart/form-data',
+      ),
     );
+
     return GroupModel.fromJson(resp.data as Map<String, dynamic>);
   }
+
 
   /// Rejoindre un groupe
   Future<void> joinGroup(int id) async {

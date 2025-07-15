@@ -1,7 +1,6 @@
 class ApiConstants {
-  //static const String baseUrl = "http://172.20.10.2:8000/api"; // localhost Android/emulator
-  static const String baseUrl = "http://localhost:8000/api"; // pour web
-
+  static const String baseUrl = "http://172.20.10.2:8000/api"; // localhost Android/emulator
+  //static const String baseUrl = "http://localhost:8000/api"; // localhost pour émulateur/appareil
   // Auth
   static const String login = '$baseUrl/accounts/login/';
   static const String registerEtudiant = '$baseUrl/accounts/register/etudiant/';
@@ -112,5 +111,8 @@ class ApiConstants {
 
   static const String statDomaines = '$baseUrl/statistiques/domaines';
   static const String statSituation = '$baseUrl/statistiques/situation';
+
+  static const String repondreEnquete = '$baseUrl/gestion/repondre/';
+
 }
 

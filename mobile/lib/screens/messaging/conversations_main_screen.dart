@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:memoire/constants/app_theme.dart';
 import 'package:memoire/services/auth_service.dart';
 import 'package:memoire/screens/group/conversation_list_screen.dart';
 import 'package:memoire/screens/group/group_list_screen.dart';
@@ -14,17 +14,34 @@ class ConversationsMainScreen extends StatefulWidget {
   State<ConversationsMainScreen> createState() => _ConversationsMainScreenState();
 }
 
-class _ConversationsMainScreenState extends State<ConversationsMainScreen> {
+class _ConversationsMainScreenState extends State<ConversationsMainScreen> with TickerProviderStateMixin {
   final AuthService _authService = AuthService();
   final NotificationService _notificationService = NotificationService();
   bool _isAlumni = false;
   bool _isLoading = true;
   int _unreadNotifications = 0;
 
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+
   @override
   void initState() {
     super.initState();
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    );
     _loadInitialData();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadInitialData() async {
@@ -40,6 +57,7 @@ class _ConversationsMainScreenState extends State<ConversationsMainScreen> {
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
+        _fadeController.forward();
       }
     }
   }
@@ -59,6 +77,10 @@ class _ConversationsMainScreenState extends State<ConversationsMainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
+
     final List<Tab> tabs = [
       const Tab(text: 'Discussions'),
       const Tab(text: 'Groupes'),
@@ -77,43 +99,116 @@ class _ConversationsMainScreenState extends State<ConversationsMainScreen> {
     return DefaultTabController(
       length: tabs.length,
       child: Scaffold(
+        backgroundColor: AppTheme.backgroundColor,
         appBar: AppBar(
-          title: Text('Messagerie', style: GoogleFonts.poppins()),
+          backgroundColor: AppTheme.backgroundColor,
+          elevation: 0,
+          centerTitle: true,
+          automaticallyImplyLeading: false,
+          title: Text(
+            'Messagerie',
+            style: textTheme.titleLarge?.copyWith(
+              color: AppTheme.primaryColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           actions: [
-            IconButton(
-              icon: Badge(
-                label: Text('$_unreadNotifications'),
-                isLabelVisible: _unreadNotifications > 0,
-                child: const Icon(Icons.notifications),
+            Container(
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: colorScheme.secondary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
               ),
-              onPressed: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const NotificationsScreen()),
-                );
-                // Recharger les notifications après avoir visité la page
-                _fetchNotifications();
-              },
-            )
+              child: Badge(
+                label: Text(
+                  '$_unreadNotifications',
+                  style: textTheme.labelSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                isLabelVisible: _unreadNotifications > 0,
+                backgroundColor: AppTheme.errorColor,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.notifications,
+                    color: colorScheme.secondary,
+                    size: 24,
+                  ),
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                    );
+                    // Recharger les notifications après avoir visité la page
+                    _fetchNotifications();
+                  },
+                ),
+              ),
+            ),
           ],
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          elevation: 1,
+          surfaceTintColor: Colors.transparent,
           bottom: _isLoading
               ? const PreferredSize(
                   preferredSize: Size.fromHeight(kToolbarHeight),
                   child: Center(child: LinearProgressIndicator()),
                 )
-              : TabBar(
-                  indicatorColor: Color(0xFF2196F3),
-                  labelColor: Color(0xFF2196F3),
-                  unselectedLabelColor: Colors.grey,
-                  tabs: tabs,
+              : PreferredSize(
+                  preferredSize: const Size.fromHeight(45),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceColor,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: AppTheme.borderColor,
+                        width: 1,
+                      ),
+                    ),
+                    child: TabBar(
+                      indicator: BoxDecoration(
+                        color: colorScheme.secondary,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      labelColor: Colors.black,
+                      unselectedLabelColor: AppTheme.subTextColor,
+                      labelStyle: textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 10,
+                      ),
+                      unselectedLabelStyle: textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 10,
+                      ),
+                      dividerColor: Colors.transparent,
+                      tabs: tabs,
+                    ),
+                  ),
                 ),
         ),
-        body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : TabBarView(children: tabViews),
+        body: FadeTransition(
+          opacity: _fadeAnimation,
+          child: _isLoading
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(colorScheme.secondary),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Chargement de la messagerie...',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.subTextColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : TabBarView(children: tabViews),
+        ),
       ),
     );
   }

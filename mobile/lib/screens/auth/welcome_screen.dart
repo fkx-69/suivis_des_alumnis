@@ -1,5 +1,6 @@
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:memoire/constants/app_theme.dart';
 import 'package:memoire/widgets/auth_widgets/login_button.dart';
 import 'package:memoire/widgets/auth_widgets/register_button.dart';
 
@@ -8,75 +9,92 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (ctx, constraints) {
-            return SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: ConstrainedBox(
-                // Force la hauteur minimale à l'espace dispo
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    // Centre verticalement sans IntrinsicHeight
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Icône ou logo
-                      const Icon(
-                        Icons.school,
-                        size: 100,
-                        color: Color(0xFF2196F3),
-                      ),
-                      const SizedBox(height: 24),
+      body: Stack(
+        children: [
+          // 🔹 Image de fond nette et responsive
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/ITMA.jpg',
+              fit: BoxFit.cover,
+            ),
+          ),
 
-                      // Titre
-                      Text(
-                        'Bienvenue sur AlumniFy',
-                        style: GoogleFonts.poppins(
-                          fontSize: 28,
+          // 🔹 Overlay assombri
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.6),
+            ),
+          ),
+
+          // 🔹 Contenu principal
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // 🔹 Texte animé "Bienvenue sur AlumniFy 🎓"
+                    SizedBox(
+                      width: size.width * 0.9,
+                      child: DefaultTextStyle(
+                        style: textTheme.displaySmall!.copyWith(
+                          fontFamily: 'serif',
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFF2196F3),
+                          fontSize: size.width < 600 ? 28 : 40,
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Sous-titre
-                      Text(
-                        'Connectez-vous avec les anciens étudiants\net partagez vos expériences',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          color: Colors.grey[600],
+                        child: AnimatedTextKit(
+                          animatedTexts: [
+                            TypewriterAnimatedText(
+                              'Bienvenue sur AlumniFy 🎓',
+                              speed: const Duration(milliseconds: 80),
+                            ),
+                          ],
+                          totalRepeatCount: 1,
+                          pause: const Duration(milliseconds: 1000),
+                          displayFullTextOnTap: true,
                         ),
-                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 48),
+                    ),
 
-                      // Bouton Connexion (plein largeur)
-                      SizedBox(
-                        width: double.infinity,
-                        child: LoginButton(),
+                    const SizedBox(height: 24),
+
+                    // 🔹 Sous-texte explicatif
+                    Text(
+                      'Rejoignez une communauté dynamique\net connectez-vous avec les anciens de votre filière.',
+                      textAlign: TextAlign.center,
+                      style: textTheme.bodyLarge?.copyWith(
+                        color: Colors.white.withOpacity(0.85),
+                        fontSize: size.width < 600 ? 14 : 16,
+                        fontFamily: 'serif',
+                        height: 1.5,
                       ),
-                      const SizedBox(height: 16),
+                    ),
 
-                      // Bouton Inscription (plein largeur)
-                      SizedBox(
-                        width: double.infinity,
-                        child: RegisterButton(),
-                      ),
+                    const SizedBox(height: 60),
 
-                      // Spacer virtuel : pousse vers le centre si écran plus grand
-                      const SizedBox(height: 1),
-                    ],
-                  ),
+                    // 🔹 Boutons
+                    SizedBox(
+                      width: double.infinity,
+                      child: LoginButton(),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: RegisterButton(),
+                    ),
+                  ],
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }

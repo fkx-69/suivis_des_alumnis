@@ -167,7 +167,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
   }
 
   Future<void> _reportUser() async {
-    // 1) Capturer le context avant l’await
+    // 1) Capturer le context avant l'await
     final ctx = context;
 
     // 2) Boîte de dialogue pour choisir le motif

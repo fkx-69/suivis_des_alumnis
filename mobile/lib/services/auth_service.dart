@@ -15,7 +15,7 @@ class AuthService {
   }
 
   AuthService._internal();
-  
+
   UserModel? _currentUser;
   UserModel? get currentUser => _currentUser;
 
@@ -59,9 +59,17 @@ class AuthService {
       );
 
       if (response.statusCode == 201) {
-        // Optionnel : récupérer aussi l'utilisateur auto-connecté
-        await getUserInfo();
-        return response.data;
+        final data = response.data;
+
+        // 🔐 Sauvegarde des tokens
+        final access = data['access'];
+        final refresh = data['refresh'];
+        if (access != null && refresh != null) {
+          await TokenManager.saveTokens(access, refresh);
+        }
+
+        await getUserInfo(); // Authentifié automatiquement
+        return data;
       } else {
         throw Exception('Échec de l\'inscription: ${response.data}');
       }
@@ -73,8 +81,7 @@ class AuthService {
       if (detail != null) {
         message = detail.toString();
       } else if (erreurs is Map) {
-        message =
-            erreurs.entries.map((e) => '${e.key}: ${e.value}').join('\n');
+        message = erreurs.entries.map((e) => '${e.key}: ${e.value}').join('\n');
       } else if (e.response?.data is Map &&
           e.response!.data.values.isNotEmpty) {
         message = e.response!.data.values.first.toString();
@@ -92,8 +99,16 @@ class AuthService {
       );
 
       if (response.statusCode == 201) {
+        final data = response.data;
+
+        final access = data['access'];
+        final refresh = data['refresh'];
+        if (access != null && refresh != null) {
+          await TokenManager.saveTokens(access, refresh);
+        }
+
         await getUserInfo();
-        return response.data;
+        return data;
       }
       throw Exception('Échec de l\'inscription: ${response.data}');
     } on DioException catch (e) {
@@ -104,8 +119,7 @@ class AuthService {
       if (detail != null) {
         message = detail.toString();
       } else if (erreurs is Map) {
-        message =
-            erreurs.entries.map((e) => '${e.key}: ${e.value}').join('\n');
+        message = erreurs.entries.map((e) => '${e.key}: ${e.value}').join('\n');
       } else if (e.response?.data is Map &&
           e.response!.data.values.isNotEmpty) {
         message = e.response!.data.values.first.toString();
@@ -114,6 +128,7 @@ class AuthService {
       throw Exception(message);
     }
   }
+
 
   /// 🔐 Récupère les infos de l’utilisateur connecté (/api/accounts/me/)
   Future<UserModel> getUserInfo() async {
@@ -140,6 +155,9 @@ class AuthService {
     File? photo,
   }) async {
     try {
+      print('🔄 UPDATE PROFILE - Début de la mise à jour');
+      print('   Photo: ${photo?.path}');
+      
       final formData = FormData.fromMap({
         'prenom': prenom,
         'nom': nom,
@@ -152,21 +170,34 @@ class AuthService {
           ),
       });
 
+      print('🔄 UPDATE PROFILE - Envoi de la requête PUT');
       final response = await DioClient.dio.put(
         ApiConstants.userUpdate,
         data: formData,
+        options: Options(
+          contentType: 'multipart/form-data',
+        ),
       );
+
+      print('🔄 UPDATE PROFILE - Réponse reçue: ${response.statusCode}');
+      print('🔄 UPDATE PROFILE - Données: ${response.data}');
 
       if (response.statusCode == 200) {
         _currentUser = UserModel.fromJson(response.data);
+        print('🔄 UPDATE PROFILE - Utilisateur mis à jour: ${_currentUser?.photoProfil}');
         return _currentUser!;
       } else {
         throw Exception('Erreur ${response.statusCode}');
       }
     } on DioException catch (e) {
+      print('❌ UPDATE PROFILE - Erreur DIO: ${e.response?.statusCode}');
+      print('❌ UPDATE PROFILE - Erreur DATA: ${e.response?.data}');
       final message =
           e.response?.data['detail'] ?? 'Erreur de mise à jour du profil';
       throw Exception(message.toString());
+    } catch (e) {
+      print('❌ UPDATE PROFILE - Erreur inconnue: $e');
+      throw Exception('Erreur inattendue lors de la mise à jour du profil');
     }
   }
 
@@ -222,10 +253,10 @@ class AuthService {
     } on DioException catch (e) {
       print('SIGNALE UTILISATEUR - ERREUR DIO: ${e.response?.statusCode}');
       print('SIGNALE UTILISATEUR - ERREUR DATA: ${e.response?.data}');
-      
-      final errorMessage = e.response?.data?['detail'] ?? 
-                           e.response?.data?.toString() ?? 
-                           'Une erreur inconnue est survenue lors du signalement.';
+
+      final errorMessage = e.response?.data?['detail'] ??
+          e.response?.data?.toString() ??
+          'Une erreur inconnue est survenue lors du signalement.';
       throw Exception(errorMessage);
     } catch (e) {
       print('SIGNALE UTILISATEUR - ERREUR INCONNUE: $e');
@@ -336,7 +367,7 @@ class AuthService {
     }
 
     final match = results.firstWhere(
-      (a) => (a['user']?['username'] as String?)?.toLowerCase() == username.toLowerCase(),
+          (a) => (a['user']?['username'] as String?)?.toLowerCase() == username.toLowerCase(),
       orElse: () => throw Exception('Aucune correspondance exacte pour "$username".'),
     );
 
@@ -363,4 +394,50 @@ class AuthService {
       'parcours_professionnels': parcoursPro,
     };
   }
+  /// Vérifie le mot de passe actuel de l'utilisateur
+  Future<bool> verifyPassword(String currentPassword) async {
+    try {
+      final response = await DioClient.dio.post(
+        ApiConstants.verifyPassword,
+        data: {'password': currentPassword},
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Change le mot de passe de l'utilisateur
+  Future<bool> changePassword(String currentPassword, String newPassword) async {
+    try {
+      final response = await DioClient.dio.post(
+        ApiConstants.changePassword,
+        data: {
+          'old_password': currentPassword,
+          'new_password': newPassword,
+        },
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Change l'email de l'utilisateur
+  Future<bool> changeEmail(String newEmail, String currentPassword) async {
+    try {
+      final response = await DioClient.dio.post(
+        ApiConstants.changeEmail,
+        data: {
+          'new_email': newEmail,
+          'password': currentPassword,
+        },
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
 }
+
+

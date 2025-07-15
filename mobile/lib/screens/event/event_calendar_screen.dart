@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../models/event_model.dart';
 import '../../services/event_service.dart';
-import '../../widgets/app_bottom_nav_bar.dart';
 import 'create_event_screen.dart';
 import 'event_detail_screen.dart';
 
@@ -146,10 +145,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
         },
         child: const Icon(Icons.add),
       ),
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: _selectedIndex,
-        onTap: _onNavTap,
-      ),
+
     );
   }
 }

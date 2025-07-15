@@ -48,13 +48,19 @@ class _EditProfileFormState extends State<EditProfileForm> {
 
   Future<void> _pickPhoto() async {
     final img = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (img != null) setState(() => _photoFile = File(img.path));
+    if (img != null) {
+      print('📸 PHOTO PICKED - Chemin: ${img.path}');
+      setState(() => _photoFile = File(img.path));
+    }
   }
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
     try {
+      print('💾 SAVE PROFILE - Début de la sauvegarde');
+      print('   Photo sélectionnée: ${_photoFile?.path}');
+      
       final updated = await AuthService().updateProfile(
         prenom: _prenomCtl.text.trim(),
         nom: _nomCtl.text.trim(),
@@ -62,8 +68,13 @@ class _EditProfileFormState extends State<EditProfileForm> {
         biographie: _bioCtl.text.trim(),
         photo: _photoFile,
       );
+      
+      print('💾 SAVE PROFILE - Profil mis à jour avec succès');
+      print('   Nouvelle photo: ${updated.photoProfil}');
+      
       widget.onSaved(updated);
     } catch (e) {
+      print('❌ SAVE PROFILE - Erreur: $e');
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Erreur : $e')));
     } finally {
@@ -118,11 +129,23 @@ class _EditProfileFormState extends State<EditProfileForm> {
                   child: CircleAvatar(
                     radius: 50,
                     backgroundImage: _photoFile != null
-                        ? FileImage(_photoFile!) as ImageProvider
-                        : (widget.user.photoProfil != null
-                        ? NetworkImage(widget.user.photoProfil!)
-                        : const AssetImage('assets/images/default_avatar.png'))
-                    as ImageProvider,
+                        ? FileImage(_photoFile!)
+                        : (widget.user.photoProfil != null && widget.user.photoProfil!.isNotEmpty
+                            ? NetworkImage(widget.user.photoProfil!)
+                            : null),
+                    backgroundColor: (_photoFile == null && (widget.user.photoProfil == null || widget.user.photoProfil!.isEmpty))
+                        ? Colors.grey.shade300
+                        : null,
+                    child: (_photoFile == null && (widget.user.photoProfil == null || widget.user.photoProfil!.isEmpty))
+                        ? Text(
+                            '${widget.user.prenom[0]}${widget.user.nom[0]}'.toUpperCase(),
+                            style: GoogleFonts.poppins(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade700,
+                            ),
+                          )
+                        : null,
                   ),
                 ),
               ),

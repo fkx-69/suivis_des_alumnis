@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:memoire/constants/app_theme.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -23,12 +23,15 @@ class PublicationDetailScreen extends StatefulWidget {
       _PublicationDetailScreenState();
 }
 
-class _PublicationDetailScreenState extends State<PublicationDetailScreen> {
+class _PublicationDetailScreenState extends State<PublicationDetailScreen> with TickerProviderStateMixin {
   late final PageController _pageController;
   final PublicationService _service = PublicationService();
   final TextEditingController _commentController = TextEditingController();
   bool _submitting = false;
   String? currentUsername;
+
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
@@ -39,12 +42,23 @@ class _PublicationDetailScreenState extends State<PublicationDetailScreen> {
       viewportFraction: 1,
     );
     currentUsername = AuthService().getCurrentUsername();
+    
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    );
+    _fadeController.forward();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     _commentController.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 
@@ -104,6 +118,10 @@ class _PublicationDetailScreenState extends State<PublicationDetailScreen> {
   }
 
   Widget _buildCommentItem(CommentModel comment, PublicationModel post) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
+    
     final isOwner = comment.auteurUsername == currentUsername;
     final isPostOwner = post.auteurUsername == currentUsername;
     final canDelete = isOwner || isPostOwner;
@@ -113,18 +131,28 @@ class _PublicationDetailScreenState extends State<PublicationDetailScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: Colors.grey.shade200,
-            backgroundImage: comment.auteurPhotoProfil != null
-                ? NetworkImage(comment.auteurPhotoProfil!)
-                : null,
-            child: comment.auteurPhotoProfil == null
-                ? Text(
-              comment.auteurUsername[0].toUpperCase(),
-              style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-            )
-                : null,
+          Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: colorScheme.secondary,
+              shape: BoxShape.circle,
+            ),
+            child: CircleAvatar(
+              radius: 18,
+              backgroundColor: AppTheme.surfaceColor,
+              backgroundImage: comment.auteurPhotoProfil != null
+                  ? NetworkImage(comment.auteurPhotoProfil!)
+                  : null,
+              child: comment.auteurPhotoProfil == null
+                  ? Text(
+                      comment.auteurUsername[0].toUpperCase(),
+                      style: textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryColor,
+                      ),
+                    )
+                  : null,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -132,11 +160,14 @@ class _PublicationDetailScreenState extends State<PublicationDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    color: AppTheme.surfaceColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppTheme.borderColor,
+                      width: 1,
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,24 +177,40 @@ class _PublicationDetailScreenState extends State<PublicationDetailScreen> {
                         children: [
                           Text(
                             comment.auteurUsername,
-                            style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                            style: textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.primaryColor,
+                            ),
                           ),
                           if (canDelete)
                             PopupMenuButton<String>(
-                              icon: const Icon(Icons.more_vert, size: 16),
+                              icon: Icon(
+                                Icons.more_vert,
+                                size: 16,
+                                color: AppTheme.subTextColor.withOpacity(0.7),
+                              ),
                               onSelected: (value) {
                                 if (value == 'delete') {
                                   _deleteComment(post.id, comment.id);
                                 }
                               },
                               itemBuilder: (context) => [
-                                const PopupMenuItem(
+                                PopupMenuItem(
                                   value: 'delete',
                                   child: Row(
                                     children: [
-                                      Icon(Icons.delete, color: Colors.red),
-                                      SizedBox(width: 8),
-                                      Text('Supprimer'),
+                                      Icon(
+                                        Icons.delete_outline,
+                                        color: AppTheme.errorColor,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Supprimer',
+                                        style: textTheme.bodyMedium?.copyWith(
+                                          color: AppTheme.errorColor,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -171,20 +218,35 @@ class _PublicationDetailScreenState extends State<PublicationDetailScreen> {
                             ),
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                       Text(
                         comment.contenu,
-                        style: GoogleFonts.poppins(color: Colors.black87),
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.primaryColor,
+                          height: 1.4,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Padding(
                   padding: const EdgeInsets.only(left: 12),
-                  child: Text(
-                    _formatDate(comment.dateCommentaire),
-                    style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 12),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        size: 12,
+                        color: AppTheme.subTextColor.withOpacity(0.7),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _formatDate(comment.dateCommentaire),
+                        style: textTheme.bodySmall?.copyWith(
+                          color: AppTheme.subTextColor,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -196,98 +258,185 @@ class _PublicationDetailScreenState extends State<PublicationDetailScreen> {
   }
 
   Widget _buildDetail(BuildContext context, PublicationModel post) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
     final mediaQuery = MediaQuery.of(context);
     final keyboardInset = mediaQuery.viewInsets.bottom;
+    
     return Column(
       children: [
+        // Media
         if (post.photo != null)
-          Image.network(
-            post.photo!,
+          Container(
             width: double.infinity,
             height: 250,
-            fit: BoxFit.cover,
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16),
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16),
+              ),
+              child: Image.network(
+                post.photo!,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: AppTheme.surfaceColor,
+                    child: Icon(
+                      Icons.image_not_supported,
+                      color: AppTheme.subTextColor.withOpacity(0.5),
+                      size: 48,
+                    ),
+                  );
+                },
+              ),
+            ),
           )
         else if (post.video != null)
           Container(
             width: double.infinity,
             height: 250,
-            color: Colors.black12,
-            child: Center(
-              child: Icon(Icons.videocam, size: 64, color: Colors.grey[700]),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor,
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16),
+              ),
+            ),
+            child: const Center(
+              child: Icon(
+                Icons.play_circle_outline,
+                size: 64,
+                color: Colors.white,
+              ),
             ),
           ),
 
+        // Texte
         if (post.texte != null && post.texte!.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             child: Text(
               post.texte!,
-              style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[900]),
+              style: textTheme.bodyLarge?.copyWith(
+                color: AppTheme.primaryColor,
+                height: 1.5,
+              ),
             ),
           ),
 
-        const Divider(height: 1),
+        const Divider(height: 1, thickness: 1),
 
+        // Commentaires
         Expanded(
           child: post.commentaires.isEmpty
               ? Center(
-            child: Text(
-              'Pas encore de commentaires',
-              style: GoogleFonts.poppins(color: Colors.grey[600]),
-            ),
-          )
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.comment_outlined,
+                        size: 48,
+                        color: AppTheme.subTextColor.withOpacity(0.5),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Pas encore de commentaires',
+                        style: textTheme.titleMedium?.copyWith(
+                          color: AppTheme.subTextColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Soyez le premier à commenter !',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.subTextColor.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
               : ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: post.commentaires.length,
-            itemBuilder: (ctx, i) {
-              final comment = post.commentaires[i];
-              return _buildCommentItem(comment, post);
-            },
-          ),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: post.commentaires.length,
+                  itemBuilder: (ctx, i) {
+                    final comment = post.commentaires[i];
+                    return _buildCommentItem(comment, post);
+                  },
+                ),
         ),
 
-        const Divider(height: 1),
+        const Divider(height: 1, thickness: 1),
 
-        Padding(
+        // Zone de saisie
+        Container(
           padding: EdgeInsets.only(
             left: 16,
-            right: 8,
-            bottom: keyboardInset > 0 ? keyboardInset : 16,
-            top: 8,
+            right: 16,
+            bottom: keyboardInset > 0 ? keyboardInset + 8 : 16,
+            top: 16,
           ),
           child: Row(
             children: [
               Expanded(
                 child: Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppTheme.surfaceColor,
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: Colors.grey.shade300),
+                    border: Border.all(
+                      color: AppTheme.borderColor,
+                      width: 1,
+                    ),
                   ),
                   child: TextField(
                     controller: _commentController,
                     decoration: InputDecoration(
                       hintText: 'Ajouter un commentaire…',
-                      hintStyle: GoogleFonts.poppins(color: Colors.grey[500]),
+                      hintStyle: textTheme.bodyMedium?.copyWith(
+                        color: AppTheme.subTextColor.withOpacity(0.7),
+                      ),
                       border: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
                     ),
-                    style: GoogleFonts.poppins(fontSize: 14),
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: AppTheme.primaryColor,
+                    ),
+                    maxLines: null,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               _submitting
-                  ? const SizedBox(
-                width: 36,
-                height: 36,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-                  : IconButton(
-                icon: const Icon(Icons.send, color: Color(0xFF2196F3)),
-                onPressed: () => _addComment(post.id),
-              ),
+                  ? SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(colorScheme.secondary),
+                      ),
+                    )
+                  : Container(
+                      decoration: BoxDecoration(
+                        color: colorScheme.secondary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.send,
+                          color: Colors.black,
+                          size: 20,
+                        ),
+                        onPressed: () => _addComment(post.id),
+                      ),
+                    ),
             ],
           ),
         ),
@@ -297,27 +446,43 @@ class _PublicationDetailScreenState extends State<PublicationDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
-        leading: BackButton(color: const Color(0xFF2196F3)),
+        backgroundColor: AppTheme.backgroundColor,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: AppTheme.primaryColor,
+            size: 24,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text(
           'Publication',
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF2196F3),
+          style: textTheme.titleLarge?.copyWith(
+            color: AppTheme.primaryColor,
             fontWeight: FontWeight.w600,
           ),
         ),
+        surfaceTintColor: Colors.transparent,
       ),
       body: SafeArea(
-        child: PageView.builder(
-          controller: _pageController,
-          itemCount: widget.publications.length,
-          itemBuilder: (context, index) {
-            return _buildDetail(context, widget.publications[index]);
-          },
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: widget.publications.length,
+            itemBuilder: (context, index) {
+              return _buildDetail(context, widget.publications[index]);
+            },
+          ),
         ),
       ),
     );

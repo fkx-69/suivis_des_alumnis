@@ -17,7 +17,7 @@ class InputMessage extends StatelessWidget {
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(color: Colors.white, boxShadow: [
+        decoration: BoxDecoration(color: Theme.of(context).colorScheme.background, boxShadow: [
           BoxShadow(color: Colors.black12, blurRadius: 4),
         ]),
         child: Row(
@@ -32,7 +32,7 @@ class InputMessage extends StatelessWidget {
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.send, color: Color(0xFF2196F3)),
+              icon: Icon(Icons.send, color: Theme.of(context).colorScheme.secondary),
               onPressed: onSend,
             ),
           ],

@@ -1,10 +1,10 @@
-// lib/screens/group/create_group_screen.dart
-
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:memoire/constants/app_theme.dart';
 import 'package:memoire/services/group_service.dart';
 import 'group_detail_screen.dart';
 import 'package:memoire/models/group_model.dart';
+import 'package:memoire/widgets/group/create_group_form.dart';
 
 class CreateGroupScreen extends StatefulWidget {
   const CreateGroupScreen({super.key});
@@ -13,23 +13,60 @@ class CreateGroupScreen extends StatefulWidget {
   State<CreateGroupScreen> createState() => _CreateGroupScreenState();
 }
 
-class _CreateGroupScreenState extends State<CreateGroupScreen> {
+class _CreateGroupScreenState extends State<CreateGroupScreen>
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _nameCtl = TextEditingController();
   final _descCtl = TextEditingController();
+  File? _selectedPhoto;
+
   bool _isLoading = false;
+
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOutCubic,
+    ));
+    _fadeController.forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    _nameCtl.dispose();
+    _descCtl.dispose();
+    super.dispose();
+  }
 
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
+
     try {
       final svc = GroupeService();
       final grp = await svc.createGroup(
         nomGroupe: _nameCtl.text.trim(),
         description: _descCtl.text.trim(),
+        photoProfil: _selectedPhoto,
       );
 
-      // Reconstruire le modèle en forçant isMember = true
       final created = GroupModel(
         id: grp.id,
         nomGroupe: grp.nomGroupe,
@@ -38,6 +75,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         dateCreation: grp.dateCreation,
         role: grp.role,
         isMember: true,
+        photoProfil: grp.photoProfil,
       );
 
       if (!mounted) return;
@@ -50,7 +88,19 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur lors de la création : $e')),
+        SnackBar(
+          backgroundColor: AppTheme.errorColor,
+          content: Text(
+            'Erreur lors de la création : $e',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Colors.white,
+            ),
+          ),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
       );
       setState(() => _isLoading = false);
     }
@@ -58,101 +108,84 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            height: 180,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF2196F3), Color(0xFF00BCD4)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-          ),
-          SafeArea(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: SafeArea(
             child: Column(
               children: [
-                // En-tête
-                Padding(
+                // En-tête avec gradient
+                Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.accentGradient,
+                    boxShadow: [
+                      BoxShadow(
+                        color: colorScheme.secondary.withOpacity(0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
                       ),
-                      const Spacer(),
-                      Text('Nouveau groupe',
-                          style: GoogleFonts.poppins(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white)),
-                      const Spacer(flex: 2),
                     ],
                   ),
-                ),
-                // Formulaire
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                    child: Card(
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      clipBehavior: Clip.hardEdge,
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              TextFormField(
-                                controller: _nameCtl,
-                                decoration: const InputDecoration(labelText: 'Nom du groupe'),
-                                validator: (v) =>
-                                v == null || v.isEmpty ? 'Champ requis' : null,
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _descCtl,
-                                decoration: const InputDecoration(labelText: 'Description'),
-                                minLines: 2,
-                                maxLines: 4,
-                                validator: (v) =>
-                                v == null || v.isEmpty ? 'Champ requis' : null,
-                              ),
-                              const SizedBox(height: 32),
-                              ElevatedButton(
-                                onPressed: _isLoading ? null : _handleSubmit,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF4CAF50),
-                                  padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                ),
-                                child: _isLoading
-                                    ? const CircularProgressIndicator(
-                                    valueColor:
-                                    AlwaysStoppedAnimation(Colors.white))
-                                    : Text('Créer',
-                                    style: GoogleFonts.poppins(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600)),
-                              ),
-                            ],
+                  child: Row(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          'Nouveau groupe',
+                          style: textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
                           ),
                         ),
                       ),
+                    ],
+                  ),
+                ),
+
+                // Formulaire
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                    child: CreateGroupForm(
+                      formKey: _formKey,
+                      nameController: _nameCtl,
+                      descriptionController: _descCtl,
+                      isLoading: _isLoading,
+                      onSubmit: _handleSubmit,
+                      onPhotoSelected: (File? photo) {
+                        setState(() {
+                          _selectedPhoto = photo;
+                        });
+                      },
                     ),
                   ),
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

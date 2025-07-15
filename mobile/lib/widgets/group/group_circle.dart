@@ -1,78 +1,188 @@
-// lib/widgets/group/group_circle.dart
-
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:memoire/constants/app_theme.dart';
 
-class GroupCircle extends StatelessWidget {
+class GroupCircle extends StatefulWidget {
   final String nom;
   final bool isMember;
   final VoidCallback? onJoin;
   final VoidCallback? onTap;
+  final String? photoProfil; // Ajout optionnel
 
   const GroupCircle({
-    Key? key,
+    super.key,
     required this.nom,
     this.isMember = false,
     this.onJoin,
     this.onTap,
-  }) : super(key: key);
+    this.photoProfil,
+  });
+
+  @override
+  State<GroupCircle> createState() => _GroupCircleState();
+}
+
+class _GroupCircleState extends State<GroupCircle>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _scaleController = AnimationController(
+    duration: const Duration(milliseconds: 150),
+    vsync: this,
+  );
+
+  late final Animation<double> _scaleAnimation = Tween<double>(
+    begin: 1.0,
+    end: 0.95,
+  ).animate(CurvedAnimation(
+    parent: _scaleController,
+    curve: Curves.easeInOut,
+  ));
+
+  @override
+  void dispose() {
+    _scaleController.dispose();
+    super.dispose();
+  }
+
+  void _handleTapDown(TapDownDetails details) {
+    _scaleController.forward();
+  }
+
+  void _handleTapUp(TapUpDetails details) {
+    _scaleController.reverse();
+  }
+
+  void _handleTapCancel() {
+    _scaleController.reverse();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final displayName = nom.length > 10 ? '${nom.substring(0, 10)}…' : nom;
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
+    final displayName =
+    widget.nom.length > 6 ? '${widget.nom.substring(0, 6)}…' : widget.nom;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(40),
-          child: CircleAvatar(
-            radius: 32,
-            backgroundColor:
-            isMember ? Colors.green.shade400 : Colors.grey.shade300,
-            child: Text(
-              nom[0].toUpperCase(),
-              style: const TextStyle(fontSize: 24, color: Colors.white),
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          width: 70,
-          child: Text(
-            displayName,
-            textAlign: TextAlign.center,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500),
-          ),
-        ),
-        if (!isMember && onJoin != null) ...[
-          const SizedBox(height: 4),
-          SizedBox(
-            height: 28,
-            child: OutlinedButton(
-              onPressed: onJoin,
-              style: OutlinedButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: const Size(64, 28),
-                side: BorderSide(color: Theme.of(context).primaryColor),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: Text(
-                'Rejoindre',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: Theme.of(context).primaryColor,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: widget.onTap,
+                    onTapDown: _handleTapDown,
+                    onTapUp: _handleTapUp,
+                    onTapCancel: _handleTapCancel,
+                    borderRadius: BorderRadius.circular(40),
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: widget.isMember
+                            ? AppTheme.accentGradient
+                            : LinearGradient(
+                          colors: [
+                            AppTheme.surfaceColor,
+                            AppTheme.surfaceColor,
+                          ],
+                        ),
+                        border: Border.all(
+                          color: widget.isMember
+                              ? colorScheme.secondary.withAlpha(77)
+                              : AppTheme.borderColor,
+                          width: 2,
+                        ),
+                        image: widget.photoProfil != null && widget.photoProfil!.isNotEmpty
+                            ? DecorationImage(
+                          image: NetworkImage(widget.photoProfil!),
+                          fit: BoxFit.cover,
+                        )
+                            : null,
+                      ),
+                      child: widget.photoProfil == null || widget.photoProfil!.isEmpty
+                          ? Center(
+                        child: Text(
+                          widget.nom[0].toUpperCase(),
+                          style: textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: widget.isMember
+                                ? Colors.white
+                                : AppTheme.primaryColor,
+                          ),
+                        ),
+                      )
+                          : null,
+                    ),
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(height: 6),
+              SizedBox(
+                width: 60,
+                child: Text(
+                  displayName,
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.primaryColor,
+                    fontSize: 9,
+                  ),
+                ),
+              ),
+              if (!widget.isMember && widget.onJoin != null) ...[
+                const SizedBox(height: 4),
+                SizedBox(
+                  width: 60,
+                  height: 22,
+                  child: ElevatedButton(
+                    onPressed: widget.onJoin,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorScheme.secondary,
+                      foregroundColor: Colors.black,
+                      elevation: 0,
+                      padding: EdgeInsets.zero,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Rejoindre',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                          fontSize: 7.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
-        ],
-      ],
+        );
+      },
     );
   }
 }

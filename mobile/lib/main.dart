@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:memoire/screens/auth/welcome_screen.dart';
+import 'constants/app_theme.dart'; // Chemin à adapter selon ton arborescence
+import 'screens/auth/welcome_screen.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Nécessaire avant toute opération async
-  await initializeDateFormatting('fr_FR', null); // Initialise les formats pour 'fr_FR'
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('fr_FR', null);
 
   runApp(const AlumniApp());
 }
@@ -18,12 +18,7 @@ class AlumniApp extends StatelessWidget {
     return MaterialApp(
       title: 'AlumniFy',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.white,
-        textTheme: GoogleFonts.poppinsTextTheme(),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.lightTheme, // 🔁 Utilise le thème global ITMA
       home: const WelcomeScreen(),
     );
   }

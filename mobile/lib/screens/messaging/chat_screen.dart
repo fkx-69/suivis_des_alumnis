@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:memoire/constants/app_theme.dart';
 import 'package:intl/intl.dart';
 import 'package:memoire/models/private_message_model.dart';
 import 'package:memoire/services/messaging_service.dart';
@@ -14,7 +14,7 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final MessagingService _svc = MessagingService();
   final AuthService      _auth = AuthService();
 
@@ -25,18 +25,32 @@ class _ChatScreenState extends State<ChatScreen> {
   final _ctl = TextEditingController();
   Timer? _polling;
 
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+
   @override
   void initState() {
     super.initState();
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    );
+    
     _auth.getUserInfo().then((u) => setState(() => _me = u.username));
     _loadChat();
     _polling = Timer.periodic(const Duration(seconds: 5), (_) => _loadChat());
+    _fadeController.forward();
   }
 
   @override
   void dispose() {
     _polling?.cancel();
     _ctl.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 
@@ -112,20 +126,26 @@ class _ChatScreenState extends State<ChatScreen> {
 
   // Builds the date separator widget.
   Widget _buildDateSeparator(DateTime date) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    
     return Center(
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 10.0),
+        margin: const EdgeInsets.symmetric(vertical: 16),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.grey.shade200,
+          color: AppTheme.surfaceColor,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppTheme.borderColor,
+            width: 1,
+          ),
         ),
         child: Text(
           _formatDateSeparator(context, date),
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-            color: Colors.black54,
-            fontSize: 12,
+          style: textTheme.bodySmall?.copyWith(
+            color: AppTheme.subTextColor,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ),
@@ -134,28 +154,53 @@ class _ChatScreenState extends State<ChatScreen> {
 
   // Builds a single message bubble.
   Widget _buildMessageItem(PrivateMessageModel m) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
     final mine = (m.expediteur.username == _me);
     final time = DateFormat.Hm().format(m.timestamp);
+    
     return Align(
       alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        padding: const EdgeInsets.all(16),
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * .7,
         ),
         decoration: BoxDecoration(
-          color: mine ? Theme.of(context).primaryColor.withOpacity(0.9) : Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(12),
+          color: mine ? colorScheme.secondary : AppTheme.surfaceColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: mine ? Colors.transparent : AppTheme.borderColor,
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
-            Text(m.contenu, style: GoogleFonts.poppins(color: mine ? Colors.white : Colors.black87)),
-            const SizedBox(height: 4),
+            Text(
+              m.contenu,
+              style: textTheme.bodyMedium?.copyWith(
+                color: mine ? Colors.black : AppTheme.primaryColor,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 6),
             Text(
               time,
-              style: GoogleFonts.poppins(fontSize: 11, color: mine ? Colors.white70 : Colors.grey[600]),
+              style: textTheme.bodySmall?.copyWith(
+                color: mine 
+                    ? Colors.black.withOpacity(0.6)
+                    : AppTheme.subTextColor,
+              ),
             ),
           ],
         ),
@@ -165,88 +210,208 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Text(widget.peerUsername, style: GoogleFonts.poppins()),
+        backgroundColor: AppTheme.backgroundColor,
+        elevation: 0,
         centerTitle: true,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: AppTheme.primaryColor,
+            size: 24,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          widget.peerUsername,
+          style: textTheme.titleLarge?.copyWith(
+            color: AppTheme.primaryColor,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        surfaceTintColor: Colors.transparent,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : _error != null
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Text(
-                            'Erreur de chargement des messages.\nVeuillez réessayer.\n\nDétail: $_error',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(color: Colors.red),
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: Column(
+          children: [
+            Expanded(
+              child: _loading
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(colorScheme.secondary),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Chargement des messages...',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: AppTheme.subTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : _error != null
+                      ? Container(
+                          margin: const EdgeInsets.all(32),
+                          padding: const EdgeInsets.all(32),
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceColor,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: AppTheme.borderColor,
+                              width: 1,
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                size: 64,
+                                color: AppTheme.errorColor.withOpacity(0.5),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Erreur de chargement',
+                                style: textTheme.titleMedium?.copyWith(
+                                  color: AppTheme.subTextColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Veuillez réessayer.\n\nDétail: $_error',
+                                style: textTheme.bodyMedium?.copyWith(
+                                  color: AppTheme.subTextColor.withOpacity(0.7),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        )
+                      : _msgs.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.chat_outlined,
+                                    size: 64,
+                                    color: AppTheme.subTextColor.withOpacity(0.5),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Aucun message',
+                                    style: textTheme.titleMedium?.copyWith(
+                                      color: AppTheme.subTextColor,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Soyez le premier à envoyer un message !',
+                                    style: textTheme.bodyMedium?.copyWith(
+                                      color: AppTheme.subTextColor.withOpacity(0.7),
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              reverse: true, // Key for modern chat UI
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              itemCount: _msgs.length,
+                              itemBuilder: (_, i) {
+                                final index = _msgs.length - 1 - i;
+                                final m = _msgs[index];
+
+                                final bool isFirstMessageOfDay = (index == 0) || !_isSameDay(_msgs[index - 1].timestamp, m.timestamp);
+
+                                if (isFirstMessageOfDay) {
+                                  return Column(
+                                    children: [
+                                      _buildDateSeparator(m.timestamp),
+                                      _buildMessageItem(m),
+                                    ],
+                                  );
+                                } else {
+                                  return _buildMessageItem(m);
+                                }
+                              },
+                            ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.cardColor,
+                border: Border(
+                  top: BorderSide(color: AppTheme.borderColor),
+                ),
+              ),
+              child: SafeArea(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceColor,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: AppTheme.borderColor,
+                            width: 1,
                           ),
                         ),
-                      )
-                    : _msgs.isEmpty
-                        ? Center(
-                            child: Text(
-                              'Aucun message dans cette conversation.\nSoyez le premier à en envoyer un !',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(color: Colors.grey),
+                        child: TextField(
+                          controller: _ctl,
+                          decoration: InputDecoration(
+                            hintText: 'Écrire un message…',
+                            hintStyle: textTheme.bodyMedium?.copyWith(
+                              color: AppTheme.subTextColor.withOpacity(0.7),
                             ),
-                          )
-                        : ListView.builder(
-                            reverse: true, // Key for modern chat UI
-                            padding: const EdgeInsets.all(12),
-                            itemCount: _msgs.length,
-                            itemBuilder: (_, i) {
-                              final index = _msgs.length - 1 - i;
-                              final m = _msgs[index];
-
-                              final bool isFirstMessageOfDay = (index == 0) || !_isSameDay(_msgs[index - 1].timestamp, m.timestamp);
-
-                              if (isFirstMessageOfDay) {
-                                return Column(
-                                  children: [
-                                    _buildDateSeparator(m.timestamp),
-                                    _buildMessageItem(m),
-                                  ],
-                                );
-                              } else {
-                                return _buildMessageItem(m);
-                              }
-                            },
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            border: InputBorder.none,
                           ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              border: Border(top: BorderSide(color: Colors.grey.shade300))),
-            child: SafeArea(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _ctl,
-                      decoration: InputDecoration(
-                        hintText: 'Écrire un message…',
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 12),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8)),
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: AppTheme.primaryColor,
+                          ),
+                          onSubmitted: (_) => _send(),
+                        ),
                       ),
-                      onSubmitted: (_) => _send(),
                     ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.send, color: Theme.of(context).primaryColor),
-                    onPressed: _send,
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: colorScheme.secondary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.send,
+                          color: Colors.black,
+                          size: 18,
+                        ),
+                        onPressed: _send,
+                        padding: const EdgeInsets.all(8),
+                        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

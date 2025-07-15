@@ -39,6 +39,14 @@ class ParcoursAcademiqueFormSection extends StatelessWidget {
     );
   }
 
+  static const List<String> _mentionsDisponibles = [
+    'mention_passable',
+    'mention_assez_bien',
+    'mention_bien',
+    'mention_tres_bien',
+    'mention_excellent',
+  ];
+
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -83,7 +91,28 @@ class ParcoursAcademiqueFormSection extends StatelessWidget {
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete, color: Colors.redAccent),
-                      onPressed: () => onDelete(item['id']),
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Confirmation'),
+                            content: const Text('Voulez-vous vraiment supprimer ce parcours ?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(ctx).pop(false),
+                                child: const Text('Annuler'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.of(ctx).pop(true),
+                                child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                          onDelete(item['id']);
+                        }
+                      },
                     ),
                   ],
                 ),
@@ -101,7 +130,7 @@ class ParcoursAcademiqueFormSection extends StatelessWidget {
     final anCtrl = TextEditingController(
       text: existing != null ? existing['annee_obtention'].toString() : '',
     );
-    final menCtrl = TextEditingController(text: existing?['mention']);
+    String? selectedMention = existing?['mention'];
 
     showModalBottomSheet(
       context: ctx,
@@ -150,9 +179,26 @@ class ParcoursAcademiqueFormSection extends StatelessWidget {
                       validator: (v) => v == null || int.tryParse(v) == null ? 'Nombre requis' : null,
                     ),
                     const SizedBox(height: 12),
-                    TextFormField(
-                      controller: menCtrl,
+                    DropdownButtonFormField<String>(
+                      value: selectedMention != null && _mentionsDisponibles.contains(selectedMention)
+                          ? selectedMention
+                          : null,
                       decoration: _fieldDecoration('Mention'),
+                      items: [
+                        const DropdownMenuItem<String>(
+                          value: null,
+                          child: Text('Aucune'),
+                        ),
+                        ..._mentionsDisponibles.map((mention) => DropdownMenuItem<String>(
+                              value: mention,
+                              child: Text(mention),
+                            )),
+                      ],
+                      onChanged: (val) {
+                        selectedMention = val;
+                      },
+                      isExpanded: true,
+                      validator: (_) => null, // Pas d'erreur si vide
                     ),
                     const SizedBox(height: 24),
                     SizedBox(
@@ -169,7 +215,7 @@ class ParcoursAcademiqueFormSection extends StatelessWidget {
                             'diplome': dipCtrl.text,
                             'institution': instCtrl.text,
                             'annee_obtention': int.parse(anCtrl.text),
-                            'mention': menCtrl.text.isEmpty ? null : menCtrl.text,
+                            'mention': selectedMention,
                           };
                           if (existing != null) {
                             onUpdate(existing['id'], data);

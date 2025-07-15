@@ -8,6 +8,7 @@ class GroupModel {
   final bool isMember;
   final DateTime dateCreation;
   final String role;
+  final String? photoProfil; // ⚠️ nullable (optionnelle)
 
   GroupModel({
     required this.id,
@@ -17,6 +18,7 @@ class GroupModel {
     required this.isMember,
     required this.dateCreation,
     required this.role,
+    this.photoProfil, // optionnelle
   });
 
   factory GroupModel.fromJson(Map<String, dynamic> json) {
@@ -51,6 +53,7 @@ class GroupModel {
       isMember: memberFlag,
       dateCreation: parsedDate,
       role: _toStr(json['role']),
+      photoProfil: json['photo_profil'] as String?, // nullable
     );
   }
 }

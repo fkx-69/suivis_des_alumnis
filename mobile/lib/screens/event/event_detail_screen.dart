@@ -1,104 +1,338 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:memoire/constants/app_theme.dart';
 import 'package:intl/intl.dart';
 import '../../models/event_model.dart';
 
-class EventDetailScreen extends StatelessWidget {
+class EventDetailScreen extends StatefulWidget {
   final EventModel event;
   const EventDetailScreen({super.key, required this.event});
 
   @override
+  State<EventDetailScreen> createState() => _EventDetailScreenState();
+}
+
+class _EventDetailScreenState extends State<EventDetailScreen> with TickerProviderStateMixin {
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOutCubic,
+    ));
+    _fadeController.forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
     final dateFormat = DateFormat('EEEE dd MMMM yyyy à HH:mm', 'fr_FR');
 
     return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Text('Détails de l\'évènement', style: GoogleFonts.poppins()),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 1,
+        backgroundColor: AppTheme.backgroundColor,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: AppTheme.primaryColor,
+            size: 24,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Détails de l\'événement',
+          style: textTheme.titleLarge?.copyWith(
+            color: AppTheme.primaryColor,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        surfaceTintColor: Colors.transparent,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 🖼️ Image
-            if (event.image != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  event.image!,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: 200,
-                ),
-              ),
-            const SizedBox(height: 16),
-
-            // 📝 Titre
-            Text(
-              event.titre,
-              style: GoogleFonts.poppins(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-
-            // 👤 Créateur
-            if (event.createur != null)
-              Text('Organisé par : ${event.createur}',
-                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700])),
-
-            // 📅 Dates
-            const SizedBox(height: 16),
-            Row(
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.calendar_month, color: Colors.blue),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Du ${dateFormat.format(event.dateDebut)}\nau ${dateFormat.format(event.dateFin)}',
-                    style: GoogleFonts.poppins(fontSize: 14),
+                // 🖼️ Image avec overlay
+                if (widget.event.image != null)
+                  Container(
+                    width: double.infinity,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Stack(
+                        children: [
+                          Image.network(
+                            widget.event.image!,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: 200,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: AppTheme.surfaceColor,
+                                child: Icon(
+                                  Icons.image_not_supported,
+                                  color: AppTheme.subTextColor.withOpacity(0.5),
+                                  size: 48,
+                                ),
+                              );
+                            },
+                          ),
+                          // Overlay gradient
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withOpacity(0.3),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            ),
+                const SizedBox(height: 24),
 
-            // ✅ Statut
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                const Icon(Icons.check_circle_outline, color: Colors.teal),
-                const SizedBox(width: 8),
+                // 📝 Titre
                 Text(
-                  event.valide ? 'Validé par l\'administration' : 'En attente de validation',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: event.valide ? Colors.teal : Colors.orange,
+                  widget.event.titre,
+                  style: textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primaryColor,
                   ),
                 ),
+                const SizedBox(height: 8),
+
+                // 👤 Créateur
+                if (widget.event.createur != null) ...[
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: colorScheme.secondary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Icon(
+                          Icons.person_outline,
+                          size: 16,
+                          color: colorScheme.secondary,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Organisé par ${widget.event.createur}',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.subTextColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+
+                // 📅 Dates
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppTheme.borderColor,
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: colorScheme.secondary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.calendar_month,
+                              color: colorScheme.secondary,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Date et heure',
+                                  style: textTheme.labelMedium?.copyWith(
+                                    color: AppTheme.subTextColor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Du ${dateFormat.format(widget.event.dateDebut)}\nau ${dateFormat.format(widget.event.dateFin)}',
+                                  style: textTheme.bodyMedium?.copyWith(
+                                    color: AppTheme.primaryColor,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // ✅ Statut
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: widget.event.valide 
+                        ? AppTheme.successColor.withOpacity(0.1)
+                        : AppTheme.warningColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: widget.event.valide 
+                          ? AppTheme.successColor.withOpacity(0.3)
+                          : AppTheme.warningColor.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: widget.event.valide 
+                              ? AppTheme.successColor.withOpacity(0.2)
+                              : AppTheme.warningColor.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          widget.event.valide 
+                              ? Icons.check_circle_outline
+                              : Icons.schedule,
+                          color: widget.event.valide 
+                              ? AppTheme.successColor
+                              : AppTheme.warningColor,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Statut',
+                              style: textTheme.labelMedium?.copyWith(
+                                color: AppTheme.subTextColor,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              widget.event.valide 
+                                  ? 'Validé par l\'administration'
+                                  : 'En attente de validation',
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: widget.event.valide 
+                                    ? AppTheme.successColor
+                                    : AppTheme.warningColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // 📖 Description
+                const SizedBox(height: 24),
+                Text(
+                  'Description',
+                  style: textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.primaryColor,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppTheme.borderColor,
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    widget.event.description,
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: AppTheme.primaryColor,
+                      height: 1.6,
+                    ),
+                    textAlign: TextAlign.justify,
+                  ),
+                ),
+                const SizedBox(height: 24),
               ],
             ),
-
-            // 📖 Description
-            const SizedBox(height: 24),
-            Text(
-              'Description',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              event.description,
-              style: GoogleFonts.poppins(fontSize: 15),
-              textAlign: TextAlign.justify,
-            ),
-            const SizedBox(height: 24),
-          ],
+          ),
         ),
       ),
     );

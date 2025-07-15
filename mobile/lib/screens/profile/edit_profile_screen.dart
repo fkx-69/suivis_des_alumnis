@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../models/user_model.dart';
 import 'package:memoire/services/auth_service.dart';
-import '../../widgets/app_bottom_nav_bar.dart';
 import 'package:memoire/widgets/profile_widgets/edit_profile_form.dart';
+import 'package:memoire/constants/app_theme.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -60,21 +59,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     if (_isLoading || _user == null) {
       return const Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.backgroundColor,
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.backgroundColor,
         elevation: 1,
-        leading: const BackButton(color: Color(0xFF2196F3)),
+        leading: BackButton(color: AppTheme.primaryColor),
         title: Text(
           'Modifier le profil',
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF2196F3),
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            color: AppTheme.primaryColor,
             fontWeight: FontWeight.w600,
             fontSize: 20,
           ),
@@ -98,10 +97,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
         ),
-      ),
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: _selectedIndex,
-        onTap: _onNavTap,
       ),
     );
   }

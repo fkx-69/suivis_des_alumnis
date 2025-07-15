@@ -40,6 +40,7 @@ dependencies:
   intl: ^0.20.2
   timeago: ^3.7.1
   fl_chart: ^1.0.0
+  animated_text_kit: ^4.2.3
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -62,6 +63,10 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  assets:
+    - assets/images/welcome.jpg
+    - assets/images/ITMA.jpg
+    - assets/images/logo.jpeg
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

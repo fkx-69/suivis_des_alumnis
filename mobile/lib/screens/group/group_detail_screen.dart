@@ -2,7 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:memoire/constants/app_theme.dart';
 import 'package:intl/intl.dart';
 import 'package:memoire/models/group_model.dart';
 import 'package:memoire/services/group_service.dart';
@@ -17,7 +17,7 @@ class GroupDetailScreen extends StatefulWidget {
   State<GroupDetailScreen> createState() => _GroupDetailScreenState();
 }
 
-class _GroupDetailScreenState extends State<GroupDetailScreen> {
+class _GroupDetailScreenState extends State<GroupDetailScreen> with TickerProviderStateMixin {
   final GroupeService _svc = GroupeService();
   final AuthService   _auth = AuthService();
 
@@ -28,14 +28,27 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
   final _msgCtl = TextEditingController();
   Timer? _polling;
 
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+
   @override
   void initState() {
     super.initState();
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    );
+
     _isMember = widget.group.isMember;
     _auth.getUserInfo().then((u) {
       setState(() => _meUsername = u.username);
     });
     if (_isMember) _startChat();
+    _fadeController.forward();
   }
 
   void _startChat() {
@@ -49,6 +62,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
   void dispose() {
     _polling?.cancel();
     _msgCtl.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 
@@ -80,7 +94,19 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
       _msgs = await _svc.fetchMessages(widget.group.id);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Échec envoi : $e')),
+        SnackBar(
+          backgroundColor: AppTheme.errorColor,
+          content: Text(
+            'Échec envoi : $e',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Colors.white,
+            ),
+          ),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
       );
     } finally {
       setState(() => _loadingMsgs = false);
@@ -89,156 +115,447 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Text(widget.group.nomGroupe, style: GoogleFonts.poppins()),
-        actions: [
-          if (_isMember)
-            IconButton(
-              icon: const Icon(Icons.group),
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => GroupMembersScreen(
-                    groupId: widget.group.id,
-                    groupName: widget.group.nomGroupe,
-                  ),
+        backgroundColor: AppTheme.backgroundColor,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: AppTheme.primaryColor,
+            size: 24,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (widget.group.photoProfil != null && widget.group.photoProfil!.isNotEmpty) ...[
+              CircleAvatar(
+                radius: 16,
+                backgroundImage: NetworkImage(widget.group.photoProfil!),
+              ),
+              const SizedBox(width: 10),
+            ],
+            Flexible(
+              child: Text(
+                widget.group.nomGroupe,
+                style: textTheme.titleLarge?.copyWith(
+                  color: AppTheme.primaryColor,
+                  fontWeight: FontWeight.w600,
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // description & bouton rejoindre
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            color: Colors.blue.shade50,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(widget.group.description,
-                    style: GoogleFonts.poppins(color: Colors.grey[800])),
-                const SizedBox(height: 12),
-                if (!_isMember)
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _join,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green.shade600,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6)),
-                      ),
-                      child: Text('Rejoindre le groupe',
-                          style: GoogleFonts.poppins(color: Colors.white)),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-
-          // chat
-          Expanded(
-            child: _loadingMsgs
-                ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 8),
-              itemCount: _msgs.length,
-              itemBuilder: (ctx, i) {
-                final m = _msgs[i];
-                final mine = (m.auteurUsername == _meUsername);
-                final time = DateFormat.Hm().format(m.dateEnvoi);
-
-                final bool showDateHeader = i == 0 ||
-                    _msgs[i].dateEnvoi.day != _msgs[i - 1].dateEnvoi.day ||
-                    _msgs[i].dateEnvoi.month != _msgs[i - 1].dateEnvoi.month ||
-                    _msgs[i].dateEnvoi.year != _msgs[i - 1].dateEnvoi.year;
-
-                final messageBubble = Align(
-                  alignment:
-                      mine ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    padding: const EdgeInsets.all(12),
-                    constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * .7),
-                    decoration: BoxDecoration(
-                      color: mine
-                          ? Colors.green.shade100
-                          : Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      crossAxisAlignment:
-                          mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                      children: [
-                        Text(m.auteurUsername,
-                            style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w600, fontSize: 13)),
-                        const SizedBox(height: 4),
-                        Text(m.message, style: GoogleFonts.poppins()),
-                        const SizedBox(height: 4),
-                        Text(time,
-                            style: GoogleFonts.poppins(
-                                fontSize: 11, color: Colors.grey[600])),
-                      ],
-                    ),
-                  ),
-                );
-
-                if (showDateHeader) {
-                  return Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: Text(
-                          DateFormat.yMMMMd('fr').format(m.dateEnvoi),
-                          style: GoogleFonts.poppins(color: Colors.grey),
-                        ),
-                      ),
-                      messageBubble,
-                    ],
-                  );
-                } else {
-                  return messageBubble;
-                }
-              },
-            ),
-          ),
-
-          // input & send (uniquement si membre)
-          if (_isMember)
+          ],
+        ),
+        actions: [
+          if (_isMember) ...[
+            // Description & bouton rejoindre avec photo optionnelle
             Container(
-              padding: const EdgeInsets.all(8),
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                  border:
-                  Border(top: BorderSide(color: Colors.grey.shade300))),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _msgCtl,
-                      decoration: InputDecoration(
-                        hintText: 'Écrire un message…',
-                        contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 12),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.send, color: Color(0xFF2196F3)),
-                    onPressed: _send,
+                gradient: AppTheme.accentGradient,
+                boxShadow: [
+                  BoxShadow(
+                    color: colorScheme.secondary.withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+
+                  // Ajout minimal: Photo de profil (si existante)
+                  if (widget.group.photoProfil != null && widget.group.photoProfil!.isNotEmpty)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: CircleAvatar(
+                          radius: 40,
+                          backgroundImage: NetworkImage(widget.group.photoProfil!),
+                        ),
+                      ),
+                    ),
+
+                  // Description inchangée
+                  Text(
+                    widget.group.description,
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: Colors.white,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Bouton rejoindre inchangé
+                  if (!_isMember)
+                    Center(
+                      child: SizedBox(
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          onPressed: _join,
+                          icon: Icon(
+                            Icons.group_add,
+                            color: Colors.black,
+                            size: 20,
+                          ),
+                          label: Text(
+                            'Rejoindre le groupe',
+                            style: textTheme.labelLarge?.copyWith(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
+
+            PopupMenuButton<String>(
+              onSelected: (value) async {
+                if (value == 'quit') {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Quitter le groupe'),
+                      content: const Text('Es-tu sûr de vouloir quitter ce groupe ?'),
+                      actions: [
+                        TextButton(
+                          child: const Text('Annuler'),
+                          onPressed: () => Navigator.of(ctx).pop(false),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                          child: const Text('Oui, quitter'),
+                          onPressed: () => Navigator.of(ctx).pop(true),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirm == true) {
+                    await _svc.quitGroup(widget.group.id);
+                    if (mounted) {
+                      Navigator.of(context).pop(); // revient à la liste de groupes
+                    }
+                  }
+                }
+              },
+              itemBuilder: (ctx) => [
+                const PopupMenuItem(
+                  value: 'quit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.exit_to_app, color: Colors.red, size: 20),
+                      SizedBox(width: 8),
+                      Text('Quitter le groupe', style: TextStyle(color: Colors.red)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
+        surfaceTintColor: Colors.transparent,
+      ),
+
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: Column(
+          children: [
+            // Description & bouton rejoindre
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: AppTheme.accentGradient,
+                boxShadow: [
+                  BoxShadow(
+                    color: colorScheme.secondary.withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.group.description,
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: Colors.white,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (!_isMember)
+                    Center(
+                      child: SizedBox(
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          onPressed: _join,
+                          icon: Icon(
+                            Icons.group_add,
+                            color: Colors.black,
+                            size: 20,
+                          ),
+                          label: Text(
+                            'Rejoindre le groupe',
+                            style: textTheme.labelLarge?.copyWith(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
+            // Chat
+            Expanded(
+              child: _loadingMsgs
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(colorScheme.secondary),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Chargement des messages...',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: AppTheme.subTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : _msgs.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.chat_outlined,
+                                size: 64,
+                                color: AppTheme.subTextColor.withOpacity(0.5),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Aucun message',
+                                style: textTheme.titleMedium?.copyWith(
+                                  color: AppTheme.subTextColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Soyez le premier à envoyer un message !',
+                                style: textTheme.bodyMedium?.copyWith(
+                                  color: AppTheme.subTextColor.withOpacity(0.7),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          itemCount: _msgs.length,
+                          itemBuilder: (ctx, i) {
+                            final m = _msgs[i];
+                            final mine = (m.auteurUsername == _meUsername);
+                            final time = DateFormat.Hm().format(m.dateEnvoi);
+
+                            final bool showDateHeader = i == 0 ||
+                                _msgs[i].dateEnvoi.day != _msgs[i - 1].dateEnvoi.day ||
+                                _msgs[i].dateEnvoi.month != _msgs[i - 1].dateEnvoi.month ||
+                                _msgs[i].dateEnvoi.year != _msgs[i - 1].dateEnvoi.year;
+
+                            final messageBubble = Align(
+                              alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                padding: const EdgeInsets.all(16),
+                                constraints: BoxConstraints(
+                                  maxWidth: MediaQuery.of(context).size.width * .7,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: mine
+                                      ? colorScheme.secondary
+                                      : AppTheme.surfaceColor,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: mine
+                                        ? Colors.transparent
+                                        : AppTheme.borderColor,
+                                    width: 1,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      m.auteurUsername,
+                                      style: textTheme.bodySmall?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color: mine ? Colors.black : AppTheme.primaryColor,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      m.message,
+                                      style: textTheme.bodyMedium?.copyWith(
+                                        color: mine ? Colors.black : AppTheme.primaryColor,
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      time,
+                                      style: textTheme.bodySmall?.copyWith(
+                                        color: mine
+                                            ? Colors.black.withOpacity(0.6)
+                                            : AppTheme.subTextColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+
+                            if (showDateHeader) {
+                              return Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.surfaceColor,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: AppTheme.borderColor,
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        DateFormat.yMMMMd('fr').format(m.dateEnvoi),
+                                        style: textTheme.bodySmall?.copyWith(
+                                          color: AppTheme.subTextColor,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  messageBubble,
+                                ],
+                              );
+                            } else {
+                              return messageBubble;
+                            }
+                          },
+                        ),
+            ),
+
+            // Input & send (uniquement si membre)
+            if (_isMember)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppTheme.cardColor,
+                  border: Border(
+                    top: BorderSide(color: AppTheme.borderColor),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceColor,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: AppTheme.borderColor,
+                            width: 1,
+                          ),
+                        ),
+                        child: TextField(
+                          controller: _msgCtl,
+                          decoration: InputDecoration(
+                            hintText: 'Écrire un message…',
+                            hintStyle: textTheme.bodyMedium?.copyWith(
+                              color: AppTheme.subTextColor.withOpacity(0.7),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            border: InputBorder.none,
+                          ),
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: AppTheme.primaryColor,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: colorScheme.secondary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.send,
+                          color: Colors.black,
+                          size: 20,
+                        ),
+                        onPressed: _send,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

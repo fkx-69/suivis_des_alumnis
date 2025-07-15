@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:memoire/widgets/auth_widgets/register_student_form.dart';
 import 'package:memoire/widgets/auth_widgets/login_link.dart'; // Assure-toi que ce fichier existe
+import 'package:memoire/screens/auth/login_screen.dart';
 
 class RegisterEtudiantScreen extends StatelessWidget {
   const RegisterEtudiantScreen({super.key});
@@ -9,18 +10,18 @@ class RegisterEtudiantScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF2196F3)),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.primary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Inscription Étudiant',
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF2196F3),
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            color: Theme.of(context).colorScheme.primary,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -35,7 +36,10 @@ class RegisterEtudiantScreen extends StatelessWidget {
               const SizedBox(height: 16),
               LoginLink(
                 onTap: () {
-                  // TODO: Naviguer vers la page d'inscription
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  );
                 },
               ),
             ],

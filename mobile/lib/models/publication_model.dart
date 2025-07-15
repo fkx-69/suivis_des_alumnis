@@ -8,6 +8,7 @@ class PublicationModel {
   final DateTime datePublication;
   final List<CommentModel> commentaires;
   final int nombresCommentaires;
+  final String? auteurPhotoProfil;
 
   PublicationModel({
     required this.id,
@@ -18,6 +19,7 @@ class PublicationModel {
     required this.datePublication,
     required this.commentaires,
     required this.nombresCommentaires,
+    this.auteurPhotoProfil,
   });
 
   // ✅ Getter personnalisé
@@ -35,6 +37,7 @@ class PublicationModel {
           .map((e) => CommentModel.fromJson(e))
           .toList(),
       nombresCommentaires: json['nombres_commentaires'] ?? 0,
+      auteurPhotoProfil: json['auteur_photo_profil'],
     );
   }
 }

@@ -26,7 +26,7 @@ export default function ThemeToggle({
   return (
     <button
       aria-label="Toggle Theme "
-      className="btn btn-xs btn-ghost"
+      className="btn btn-xs btn-ghost "
       onClick={toggle}
       type="button"
       data-testid="theme-toggle-button"

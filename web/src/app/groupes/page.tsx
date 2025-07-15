@@ -69,7 +69,6 @@ export default function GroupesPage() {
                   width={500}
                   height={192}
                   className="w-full h-48 object-cover"
-                  unoptimized
                 />
               </figure>
             )}

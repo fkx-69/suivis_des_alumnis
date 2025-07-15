@@ -33,8 +33,10 @@ export default function LoginPage() {
       toast.success("Connexion réussie");
     } catch (err) {
       if (axios.isAxiosError(err)) {
+        const errorData = err.response?.data;
         const message =
-          err.response?.data?.detail ||
+          errorData?.non_field_errors?.join(" \n") ||
+          errorData?.detail ||
           err.message ||
           "Identifiants incorrects";
         setServerError(message);

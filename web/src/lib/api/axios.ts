@@ -29,6 +29,7 @@ api.interceptors.response.use(
   },
   (error) => {
     const message =
+      error.response?.data?.non_field_errors?.join(" \n") ||
       error.response?.data?.detail ||
       error.response?.data?.message ||
       error.message ||

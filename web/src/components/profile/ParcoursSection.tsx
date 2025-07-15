@@ -15,7 +15,7 @@ import type {
   ParcoursProfessionnel,
 } from "@/types/parcours";
 import { Mentions } from "@/lib/constants/parcours";
-import type { Mention_keys } from "@/types/parcours";
+import type { Mention } from "@/lib/constants/parcours";
 
 interface Props {
   academicItems: ParcoursAcademique[];

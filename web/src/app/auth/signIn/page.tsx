@@ -99,7 +99,7 @@ export default function SignIn() {
         router.push("/");
       } else {
         alert(
-          "Inscription réussie, mais la connexion a échoué. Veuillez vous connecter manuellement.",
+          "Inscription réussie, mais la connexion a échoué. Veuillez vous connecter manuellement."
         );
         router.push("/auth/login");
       }
@@ -196,11 +196,7 @@ export default function SignIn() {
                 >
                   Précédent
                 </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary flex-1"
-                  onClick={() => handleSubmit(onSubmit)()}
-                >
+                <button type="submit" className="btn btn-primary flex-1">
                   S&apos;inscrire
                 </button>
               </div>

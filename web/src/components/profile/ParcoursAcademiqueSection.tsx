@@ -7,7 +7,9 @@ import {
   updateParcoursAcademique,
   deleteParcoursAcademique,
 } from "@/lib/api/parcours";
-import { ParcoursAcademique, Mention_keys, Mentions } from "@/types/parcours";
+import type { ParcoursAcademique } from "@/types/parcours";
+import { Mentions, Mention_keys } from "@/lib/constants";
+import type { Mention } from "@/lib/constants/parcours";
 
 interface Props {
   items: ParcoursAcademique[];
@@ -97,7 +99,8 @@ export default function ParcoursAcademiqueSection({ items, onChanged }: Props) {
               <p className="text-base-content/80">{p.institution}</p>
               <p className="text-sm text-base-content/60">
                 Obtenu en {p.annee_obtention}{" "}
-                {p.mention && `- Mention ${Mentions[p.mention]}`}
+                {p.mention &&
+                  `- Mention ${Mentions[p.mention as keyof typeof Mentions]}`}
               </p>
             </div>
             <div className="flex gap-2 items-center">
@@ -159,9 +162,9 @@ export default function ParcoursAcademiqueSection({ items, onChanged }: Props) {
               onChange={handleChange}
             >
               <option value="">Sélectionnez une mention (optionnel)</option>
-              {Object.entries(Mentions).map(([key, value]) => (
+              {Mention_keys.map((key) => (
                 <option key={key} value={key}>
-                  {value}
+                  {Mentions[key]}
                 </option>
               ))}
             </select>

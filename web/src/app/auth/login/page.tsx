@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/Input";
 import axios from "axios";
 import { toast } from "@/components/ui/toast";
 import "@/app/globals.css";
+import { useState } from "react";
 
 const schema = z.object({
   email: z.string().email({ message: "Email invalide" }),

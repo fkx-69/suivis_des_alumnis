@@ -5,13 +5,13 @@ export const Mentions = {
   tres_bien: "Très bien",
 };
 
-export type Mention = keyof typeof Mentions;
+export const Mention_keys = Mentions.keys();
 
 export interface ParcoursAcademique {
   id: number;
   diplome: string;
   institution: string;
-  annee_obtention: number;
+  annee_obtention: string;
   mention: Mention | null;
 }
 

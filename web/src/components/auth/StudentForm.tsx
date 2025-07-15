@@ -3,7 +3,7 @@ import React from "react";
 import { useFormContext } from "react-hook-form";
 import type { Filiere } from "@/lib/api/filiere";
 import { type StudentFormValues } from "@/lib/validators/auth";
-import { niveau_etude } from "@/lib/constants";
+import { niveau_etude, niveau_etude_keys } from "@/lib/constants";
 
 interface StudentFormProps {
   filieres: Filiere[];
@@ -17,7 +17,7 @@ export default function StudentForm({ filieres, error }: StudentFormProps) {
   } = useFormContext<StudentFormValues>();
   const years = Array.from(
     { length: new Date().getFullYear() - 2017 + 1 },
-    (_, i) => 2017 + i,
+    (_, i) => 2017 + i
   );
   return (
     <fieldset className="space-y-4">
@@ -47,9 +47,9 @@ export default function StudentForm({ filieres, error }: StudentFormProps) {
             {...register("niveau_etude")}
             className="select select-primary w-full"
           >
-            {niveau_etude.map((niv) => (
+            {niveau_etude_keys.map((niv) => (
               <option key={niv} value={niv}>
-                {niv}
+                {niveau_etude[niv]}
               </option>
             ))}
           </select>

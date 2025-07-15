@@ -7,7 +7,7 @@ import {
   updateParcoursAcademique,
   deleteParcoursAcademique,
 } from "@/lib/api/parcours";
-import { ParcoursAcademique, Mention, Mentions } from "@/types/parcours";
+import { ParcoursAcademique, Mention_keys, Mentions } from "@/types/parcours";
 
 interface Props {
   items: ParcoursAcademique[];

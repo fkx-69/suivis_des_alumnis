@@ -85,13 +85,12 @@ export function Carousel({ children }: CarouselProps) {
     function animateScroll(currentTime: number) {
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      // Ease in-out
-      const ease = progress < 0.5
-        ? 2 * progress * progress
-        : -1 + (4 - 2 * progress) * progress;
-      containerRef.current!.scrollLeft = start + change * ease;
-      if (progress < 1) {
-        window.requestAnimationFrame(animateScroll);
+      // Interpolation linéaire pour réduire l'accélération
+      if (containerRef.current) {
+        containerRef.current.scrollLeft = start + change * progress;
+        if (progress < 1) {
+          window.requestAnimationFrame(animateScroll);
+        }
       }
     }
     window.requestAnimationFrame(animateScroll);

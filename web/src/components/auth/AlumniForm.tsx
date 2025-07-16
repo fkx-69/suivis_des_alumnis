@@ -4,11 +4,16 @@ import { useFormContext, useWatch } from "react-hook-form";
 import type { Filiere } from "@/lib/api/filiere";
 import { type AlumniFormValues } from "@/lib/validators/auth";
 import { Input } from "@/components/ui/Input";
-import { jobBySector } from "@/lib/constants";
+import { fetchPostesParSecteur } from "@/lib/api/auth";
 
 interface AlumniFormProps {
   filieres: Filiere[];
   error?: string;
+}
+
+interface Secteur {
+  secteur: string;
+  postes: { code: string; libelle: string }[];
 }
 
 export default function AlumniForm({ filieres, error }: AlumniFormProps) {
@@ -31,6 +36,11 @@ export default function AlumniForm({ filieres, error }: AlumniFormProps) {
     control,
     name: "secteur_activite",
   });
+
+  const [secteurs, setSecteurs] = React.useState<Secteur[]>([]);
+  React.useEffect(() => {
+    fetchPostesParSecteur().then(setSecteurs);
+  }, []);
 
   const isJobSeeking = situationPro === "chomage";
 
@@ -85,9 +95,9 @@ export default function AlumniForm({ filieres, error }: AlumniFormProps) {
             {...register("secteur_activite")}
             disabled={isJobSeeking}
           >
-            {Object.keys(jobBySector).map((key) => (
-              <option key={key} value={key}>
-                {key}
+            {secteurs.map((secteur) => (
+              <option key={secteur.secteur} value={secteur.secteur}>
+                {secteur.secteur}
               </option>
             ))}
           </select>
@@ -99,11 +109,11 @@ export default function AlumniForm({ filieres, error }: AlumniFormProps) {
             {...register("poste_actuel")}
             disabled={isJobSeeking}
           >
-            {Object.entries(
-              jobBySector[secteurActivite as keyof typeof jobBySector] || {},
-            ).map(([key, value]) => (
-              <option key={key} value={key}>
-                {value}
+            {(
+              secteurs.find((s) => s.secteur === secteurActivite)?.postes || []
+            ).map((poste) => (
+              <option key={poste.code} value={poste.code}>
+                {poste.libelle}
               </option>
             ))}
           </select>

@@ -47,3 +47,8 @@ export async function changeEmail(data: { email: string }) {
   const res = await api.put("/accounts/change-email/", data);
   return res.data;
 }
+
+export async function fetchPostesParSecteur() {
+  const res = await api.get('/accounts/postes-par-secteur/');
+  return res.data;
+}

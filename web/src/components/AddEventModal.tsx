@@ -145,7 +145,7 @@ export default function AddEventModal({
   }, []);
 
   return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
       <motion.form
         role="dialog"
         aria-modal="true"

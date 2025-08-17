@@ -206,14 +206,14 @@ class AppTheme {
         fontSize: 14,
       ),
     ),
-    cardTheme: CardTheme(
-      color: cardColor,
-      elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.1),
+    cardTheme: CardThemeData(
+      color: Colors.white,
+      elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
     ),
+
     dividerTheme: const DividerThemeData(
       color: borderColor,
       thickness: 1,

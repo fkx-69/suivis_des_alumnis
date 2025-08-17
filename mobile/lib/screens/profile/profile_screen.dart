@@ -10,6 +10,8 @@ import 'package:memoire/screens/profile/edit_parcours_screen.dart';
 import 'package:memoire/widgets/profile_widgets/parcours_display_section.dart';
 import 'create_publication_screen.dart';
 import 'package:memoire/screens/profile/settings_screen.dart';
+import 'package:memoire/widgets/profile_widgets/upload_test_widget.dart';
+import 'package:memoire/widgets/profile_widgets/simple_upload_test.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -118,6 +120,28 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
         actions: [
           IconButton(
             icon: Icon(
+              Icons.upload_file,
+              color: colorScheme.secondary,
+              size: 24,
+            ),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SimpleUploadTest()),
+            ),
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.bug_report,
+              color: colorScheme.secondary,
+              size: 24,
+            ),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const UploadTestWidget()),
+            ),
+          ),
+          IconButton(
+            icon: Icon(
               Icons.settings,
               color: colorScheme.secondary,
               size: 24,
@@ -164,10 +188,18 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                       ),
                       const Spacer(),
                       TextButton.icon(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const EditParcoursScreen()),
-                        ),
+                        onPressed: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const EditParcoursScreen()),
+                          );
+
+                          if (result == true) {
+                            await _loadData(); // Recharge les parcours et le profil
+                            setState(() {});   // Force le rebuild
+                          }
+                        },
+
                         icon: Icon(
                           Icons.edit,
                           size: 14,

@@ -51,22 +51,10 @@ class ProfileHeader extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: CircleAvatar(
-                  radius: 40,
-                  backgroundColor: AppTheme.surfaceColor,
-                  backgroundImage: user.photoProfil != null
-                      ? NetworkImage(user.photoProfil!)
-                      : null,
-                  child: user.photoProfil == null
-                      ? Text(
-                          '${user.prenom[0]}${user.nom[0]}'.toUpperCase(),
-                          style: textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.primaryColor,
-                          ),
-                        )
-                      : null,
+                child: ClipOval(
+                  child: _buildProfileImage(user, textTheme),
                 ),
+
               ),
               const SizedBox(width: 20),
               Expanded(
@@ -208,5 +196,57 @@ class ProfileHeader extends StatelessWidget {
         ],
       ),
     );
+
   }
+  Widget _buildProfileImage(UserModel user, TextTheme textTheme) {
+    // Vérifier si l'utilisateur a une photo de profil
+    if (user.photoProfil != null && user.photoProfil!.isNotEmpty) {
+      print('🖼️ ProfileHeader: Affichage de la photo: ${user.photoProfil}');
+      
+      // Vérifier si c'est une URL valide
+      if (user.photoProfil!.startsWith('http')) {
+        return Image.network(
+          user.photoProfil!,
+          width: 80,
+          height: 80,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            print('❌ ProfileHeader: Erreur de chargement de l\'image: $error');
+            return _buildFallbackInitials(user, textTheme);
+          },
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return const SizedBox(
+              width: 80,
+              height: 80,
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            );
+          },
+        );
+      } else {
+        print('⚠️ ProfileHeader: URL de photo invalide: ${user.photoProfil}');
+        return _buildFallbackInitials(user, textTheme);
+      }
+    }
+    
+    print('🖼️ ProfileHeader: Aucune photo, affichage des initiales');
+    return _buildFallbackInitials(user, textTheme);
+  }
+
+  Widget _buildFallbackInitials(UserModel user, TextTheme textTheme) {
+    return Container(
+      width: 80,
+      height: 80,
+      color: AppTheme.surfaceColor,
+      alignment: Alignment.center,
+      child: Text(
+        '${user.prenom[0]}${user.nom[0]}'.toUpperCase(),
+        style: textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: AppTheme.primaryColor,
+        ),
+      ),
+    );
+  }
+
 }

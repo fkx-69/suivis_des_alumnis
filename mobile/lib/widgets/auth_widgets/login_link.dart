@@ -12,7 +12,7 @@ class LoginLink extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'Vous avez déjà un compte ? ',
+          'Déjà un compte ? ',
           style: GoogleFonts.poppins(color: Colors.grey[600]),
         ),
         TextButton(

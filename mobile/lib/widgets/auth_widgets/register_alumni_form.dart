@@ -6,7 +6,7 @@ import 'package:memoire/services/auth_service.dart';
 import 'package:memoire/services/filiere_service.dart';
 import 'package:memoire/constants/postes_par_secteur.dart';
 import 'package:memoire/screens/main_screen.dart';
-import 'dart:io';
+
 import 'package:image_picker/image_picker.dart';
 
 class RegisterAlumniForm extends StatefulWidget {
@@ -45,7 +45,7 @@ class _RegisterAlumniFormState extends State<RegisterAlumniForm> {
   bool _isLoading = false;
   String? _errorMessage;
   int _currentStep = 0; // 0 = Étape 1, 1 = Étape 2, 2 = Étape 3
-  File? _selectedImage;
+
 
   @override
   void initState() {
@@ -54,39 +54,42 @@ class _RegisterAlumniFormState extends State<RegisterAlumniForm> {
   }
 
   Future<void> _loadFilieres() async {
+    print('🔄 RegisterAlumniForm: Chargement des filières...');
     try {
       final filieres = await FiliereService().fetchFilieres();
+      print('✅ RegisterAlumniForm: ${filieres.length} filières chargées');
       setState(() {
         _filieres = filieres;
         _selectedFiliere = filieres.isNotEmpty ? filieres.first : null;
+        _errorMessage = null; // Effacer les erreurs précédentes
       });
     } catch (e) {
+      print('❌ RegisterAlumniForm: Erreur lors du chargement des filières: $e');
       setState(() {
-        _errorMessage = 'Erreur lors du chargement des filières';
+        _errorMessage = 'Erreur de chargement des filières: ${e.toString().replaceFirst('Exception: ', '')}';
       });
+      
+      // Afficher un SnackBar pour informer l'utilisateur
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppTheme.errorColor,
+            content: Text(
+              'Impossible de charger les filières. Vérifiez votre connexion au serveur.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.white,
+              ),
+            ),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        );
+      }
     }
   }
 
-  Future<void> _pickImage() async {
-    try {
-      final XFile? image = await _imagePicker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 512,
-        maxHeight: 512,
-        imageQuality: 80,
-      );
-      
-      if (image != null) {
-        setState(() {
-          _selectedImage = File(image.path);
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Erreur lors de la sélection de l\'image';
-      });
-    }
-  }
 
   bool _canProceedToStep2() {
     return _emailController.text.isNotEmpty &&
@@ -271,67 +274,6 @@ class _RegisterAlumniFormState extends State<RegisterAlumniForm> {
   Widget _buildStep1() {
     return Column(
       children: [
-        // Photo de profil
-        Container(
-          margin: const EdgeInsets.only(bottom: 24),
-          child: Column(
-            children: [
-              Text(
-                'Photo de profil',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.primaryColor,
-                ),
-              ),
-              const SizedBox(height: 12),
-              GestureDetector(
-                onTap: _pickImage,
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceColor,
-                    borderRadius: BorderRadius.circular(60),
-                    border: Border.all(
-                      color: AppTheme.borderColor,
-                      width: 2,
-                    ),
-                  ),
-                  child: _selectedImage != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(58),
-                          child: Image.file(
-                            _selectedImage!,
-                            width: 116,
-                            height: 116,
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                      : Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.camera_alt,
-                              size: 32,
-                              color: AppTheme.subTextColor,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Ajouter une photo',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.subTextColor,
-                                fontSize: 12,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                ),
-              ),
-            ],
-          ),
-        ),
-
         // Nom et Prénom
         Row(
           children: [
@@ -493,6 +435,8 @@ class _RegisterAlumniFormState extends State<RegisterAlumniForm> {
   }
 
   Widget _buildStep3() {
+    final isEmploi = _selectedSituationPro == 'emploi';
+
     return Column(
       children: [
         // Situation professionnelle
@@ -518,12 +462,13 @@ class _RegisterAlumniFormState extends State<RegisterAlumniForm> {
         ),
         const SizedBox(height: 20),
 
-        // Secteur d'activité
+        // Secteur d'activité (seulement si emploi)
         DropdownButtonFormField<String>(
           value: _selectedSecteurActivite,
           decoration: _baseDecoration(
             hintText: 'Secteur d\'activité',
             example: 'Informatique, Finance, Marketing...',
+            disabled: !isEmploi,
           ),
           items: postesParSecteur.keys
               .map((k) => DropdownMenuItem(
@@ -531,46 +476,50 @@ class _RegisterAlumniFormState extends State<RegisterAlumniForm> {
             child: Text(k),
           ))
               .toList(),
-          onChanged: (v) => setState(() => _selectedSecteurActivite = v),
-          validator: (v) => v == null ? 'Champ requis' : null,
+          onChanged: isEmploi ? (v) => setState(() => _selectedSecteurActivite = v) : null,
+          validator: (v) => isEmploi && v == null ? 'Champ requis' : null,
         ),
         const SizedBox(height: 20),
 
-        // Poste actuel (si en emploi)
-        if (_selectedSituationPro == 'emploi') ...[
-          DropdownButtonFormField<String>(
-            value: _selectedPosteActuel,
-            decoration: _baseDecoration(
-              hintText: 'Poste actuel',
-              example: 'Développeur, Manager, Consultant...',
-            ),
-            items: postesParSecteur.values
-                .expand((list) => list)
-                .map((p) => DropdownMenuItem<String>(
-              value: p['value'] as String,
-              child: Text(p['label'] as String),
-            ))
-                .toList(),
-            onChanged: (v) => setState(() => _selectedPosteActuel = v),
-            validator: (v) => v == null ? 'Champ requis' : null,
+        // Poste actuel
+        DropdownButtonFormField<String>(
+          value: _selectedPosteActuel,
+          decoration: _baseDecoration(
+            hintText: 'Poste actuel',
+            example: 'Développeur, Manager, Consultant...',
+            disabled: !isEmploi,
           ),
-          const SizedBox(height: 20),
-        ],
+          items: postesParSecteur.values
+              .expand((list) => list)
+              .map((p) => DropdownMenuItem<String>(
+            value: p['value'] as String,
+            child: Text(p['label'] as String),
+          ))
+              .toList(),
+          onChanged: isEmploi ? (v) => setState(() => _selectedPosteActuel = v) : null,
+          validator: (v) => isEmploi && v == null ? 'Champ requis' : null,
+        ),
+        const SizedBox(height: 20),
 
         // Nom de l'entreprise
         TextFormField(
           controller: _nomEntrepriseController,
+          enabled: isEmploi,
           textInputAction: TextInputAction.done,
           autovalidateMode: AutovalidateMode.onUserInteraction,
           decoration: _baseDecoration(
             hintText: 'Nom de l\'entreprise',
             example: 'Google, Microsoft, Startup XYZ...',
+            disabled: !isEmploi,
           ),
-          validator: (v) => (v == null || v.isEmpty) ? 'Champ requis' : null,
+          validator: (v) => isEmploi && (v == null || v.isEmpty)
+              ? 'Champ requis si vous êtes en emploi'
+              : null,
         ),
       ],
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -578,126 +527,121 @@ class _RegisterAlumniFormState extends State<RegisterAlumniForm> {
     final textTheme = theme.textTheme;
     final colorScheme = theme.colorScheme;
 
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          // Message d'erreur
-          if (_errorMessage != null) ...[
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppTheme.errorColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppTheme.errorColor.withOpacity(0.3),
-                  width: 1,
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            if (_errorMessage != null) ...[
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppTheme.errorColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.errorColor.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.error_outline, color: AppTheme.errorColor, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _errorMessage!,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.errorColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    color: AppTheme.errorColor,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
+              const SizedBox(height: 24),
+            ],
+
+            _buildStepIndicator(),
+            _buildStepTitle(),
+            if (_currentStep == 0)
+              _buildStep1()
+            else if (_currentStep == 1)
+              _buildStep2()
+            else
+              _buildStep3(),
+
+            const SizedBox(height: 32),
+
+            Row(
+              children: [
+                if (_currentStep > 0) ...[
                   Expanded(
-                    child: Text(
-                      _errorMessage!,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.errorColor,
-                        fontWeight: FontWeight.w500,
+                    child: OutlinedButton(
+                      onPressed: _isLoading ? null : _previousStep,
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.arrow_back, size: 20),
+                          SizedBox(width: 8),
+                          Text('Précédent'),
+                        ],
                       ),
                     ),
                   ),
+                  const SizedBox(width: 16),
                 ],
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
-
-          // Indicateur d'étape
-          _buildStepIndicator(),
-          
-          // Titre de l'étape
-          _buildStepTitle(),
-
-          // Contenu de l'étape
-          if (_currentStep == 0) _buildStep1()
-          else if (_currentStep == 1) _buildStep2()
-          else _buildStep3(),
-
-          const SizedBox(height: 32),
-
-          // Boutons de navigation
-          Row(
-            children: [
-              if (_currentStep > 0) ...[
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: _isLoading ? null : _previousStep,
-                    style: OutlinedButton.styleFrom(
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : (_currentStep < 2 ? _nextStep : _register),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                      foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: Row(
+                    child: _isLoading
+                        ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                      ),
+                    )
+                        : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.arrow_back, size: 20),
+                        Icon(
+                          _currentStep < 2 ? Icons.arrow_forward : Icons.person_add,
+                          size: 20,
+                          color: Colors.black,
+                        ),
                         const SizedBox(width: 8),
-                        Text('Précédent'),
+                        Text(
+                          _currentStep < 2 ? 'Suivant' : 'S\'inscrire',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
               ],
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : (_currentStep < 2 ? _nextStep : _register),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colorScheme.secondary,
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                    height: 24,
-                    width: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-                    ),
-                  )
-                      : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        _currentStep < 2 ? Icons.arrow_forward : Icons.person_add,
-                        size: 20,
-                        color: Colors.black,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _currentStep < 2 ? 'Suivant' : 'S\'inscrire',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }

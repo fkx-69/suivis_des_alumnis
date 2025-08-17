@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:memoire/constants/app_theme.dart';
 import 'package:memoire/models/user_model.dart';
 import 'package:memoire/models/publication_model.dart';
 import 'package:memoire/models/event_model.dart';
 import 'package:memoire/screens/event/event_detail_screen.dart';
 import 'package:memoire/services/home_service.dart';
+import 'package:memoire/services/event_provider.dart';
 import 'package:memoire/widgets/publication_card.dart';
 import 'package:memoire/widgets/home/section_title.dart';
 import 'package:memoire/widgets/home/search_bar.dart';
@@ -56,12 +58,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     try {
       final suggestions = await _homeService.fetchSuggestions();
       final publications = await _homeService.fetchPublications();
-      final events = await _homeService.fetchEvents();
+      
+      // Charger les événements via le Provider
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<EventProvider>().loadAllEvents();
+      });
+      
       if (!mounted) return;
       setState(() {
         _suggestions = suggestions;
         _publications = publications;
-        _events = events;
       });
     } catch (e) {
       if (mounted) {
@@ -79,6 +85,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
     }
   }
+
 
   Future<void> _search(String query) async {
     if (query.isEmpty) {
@@ -157,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   ),
                                 ),
                                 Text(
-                                  'Réseau des anciens ITMA',
+                                  'Réseau des ITMIENS',
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: Colors.white.withOpacity(0.8),
                                     fontSize: 12,
@@ -217,9 +224,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     SizedBox(height: size.height * 0.025),
 
                     const SectionTitle(title: 'Suggestions de profils'),
-                    _suggestions.isEmpty
-                        ? const Center(child: Text("Aucune suggestion disponible."))
-                        : UserSuggestionSection(users: _suggestions),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _suggestions.isEmpty
+                              ? const Center(child: Text("Aucune suggestion disponible."))
+                              : UserSuggestionSection(users: _suggestions),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            print("🔄 Test: Rechargement des suggestions...");
+                            _loadContent();
+                          },
+                          icon: const Icon(Icons.refresh),
+                          tooltip: "Recharger",
+                        ),
+                      ],
+                    ),
 
                     SizedBox(height: size.height * 0.03),
 
@@ -227,51 +248,112 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     if (_publications.isEmpty)
                       const Center(child: Text("Aucune publication disponible."))
                     else
-                      ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _publications.length,
-                        separatorBuilder: (_, __) =>
-                            SizedBox(height: size.height * 0.02),
-                        itemBuilder: (context, index) {
-                          return PublicationCard(publication: _publications[index]);
-                        },
+                      Column(
+                        children: _publications
+                            .map((pub) => Padding(
+                          padding: EdgeInsets.only(bottom: size.height * 0.02),
+                          child: PublicationCard(publication: pub),
+                        ))
+                            .toList(),
                       ),
+
 
                     SizedBox(height: size.height * 0.03),
                     const SectionTitle(title: 'Évènements à venir'),
+                    const SizedBox(height: 12),
 
-                    Builder(
-                      builder: (_) {
-                        final eventList = _events
-                            .where((e) => e.valide == true && e.dateDebut.isAfter(DateTime.now()))
-                            .toList();
+                    Consumer<EventProvider>(
+                      builder: (context, eventProvider, child) {
+                        final eventList = eventProvider.upcomingEvents;
+                        final isLoading = eventProvider.isLoading;
 
-                        if (eventList.isEmpty) {
-                          return const Center(child: Text("Aucun événement à venir."));
+                        if (isLoading) {
+                          return const Padding(
+                            padding: EdgeInsets.only(top: 8.0),
+                            child: Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
                         }
 
-                        return SizedBox(
-                          height: 270,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: eventList.length,
-                            separatorBuilder: (_, __) => SizedBox(width: size.width * 0.03),
-                            itemBuilder: (context, index) {
-                              final event = eventList[index];
-                              return EventCard(
-                                event: event,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => EventDetailScreen(event: event),
+                        if (eventList.isEmpty) {
+                          return Container(
+                            padding: const EdgeInsets.all(16),
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surfaceColor,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppTheme.borderColor,
+                                width: 1,
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.event_outlined,
+                                  size: 48,
+                                  color: AppTheme.subTextColor.withOpacity(0.5),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  "Aucun événement à venir",
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: AppTheme.subTextColor,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "Soyez le premier à créer un événement !",
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: AppTheme.subTextColor.withOpacity(0.7),
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return Column(
+                          children: [
+                            SizedBox(
+                              height: 270,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                itemCount: eventList.length,
+                                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                                itemBuilder: (context, index) {
+                                  final event = eventList[index];
+                                  return SizedBox(
+                                    width: 280,
+                                    child: EventCard(
+                                      event: event,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => EventDetailScreen(event: event),
+                                          ),
+                                        );
+                                      },
                                     ),
                                   );
                                 },
-                              );
-                            },
-                          ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Center(
+                              child: Text(
+                                "${eventList.length} événement${eventList.length > 1 ? 's' : ''} trouvé${eventList.length > 1 ? 's' : ''}",
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: AppTheme.subTextColor.withOpacity(0.7),
+                                ),
+                              ),
+                            ),
+                          ],
                         );
                       },
                     ),

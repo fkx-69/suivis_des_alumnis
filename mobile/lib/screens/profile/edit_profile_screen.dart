@@ -3,6 +3,7 @@ import '../../models/user_model.dart';
 import 'package:memoire/services/auth_service.dart';
 import 'package:memoire/widgets/profile_widgets/edit_profile_form.dart';
 import 'package:memoire/constants/app_theme.dart';
+import 'profile_screen.dart'; // assure-toi que ce chemin est correct
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -15,7 +16,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final AuthService _authService = AuthService();
   UserModel? _user;
   bool _isLoading = true;
-  int _selectedIndex = 3; // Profil
 
   @override
   void initState() {
@@ -29,29 +29,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final u = await _authService.getUserInfo();
       setState(() => _user = u);
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Erreur : $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur : $e'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
     } finally {
       setState(() => _isLoading = false);
-    }
-  }
-
-  void _onNavTap(int index) {
-    if (index == _selectedIndex) return;
-    setState(() => _selectedIndex = index);
-    switch (index) {
-      case 0:
-        Navigator.pushReplacementNamed(context, '/home');
-        break;
-      case 1:
-        Navigator.pushReplacementNamed(context, '/events');
-        break;
-      case 2:
-        Navigator.pushReplacementNamed(context, '/messages');
-        break;
-      case 3:
-        Navigator.pop(context);
-        break;
     }
   }
 
@@ -67,30 +52,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppTheme.backgroundColor,
-        elevation: 1,
-        leading: BackButton(color: AppTheme.primaryColor),
-        title: Text(
-          'Modifier le profil',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            color: AppTheme.primaryColor,
-            fontWeight: FontWeight.w600,
-            fontSize: 20,
-          ),
-        ),
+        title: const Text('Modifier le profil'),
+        leading: const BackButton(color: AppTheme.primaryColor),
+        surfaceTintColor: Colors.transparent,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           child: Card(
-            shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            elevation: 4,
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               child: EditProfileForm(
                 user: _user!,
                 onSaved: (updatedUser) {
+                  print('✅ EditProfileScreen: Profil mis à jour, retour à l\'écran précédent');
+                  // Retourner à l'écran précédent avec le résultat
                   Navigator.pop(context, updatedUser);
                 },
               ),

@@ -7,31 +7,37 @@ import { usePathname } from "next/navigation";
 import { fetchConversations } from "@/lib/api/messaging";
 import { Conversation } from "@/types/messaging";
 import { useProfileModal } from "@/contexts/ProfileModalContext";
+import { DiscussionsProvider, useDiscussions } from "@/contexts/DiscussionsContext";
 
 export default function DiscussionsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  return (
+    <DiscussionsProvider>
+      <DiscussionsLayoutInner>{children}</DiscussionsLayoutInner>
+    </DiscussionsProvider>
+  );
+}
+
+function DiscussionsLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { showProfile } = useProfileModal();
-
+  const { conversations, setConversations } = useDiscussions();
   const handleProfileClick = (e: React.MouseEvent, username: string) => {
     e.stopPropagation();
     e.preventDefault();
     showProfile(username);
   };
-  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
-
   const menuDropdownRef = React.useRef<HTMLDivElement>(null);
   const menuButtonRef = React.useRef<HTMLButtonElement>(null);
-
   useEffect(() => {
     fetchConversations()
       .then(setConversations)
       .finally(() => setLoading(false));
-  }, []);
+  }, [setConversations]);
 
   useEffect(() => {
     const menuButton = menuButtonRef.current;

@@ -7,7 +7,7 @@ plugins {
 
 android {
     compileSdk = 35
-    ndkVersion = "27.0.12077973" // ✅ Ceci uniquement
+    ndkVersion = "27.0.12077973"
 
     namespace = "com.example.memoire"
 

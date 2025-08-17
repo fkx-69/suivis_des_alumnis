@@ -1,5 +1,3 @@
-// lib/screens/group/group_list_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:memoire/constants/app_theme.dart';
 import 'package:memoire/models/group_model.dart';
@@ -336,7 +334,7 @@ class _GroupListScreenState extends State<GroupListScreen> with TickerProviderSt
                   ),
                 )
               : ListView.builder(
-                  shrinkWrap: true,
+              shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
                   itemCount: verticaux.length,
@@ -359,14 +357,14 @@ class _GroupListScreenState extends State<GroupListScreen> with TickerProviderSt
                         color: Colors.transparent,
                         child: InkWell(
                           borderRadius: BorderRadius.circular(16),
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => GroupDetailScreen(group: g),
-                            ),
-                          ).then((r) {
-                            if (r == true) _loadGroups();
-                          }),
+                          onTap: () async {
+                            final result = await Navigator.push<bool>(
+                              context,
+                              MaterialPageRoute(builder: (_) => GroupDetailScreen(group: g)),
+                            );
+                            if (result == true) _loadGroups();
+                          },
+
                           child: Padding(
                             padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
                             child: Row(

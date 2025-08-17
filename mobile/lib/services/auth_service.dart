@@ -5,6 +5,8 @@ import 'package:memoire/models/alumni_model.dart';
 import 'package:memoire/models/student_model.dart';
 import 'package:memoire/models/user_model.dart';
 import 'package:memoire/services/dio_client.dart';
+import 'package:memoire/services/upload_service.dart';
+import 'package:image_picker/image_picker.dart';
 import '../helpers/token_manager.dart';
 
 class AuthService {
@@ -152,23 +154,36 @@ class AuthService {
     required String nom,
     required String username,
     String? biographie,
-    File? photo,
+    dynamic photo, // Accepte File ou XFile
   }) async {
     try {
       print('🔄 UPDATE PROFILE - Début de la mise à jour');
-      print('   Photo: ${photo?.path}');
+      print('   Prénom: $prenom');
+      print('   Nom: $nom');
+      print('   Username: $username');
+      print('   Biographie: $biographie');
+      print('   Photo: ${photo is XFile ? photo.name : photo is File ? photo.path : 'N/A'}');
+      print('   URL endpoint: ${ApiConstants.userUpdate}');
       
-      final formData = FormData.fromMap({
-        'prenom': prenom,
-        'nom': nom,
-        'username': username,
-        if (biographie != null) 'biographie': biographie,
-        if (photo != null)
-          'photo': await MultipartFile.fromFile(
-            photo.path,
-            filename: photo.path.split(Platform.pathSeparator).last,
-          ),
-      });
+      // Utiliser le service d'upload adapté
+      final formData = await UploadService.createFormDataWithImage(
+        data: {
+          'prenom': prenom,
+          'nom': nom,
+          'username': username,
+          if (biographie != null && biographie.isNotEmpty) 'biographie': biographie,
+        },
+        imageFile: photo is XFile ? photo : null,
+        imageFieldName: 'photo_profil', // Changement ici : utiliser 'photo_profil' au lieu de 'photo'
+      );
+      
+      if (formData == null) {
+        throw Exception('Impossible de créer le FormData pour l\'upload');
+      }
+
+      print('🔄 UPDATE PROFILE - FormData créé avec succès');
+      print('   Champs dans FormData: ${formData.fields.map((f) => f.key).toList()}');
+      print('   Fichiers dans FormData: ${formData.files.map((f) => f.key).toList()}');
 
       print('🔄 UPDATE PROFILE - Envoi de la requête PUT');
       final response = await DioClient.dio.put(
@@ -192,12 +207,32 @@ class AuthService {
     } on DioException catch (e) {
       print('❌ UPDATE PROFILE - Erreur DIO: ${e.response?.statusCode}');
       print('❌ UPDATE PROFILE - Erreur DATA: ${e.response?.data}');
-      final message =
-          e.response?.data['detail'] ?? 'Erreur de mise à jour du profil';
-      throw Exception(message.toString());
+      print('❌ UPDATE PROFILE - Type d\'erreur: ${e.type}');
+      print('❌ UPDATE PROFILE - Message: ${e.message}');
+      
+      String errorMessage;
+      if (e.type == DioExceptionType.connectionTimeout) {
+        errorMessage = 'Timeout de connexion - Vérifiez votre connexion';
+      } else if (e.type == DioExceptionType.connectionError) {
+        errorMessage = 'Erreur de connexion au serveur';
+      } else if (e.response?.statusCode == 400) {
+        errorMessage = e.response?.data['detail'] ?? 'Données invalides';
+      } else if (e.response?.statusCode == 413) {
+        errorMessage = 'Fichier trop volumineux';
+      } else if (e.response?.statusCode == 415) {
+        errorMessage = 'Type de fichier non supporté';
+      } else if (e.response?.statusCode == 500) {
+        errorMessage = 'Erreur interne du serveur';
+      } else {
+        errorMessage = e.response?.data['detail'] ?? e.message ?? 'Erreur de mise à jour du profil';
+      }
+      
+      print('❌ UPDATE PROFILE - Message d\'erreur final: $errorMessage');
+      throw Exception(errorMessage);
     } catch (e) {
       print('❌ UPDATE PROFILE - Erreur inconnue: $e');
-      throw Exception('Erreur inattendue lors de la mise à jour du profil');
+      print('❌ UPDATE PROFILE - Type d\'erreur: ${e.runtimeType}');
+      throw Exception('Erreur inattendue lors de la mise à jour du profil: $e');
     }
   }
 

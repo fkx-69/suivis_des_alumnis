@@ -1,7 +1,5 @@
-// lib/screens/profile/widgets/parcours_academique_form.dart
-
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../constants/app_theme.dart';
 
 typedef AcadCreate = Future<void> Function(Map<String, dynamic> data);
 typedef AcadUpdate = Future<void> Function(int id, Map<String, dynamic> data);
@@ -21,24 +19,6 @@ class ParcoursAcademiqueFormSection extends StatelessWidget {
     required this.onDelete,
   });
 
-  InputDecoration _fieldDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: GoogleFonts.poppins(color: Colors.grey[700]),
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.grey.shade300),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
-      ),
-    );
-  }
-
   static const List<String> _mentionsDisponibles = [
     'mention_passable',
     'mention_assez_bien',
@@ -55,13 +35,8 @@ class ParcoursAcademiqueFormSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              padding: const EdgeInsets.symmetric(vertical: 14),
-            ),
             icon: const Icon(Icons.add),
-            label: Text('Ajouter parcours académique', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600)),
+            label: const Text('Ajouter parcours académique'),
             onPressed: () => _showForm(context),
           ),
         ),
@@ -72,25 +47,26 @@ class ParcoursAcademiqueFormSection extends StatelessWidget {
             child: Card(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               elevation: 2,
+              color: AppTheme.cardColor,
               child: ListTile(
                 title: Text(
                   item['diplome'] ?? '',
-                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
                 subtitle: Text(
                   '${item['institution']}, ${item['annee_obtention']}\n${item['mention'] ?? ''}',
-                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700]),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
                 isThreeLine: true,
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.edit, color: Color(0xFF2196F3)),
+                      icon: const Icon(Icons.edit, color: AppTheme.accentColor),
                       onPressed: () => _showForm(context, existing: item),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.redAccent),
+                      icon: const Icon(Icons.delete, color: AppTheme.errorColor),
                       onPressed: () async {
                         final confirm = await showDialog<bool>(
                           context: context,
@@ -104,7 +80,10 @@ class ParcoursAcademiqueFormSection extends StatelessWidget {
                               ),
                               TextButton(
                                 onPressed: () => Navigator.of(ctx).pop(true),
-                                child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
+                                child: const Text(
+                                  'Supprimer',
+                                  style: TextStyle(color: AppTheme.errorColor),
+                                ),
                               ),
                             ],
                           ),
@@ -139,9 +118,9 @@ class ParcoursAcademiqueFormSection extends StatelessWidget {
       builder: (bCtx) => DraggableScrollableSheet(
         expand: false,
         builder: (_, controller) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          decoration: BoxDecoration(
+            color: AppTheme.backgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           ),
           padding: EdgeInsets.only(
             left: 16, right: 16, top: 16,
@@ -153,7 +132,7 @@ class ParcoursAcademiqueFormSection extends StatelessWidget {
             children: [
               Text(
                 existing != null ? 'Modifier parcours' : 'Nouveau parcours',
-                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600),
+                style: Theme.of(ctx).textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
               Form(
@@ -162,19 +141,19 @@ class ParcoursAcademiqueFormSection extends StatelessWidget {
                   children: [
                     TextFormField(
                       controller: dipCtrl,
-                      decoration: _fieldDecoration('Diplôme *'),
+                      decoration: const InputDecoration(labelText: 'Diplôme *'),
                       validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: instCtrl,
-                      decoration: _fieldDecoration('Institution *'),
+                      decoration: const InputDecoration(labelText: 'Institution *'),
                       validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: anCtrl,
-                      decoration: _fieldDecoration('Année obtention *'),
+                      decoration: const InputDecoration(labelText: 'Année obtention *'),
                       keyboardType: TextInputType.number,
                       validator: (v) => v == null || int.tryParse(v) == null ? 'Nombre requis' : null,
                     ),
@@ -183,32 +162,26 @@ class ParcoursAcademiqueFormSection extends StatelessWidget {
                       value: selectedMention != null && _mentionsDisponibles.contains(selectedMention)
                           ? selectedMention
                           : null,
-                      decoration: _fieldDecoration('Mention'),
+                      decoration: const InputDecoration(labelText: 'Mention'),
                       items: [
                         const DropdownMenuItem<String>(
                           value: null,
                           child: Text('Aucune'),
                         ),
                         ..._mentionsDisponibles.map((mention) => DropdownMenuItem<String>(
-                              value: mention,
-                              child: Text(mention),
-                            )),
+                          value: mention,
+                          child: Text(mention),
+                        )),
                       ],
                       onChanged: (val) {
                         selectedMention = val;
                       },
                       isExpanded: true,
-                      validator: (_) => null, // Pas d'erreur si vide
                     ),
                     const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4CAF50),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
                         onPressed: () {
                           if (!formKey.currentState!.validate()) return;
                           final data = {
@@ -224,10 +197,7 @@ class ParcoursAcademiqueFormSection extends StatelessWidget {
                           }
                           Navigator.pop(ctx);
                         },
-                        child: Text(
-                          existing != null ? 'Modifier' : 'Créer',
-                          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
-                        ),
+                        child: Text(existing != null ? 'Modifier' : 'Créer'),
                       ),
                     ),
                   ],

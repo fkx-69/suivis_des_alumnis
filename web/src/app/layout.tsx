@@ -8,6 +8,7 @@ import { ProfileModalProvider } from "@/contexts/ProfileModalContext";
 
 import { useEffect } from "react";
 import { ThemeProvider } from "next-themes";
+import { Toaster } from "sonner";
 
 export default function RootLayout({
   children,
@@ -33,6 +34,7 @@ export default function RootLayout({
             </ProfileModalProvider>
           </AuthProvider>
         </ThemeProvider>
+        <Toaster />
       </body>
     </html>
   );

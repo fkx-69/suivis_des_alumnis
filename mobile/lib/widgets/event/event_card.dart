@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:memoire/constants/app_theme.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../../models/event_model.dart';
+import '../../services/event_provider.dart';
 
 class EventCard extends StatefulWidget {
   final EventModel event;
@@ -21,6 +23,7 @@ class _EventCardState extends State<EventCard> with SingleTickerProviderStateMix
   late AnimationController _scaleController;
   late Animation<double> _scaleAnimation;
   bool _isHovered = false;
+  bool _isValidating = false;
 
   @override
   void initState() {
@@ -54,6 +57,39 @@ class _EventCardState extends State<EventCard> with SingleTickerProviderStateMix
 
   void _onTapCancel() {
     _scaleController.reverse();
+  }
+
+  Future<void> _validateEvent() async {
+    setState(() => _isValidating = true);
+    
+    try {
+      print("🔄 EventCard: Validation de l'événement ${widget.event.id}...");
+      await context.read<EventProvider>().validateEvent(widget.event.id);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('✅ Événement validé avec succès'),
+            backgroundColor: AppTheme.successColor,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print("❌ EventCard: Erreur lors de la validation: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Erreur lors de la validation: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isValidating = false);
+      }
+    }
   }
 
   @override
@@ -109,8 +145,11 @@ class _EventCardState extends State<EventCard> with SingleTickerProviderStateMix
                               child: Image.network(
                                 widget.event.image!,
                                 fit: BoxFit.cover,
+                                width: double.infinity,
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
+                                    width: double.infinity,
+                                    height: 120,
                                     color: AppTheme.surfaceColor,
                                     child: Icon(
                                       Icons.image_not_supported,
@@ -132,6 +171,8 @@ class _EventCardState extends State<EventCard> with SingleTickerProviderStateMix
                             fontWeight: FontWeight.w600,
                             color: AppTheme.primaryColor,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
 
                         const SizedBox(height: 12),
@@ -159,6 +200,8 @@ class _EventCardState extends State<EventCard> with SingleTickerProviderStateMix
                                   color: AppTheme.subTextColor,
                                   fontWeight: FontWeight.w500,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
@@ -224,6 +267,37 @@ class _EventCardState extends State<EventCard> with SingleTickerProviderStateMix
                               ),
                             ),
                             const Spacer(),
+                            // Bouton de validation (seulement pour les événements non validés)
+                            if (!widget.event.valide)
+                              GestureDetector(
+                                onTap: _isValidating ? null : _validateEvent,
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.successColor.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: AppTheme.successColor.withOpacity(0.3),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: _isValidating
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.successColor),
+                                          ),
+                                        )
+                                      : Icon(
+                                          Icons.check_circle_outline,
+                                          size: 16,
+                                          color: AppTheme.successColor,
+                                        ),
+                                ),
+                              ),
+                            const SizedBox(width: 8),
                             Icon(
                               Icons.arrow_forward_ios,
                               size: 16,

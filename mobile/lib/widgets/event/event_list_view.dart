@@ -19,9 +19,11 @@ class EventListView extends StatelessWidget {
         child: Text('Aucun événement', style: TextStyle(fontSize: 16, color: Colors.grey)),
       );
     }
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+    
+    return Container(
+      constraints: const BoxConstraints.expand(),
       child: ListView.builder(
+        padding: const EdgeInsets.symmetric(vertical: 8),
         itemCount: events.length,
         itemBuilder: (ctx, i) {
           final ev = events[i];

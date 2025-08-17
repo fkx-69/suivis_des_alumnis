@@ -4,6 +4,7 @@ import 'package:memoire/models/publication_model.dart';
 import 'package:memoire/services/publication_service.dart';
 import '../models/comment_model.dart';
 import '../constants/app_theme.dart';
+import '../constants/api_constants.dart';
 import '../screens/profile/publication_detail_screen.dart';
 import '../screens/profile/public_profile_screen.dart';
 import 'package:memoire/services/auth_service.dart';
@@ -29,7 +30,28 @@ class _PublicationCardState extends State<PublicationCard> {
   void initState() {
     super.initState();
     _comments = List.from(widget.publication.commentaires);
-    currentUsername = AuthService().getCurrentUsername(); // Si tu ne l’as pas déjà
+    currentUsername = AuthService().getCurrentUsername(); // Si tu ne l'as pas déjà
+  }
+
+  String _buildImageUrl(String? imageUrl) {
+    if (imageUrl == null || imageUrl.isEmpty) {
+      print("🔍 PublicationCard: URL d'image vide ou null");
+      return '';
+    }
+    
+    print("🔍 PublicationCard: URL originale: $imageUrl");
+    
+    // Si l'URL commence déjà par http, on la retourne telle quelle
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      print("🔍 PublicationCard: URL complète détectée: $imageUrl");
+      return imageUrl;
+    }
+    
+    // Sinon, on construit l'URL complète avec le baseUrl
+    final baseUrl = "http://192.168.1.15:8000";
+    final fullUrl = '$baseUrl$imageUrl';
+    print("🔍 PublicationCard: URL construite: $fullUrl");
+    return fullUrl;
   }
 
 
@@ -111,11 +133,63 @@ class _PublicationCardState extends State<PublicationCard> {
                     child: CircleAvatar(
                       radius: 20,
                       backgroundColor: AppTheme.surfaceColor,
-                      backgroundImage: const NetworkImage('https://via.placeholder.com/150'),
-                      child: const Icon(
-                        Icons.person,
-                        color: AppTheme.primaryColor,
-                        size: 20,
+                      child: ClipOval(
+                        child: _buildAuthorProfileImage() != null
+                            ? Image.network(
+                                _buildImageUrl(widget.publication.auteurPhotoProfil),
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  print("❌ PublicationCard: Erreur chargement photo auteur: $error");
+                                  return Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.primaryColor.withOpacity(0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.person,
+                                      color: AppTheme.primaryColor,
+                                      size: 20,
+                                    ),
+                                  );
+                                },
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.surfaceColor,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Center(
+                                      child: CircularProgressIndicator(
+                                        value: loadingProgress.expectedTotalBytes != null
+                                            ? loadingProgress.cumulativeBytesLoaded /
+                                                loadingProgress.expectedTotalBytes!
+                                            : null,
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              )
+                            : Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryColor.withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.person,
+                                  color: AppTheme.primaryColor,
+                                  size: 20,
+                                ),
+                              ),
                       ),
                     ),
                   ),
@@ -332,5 +406,28 @@ class _PublicationCardState extends State<PublicationCard> {
         ],
       ),
     );
+  }
+
+  ImageProvider? _buildAuthorProfileImage() {
+    final imageUrl = _buildImageUrl(widget.publication.auteurPhotoProfil);
+    
+    if (imageUrl.isNotEmpty) {
+      print("🖼️ PublicationCard: Photo de profil de l'auteur: $imageUrl");
+      return NetworkImage(imageUrl);
+    }
+    print("🖼️ PublicationCard: Aucune photo de profil pour l'auteur");
+    return null;
+  }
+
+  Widget? _buildAuthorProfileFallback() {
+    // Afficher une icône seulement si aucune photo n'est disponible
+    if (widget.publication.auteurPhotoProfil == null || widget.publication.auteurPhotoProfil!.isEmpty) {
+      return Icon(
+        Icons.person,
+        color: AppTheme.primaryColor,
+        size: 20,
+      );
+    }
+    return null;
   }
 }

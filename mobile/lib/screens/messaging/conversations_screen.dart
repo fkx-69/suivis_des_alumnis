@@ -166,8 +166,9 @@ class _ConversationsScreenState extends State<ConversationsScreen> with TickerPr
                       Icon(
                         Icons.chat_outlined,
                         size: 64,
-                        color: AppTheme.subTextColor.withOpacity(0.5),
+                        color: Theme.of(context).colorScheme.secondary, // doré
                       ),
+
                       const SizedBox(height: 16),
                       Text(
                         'Aucune conversation',
@@ -196,7 +197,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> with TickerPr
                 itemBuilder: (context, index) {
                   final convo = conversations[index];
                   // Utilisation de NetworkImage pour l'avatar, avec un fallback
-                  final avatarImage = convo.photoProfil != null && convo.photoProfil!.isNotEmpty
+                  final avatarImage = (convo.photoProfil?.trim().isNotEmpty ?? false)
                       ? NetworkImage(convo.photoProfil!)
                       : null;
 

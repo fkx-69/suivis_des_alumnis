@@ -133,105 +133,38 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> with TickerProvid
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (widget.group.photoProfil != null && widget.group.photoProfil!.isNotEmpty) ...[
-              CircleAvatar(
-                radius: 16,
-                backgroundImage: NetworkImage(widget.group.photoProfil!),
-              ),
-              const SizedBox(width: 10),
-            ],
-            Flexible(
-              child: Text(
-                widget.group.nomGroupe,
-                style: textTheme.titleLarge?.copyWith(
-                  color: AppTheme.primaryColor,
-                  fontWeight: FontWeight.w600,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
+        title: Text(
+          widget.group.nomGroupe,
+          style: textTheme.titleLarge?.copyWith(
+            color: AppTheme.primaryColor,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         actions: [
           if (_isMember) ...[
-            // Description & bouton rejoindre avec photo optionnelle
             Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              margin: const EdgeInsets.only(right: 8),
               decoration: BoxDecoration(
-                gradient: AppTheme.accentGradient,
-                boxShadow: [
-                  BoxShadow(
-                    color: colorScheme.secondary.withOpacity(0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
+                color: colorScheme.secondary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-
-                  // Ajout minimal: Photo de profil (si existante)
-                  if (widget.group.photoProfil != null && widget.group.photoProfil!.isNotEmpty)
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 16.0),
-                        child: CircleAvatar(
-                          radius: 40,
-                          backgroundImage: NetworkImage(widget.group.photoProfil!),
-                        ),
-                      ),
-                    ),
-
-                  // Description inchangée
-                  Text(
-                    widget.group.description,
-                    style: textTheme.bodyLarge?.copyWith(
-                      color: Colors.white,
-                      height: 1.4,
+              child: IconButton(
+                icon: Icon(
+                  Icons.group,
+                  color: colorScheme.secondary,
+                  size: 24,
+                ),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => GroupMembersScreen(
+                      groupId: widget.group.id,
+                      groupName: widget.group.nomGroupe,
                     ),
                   ),
-                  const SizedBox(height: 16),
-
-                  // Bouton rejoindre inchangé
-                  if (!_isMember)
-                    Center(
-                      child: SizedBox(
-                        height: 48,
-                        child: ElevatedButton.icon(
-                          onPressed: _join,
-                          icon: Icon(
-                            Icons.group_add,
-                            color: Colors.black,
-                            size: 20,
-                          ),
-                          label: Text(
-                            'Rejoindre le groupe',
-                            style: textTheme.labelLarge?.copyWith(
-                              color: Colors.black,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.black,
-                            elevation: 0,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
+                ),
               ),
             ),
-
             PopupMenuButton<String>(
               onSelected: (value) async {
                 if (value == 'quit') {
@@ -257,7 +190,8 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> with TickerProvid
                   if (confirm == true) {
                     await _svc.quitGroup(widget.group.id);
                     if (mounted) {
-                      Navigator.of(context).pop(); // revient à la liste de groupes
+                      Navigator.of(context).pop(true); // pour signaler à la page précédente qu’on doit rafraîchir
+
                     }
                   }
                 }
@@ -277,9 +211,9 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> with TickerProvid
             ),
           ],
         ],
+
         surfaceTintColor: Colors.transparent,
       ),
-
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: Column(
@@ -393,6 +327,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> with TickerProvid
                           ),
                         )
                       : ListView.builder(
+                          reverse: true,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           itemCount: _msgs.length,
                           itemBuilder: (ctx, i) {

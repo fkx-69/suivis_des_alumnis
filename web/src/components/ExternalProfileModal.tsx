@@ -32,11 +32,14 @@ export default function ExternalProfileModal({
   const handleMentoratRequest = async () => {
     try {
       await envoyerDemande(user.username);
-      toast.success(`Demande de mentorat envoyée à ${user.prenom}.`);
+      toast.success("Votre demande de mentorat a bien été envoyée.");
       onClose();
-    } catch (error) {
-      // The global error handler in axios should already show a toast.
-      console.error("Erreur lors de l'envoi de la demande de mentorat:", error);
+    } catch (error: any) {
+      if (error?.response?.status === 500) {
+        toast.error("Vous avez déjà fait une demande à cet alumni.");
+      } else {
+        toast.error("Erreur lors de l'envoi de la demande de mentorat.");
+      }
     }
   };
 

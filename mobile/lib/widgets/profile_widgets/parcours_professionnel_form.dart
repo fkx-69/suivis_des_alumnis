@@ -1,7 +1,5 @@
-// lib/screens/profile/widgets/parcours_professionnel_form.dart
-
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../constants/app_theme.dart';
 
 typedef ProfCreate = Future<void> Function(Map<String, dynamic> data);
 typedef ProfUpdate = Future<void> Function(int id, Map<String, dynamic> data);
@@ -21,32 +19,13 @@ class ParcoursProfessionnelFormSection extends StatelessWidget {
     required this.onDelete,
   });
 
-  // Liste des contrats : 'value' = code envoyé au backend, 'label' = texte affiché
   static const List<Map<String, String>> _contrats = [
-    {'value': 'CDI',       'label': 'CDI'},
-    {'value': 'CDD',       'label': 'CDD'},
-    {'value': 'stage',     'label': 'Stage'},
+    {'value': 'CDI', 'label': 'CDI'},
+    {'value': 'CDD', 'label': 'CDD'},
+    {'value': 'stage', 'label': 'Stage'},
     {'value': 'freelance', 'label': 'Freelance'},
-    {'value': 'autre',     'label': 'Autre'},
+    {'value': 'autre', 'label': 'Autre'},
   ];
-
-  InputDecoration _fieldDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: GoogleFonts.poppins(color: Colors.grey[700]),
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.grey.shade300),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,16 +35,8 @@ class ParcoursProfessionnelFormSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              padding: const EdgeInsets.symmetric(vertical: 14),
-            ),
             icon: const Icon(Icons.add_business),
-            label: Text(
-              'Ajouter parcours pro',
-              style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
+            label: const Text('Ajouter parcours pro'),
             onPressed: () => _showForm(context),
           ),
         ),
@@ -76,24 +47,25 @@ class ParcoursProfessionnelFormSection extends StatelessWidget {
             child: Card(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               elevation: 2,
+              color: AppTheme.cardColor,
               child: ListTile(
                 title: Text(
                   item['poste'] ?? '',
-                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
                 subtitle: Text(
                   '${item['entreprise']} • ${item['date_debut']} (${item['type_contrat']})',
-                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700]),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.edit, color: Color(0xFF2196F3)),
+                      icon: const Icon(Icons.edit, color: AppTheme.accentColor),
                       onPressed: () => _showForm(context, existing: item),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.redAccent),
+                      icon: const Icon(Icons.delete, color: AppTheme.errorColor),
                       onPressed: () async {
                         final confirm = await showDialog<bool>(
                           context: context,
@@ -107,7 +79,10 @@ class ParcoursProfessionnelFormSection extends StatelessWidget {
                               ),
                               TextButton(
                                 onPressed: () => Navigator.of(ctx).pop(true),
-                                child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
+                                child: const Text(
+                                  'Supprimer',
+                                  style: TextStyle(color: AppTheme.errorColor),
+                                ),
                               ),
                             ],
                           ),
@@ -131,7 +106,6 @@ class ParcoursProfessionnelFormSection extends StatelessWidget {
     final posteCtrl = TextEditingController(text: existing?['poste']);
     final entCtrl = TextEditingController(text: existing?['entreprise']);
     final dateCtrl = TextEditingController(text: existing?['date_debut']);
-    // selectedType contient le code (ex. 'stage'), pas le label
     String selectedType = existing?['type_contrat'] ?? _contrats.first['value']!;
 
     showModalBottomSheet(
@@ -141,9 +115,9 @@ class ParcoursProfessionnelFormSection extends StatelessWidget {
       builder: (bCtx) => DraggableScrollableSheet(
         expand: false,
         builder: (_, controller) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          decoration: BoxDecoration(
+            color: AppTheme.backgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           ),
           padding: EdgeInsets.only(
             left: 16, right: 16, top: 16,
@@ -155,7 +129,7 @@ class ParcoursProfessionnelFormSection extends StatelessWidget {
             children: [
               Text(
                 existing != null ? 'Modifier parcours pro' : 'Nouveau parcours pro',
-                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600),
+                style: Theme.of(ctx).textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
               Form(
@@ -164,19 +138,19 @@ class ParcoursProfessionnelFormSection extends StatelessWidget {
                   children: [
                     TextFormField(
                       controller: posteCtrl,
-                      decoration: _fieldDecoration('Poste *'),
+                      decoration: const InputDecoration(labelText: 'Poste *'),
                       validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: entCtrl,
-                      decoration: _fieldDecoration('Entreprise *'),
+                      decoration: const InputDecoration(labelText: 'Entreprise *'),
                       validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: dateCtrl,
-                      decoration: _fieldDecoration('Date début *'),
+                      decoration: const InputDecoration(labelText: 'Date début *'),
                       readOnly: true,
                       onTap: () async {
                         final d = await showDatePicker(
@@ -196,7 +170,7 @@ class ParcoursProfessionnelFormSection extends StatelessWidget {
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       value: selectedType,
-                      decoration: _fieldDecoration('Type de contrat *'),
+                      decoration: const InputDecoration(labelText: 'Type de contrat *'),
                       items: _contrats.map((c) {
                         return DropdownMenuItem(
                           value: c['value'],
@@ -210,18 +184,13 @@ class ParcoursProfessionnelFormSection extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4CAF50),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
                         onPressed: () {
                           if (!formKey.currentState!.validate()) return;
                           final data = {
-                            'poste'       : posteCtrl.text,
-                            'entreprise'  : entCtrl.text,
-                            'date_debut'  : dateCtrl.text,       // "YYYY-MM-DD"
-                            'type_contrat': selectedType,         // code, ex. 'stage'
+                            'poste': posteCtrl.text,
+                            'entreprise': entCtrl.text,
+                            'date_debut': dateCtrl.text,
+                            'type_contrat': selectedType,
                           };
                           if (existing != null) {
                             onUpdate(existing['id'], data);
@@ -230,10 +199,7 @@ class ParcoursProfessionnelFormSection extends StatelessWidget {
                           }
                           Navigator.pop(ctx);
                         },
-                        child: Text(
-                          existing != null ? 'Modifier' : 'Créer',
-                          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
-                        ),
+                        child: Text(existing != null ? 'Modifier' : 'Créer'),
                       ),
                     ),
                   ],

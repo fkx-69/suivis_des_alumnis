@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../models/user_model.dart';
 import '../../../services/auth_service.dart';
+import 'package:memoire/constants/app_theme.dart';
+import 'package:memoire/services/upload_service.dart';
 
 class EditProfileForm extends StatefulWidget {
   final UserModel user;
@@ -25,16 +26,16 @@ class _EditProfileFormState extends State<EditProfileForm> {
   late TextEditingController _nomCtl;
   late TextEditingController _usernameCtl;
   late TextEditingController _bioCtl;
-  File? _photoFile;
+  XFile? _photoFile;
   bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    _prenomCtl   = TextEditingController(text: widget.user.prenom);
-    _nomCtl      = TextEditingController(text: widget.user.nom);
+    _prenomCtl = TextEditingController(text: widget.user.prenom);
+    _nomCtl = TextEditingController(text: widget.user.nom);
     _usernameCtl = TextEditingController(text: widget.user.username);
-    _bioCtl      = TextEditingController(text: widget.user.biographie ?? '');
+    _bioCtl = TextEditingController(text: widget.user.biographie ?? '');
   }
 
   @override
@@ -47,20 +48,46 @@ class _EditProfileFormState extends State<EditProfileForm> {
   }
 
   Future<void> _pickPhoto() async {
-    final img = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (img != null) {
-      print('📸 PHOTO PICKED - Chemin: ${img.path}');
-      setState(() => _photoFile = File(img.path));
+    print('📸 EditProfileForm: Sélection d\'une photo...');
+    try {
+      final img = await UploadService.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 80,
+      );
+      if (img != null) {
+        print('📸 EditProfileForm: Photo sélectionnée: ${img.name}');
+        setState(() => _photoFile = img);
+      }
+    } catch (e) {
+      print('❌ EditProfileForm: Erreur lors de la sélection de photo: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors de la sélection de photo: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
     }
   }
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    
+    print('💾 EditProfileForm: Sauvegarde du profil...');
+    print('   Photo sélectionnée: ${_photoFile?.path}');
+    print('   Photo sélectionnée - nom: ${_photoFile?.name}');
+    print('   Photo sélectionnée - taille: ${_photoFile != null ? await _photoFile!.length() : 'N/A'} bytes');
+    print('   Photo existante: ${widget.user.photoProfil}');
+    print('   Prénom: ${_prenomCtl.text.trim()}');
+    print('   Nom: ${_nomCtl.text.trim()}');
+    print('   Username: ${_usernameCtl.text.trim()}');
+    print('   Biographie: ${_bioCtl.text.trim()}');
+    
     setState(() => _isSaving = true);
     try {
-      print('💾 SAVE PROFILE - Début de la sauvegarde');
-      print('   Photo sélectionnée: ${_photoFile?.path}');
-      
       final updated = await AuthService().updateProfile(
         prenom: _prenomCtl.text.trim(),
         nom: _nomCtl.text.trim(),
@@ -69,156 +96,187 @@ class _EditProfileFormState extends State<EditProfileForm> {
         photo: _photoFile,
       );
       
-      print('💾 SAVE PROFILE - Profil mis à jour avec succès');
+      print('✅ EditProfileForm: Profil mis à jour avec succès');
       print('   Nouvelle photo: ${updated.photoProfil}');
+      print('   Nouveau prénom: ${updated.prenom}');
+      print('   Nouveau nom: ${updated.nom}');
       
       widget.onSaved(updated);
+      
+      // Afficher un message de succès
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Profil mis à jour avec succès'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     } catch (e) {
-      print('❌ SAVE PROFILE - Erreur: $e');
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Erreur : $e')));
+      print('❌ EditProfileForm: Erreur lors de la sauvegarde: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors de la sauvegarde: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
     } finally {
       setState(() => _isSaving = false);
     }
   }
 
-  InputDecoration _inputDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: GoogleFonts.poppins(color: Colors.grey[700]),
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.grey.shade300),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.grey.shade300),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          // Photo de profil
+          GestureDetector(
+            onTap: _pickPhoto,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceColor,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppTheme.borderColor,
+                  width: 2,
+                ),
+              ),
+              child: CircleAvatar(
+                radius: 50,
+                backgroundColor: AppTheme.surfaceColor,
+                backgroundImage: _buildProfileImage(),
+                child: _buildProfileFallback(),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: _pickPhoto,
+            icon: const Icon(Icons.camera_alt, size: 16),
+            label: const Text(
+              'Changer la photo',
+              style: TextStyle(
+                color: AppTheme.accentColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Prénom
+          TextFormField(
+            controller: _prenomCtl,
+            decoration: const InputDecoration(
+              labelText: 'Prénom',
+              border: OutlineInputBorder(),
+            ),
+            validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
+          ),
+          const SizedBox(height: 16),
+
+          // Nom
+          TextFormField(
+            controller: _nomCtl,
+            decoration: const InputDecoration(
+              labelText: 'Nom',
+              border: OutlineInputBorder(),
+            ),
+            validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
+          ),
+          const SizedBox(height: 16),
+
+          // Username
+          TextFormField(
+            controller: _usernameCtl,
+            decoration: const InputDecoration(
+              labelText: 'Nom d\'utilisateur',
+              border: OutlineInputBorder(),
+            ),
+            validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
+          ),
+          const SizedBox(height: 16),
+
+          // Biographie
+          TextFormField(
+            controller: _bioCtl,
+            maxLines: 3,
+            decoration: const InputDecoration(
+              labelText: 'Biographie',
+              border: OutlineInputBorder(),
+              hintText: 'Parlez-nous de vous...',
+            ),
+          ),
+          const SizedBox(height: 32),
+
+          // Bouton Enregistrer
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: _isSaving
+                ? const Center(child: CircularProgressIndicator())
+                : ElevatedButton(
+                    onPressed: _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryColor,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Enregistrer',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+          ),
+        ],
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 3,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      clipBehavior: Clip.hardEdge,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              // Photo & bouton
-              GestureDetector(
-                onTap: _pickPhoto,
-                child: Container(
-                  padding: const EdgeInsets.all(3),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    shape: BoxShape.circle,
-                  ),
-                  child: CircleAvatar(
-                    radius: 50,
-                    backgroundImage: _photoFile != null
-                        ? FileImage(_photoFile!)
-                        : (widget.user.photoProfil != null && widget.user.photoProfil!.isNotEmpty
-                            ? NetworkImage(widget.user.photoProfil!)
-                            : null),
-                    backgroundColor: (_photoFile == null && (widget.user.photoProfil == null || widget.user.photoProfil!.isEmpty))
-                        ? Colors.grey.shade300
-                        : null,
-                    child: (_photoFile == null && (widget.user.photoProfil == null || widget.user.photoProfil!.isEmpty))
-                        ? Text(
-                            '${widget.user.prenom[0]}${widget.user.nom[0]}'.toUpperCase(),
-                            style: GoogleFonts.poppins(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey.shade700,
-                            ),
-                          )
-                        : null,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: _pickPhoto,
-                child: Text('Changer la photo', style: GoogleFonts.poppins(color: const Color(0xFF2196F3))),
-              ),
-              const SizedBox(height: 24),
+  ImageProvider? _buildProfileImage() {
+    try {
+      // Priorité 1: Photo nouvellement sélectionnée
+      if (_photoFile != null) {
+        print('🖼️ Affichage de la photo sélectionnée: ${_photoFile!.name}');
+        return FileImage(File(_photoFile!.path));
+      }
+      
+      // Priorité 2: Photo existante depuis le serveur
+      if (widget.user.photoProfil != null && widget.user.photoProfil!.isNotEmpty) {
+        print('🖼️ Affichage de la photo existante: ${widget.user.photoProfil}');
+        return NetworkImage(widget.user.photoProfil!);
+      }
+      
+      print('🖼️ Aucune photo disponible, affichage des initiales');
+      return null;
+    } catch (e) {
+      print('❌ Erreur lors de la construction de l\'image: $e');
+      return null;
+    }
+  }
 
-              // Prénom
-              TextFormField(
-                controller: _prenomCtl,
-                decoration: _inputDecoration('Prénom'),
-                validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
-              ),
-              const SizedBox(height: 16),
-
-              // Nom
-              TextFormField(
-                controller: _nomCtl,
-                decoration: _inputDecoration('Nom'),
-                validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
-              ),
-              const SizedBox(height: 16),
-
-              // Username
-              TextFormField(
-                controller: _usernameCtl,
-                decoration: _inputDecoration('Nom d’utilisateur'),
-                validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
-              ),
-              const SizedBox(height: 16),
-
-              // Biographie
-              TextFormField(
-                controller: _bioCtl,
-                maxLines: 3,
-                decoration: _inputDecoration('Biographie'),
-              ),
-              const SizedBox(height: 32),
-
-              // Bouton Enregistrer
-              SizedBox(
-                width: double.infinity,
-                child: _isSaving
-                    ? const SizedBox(
-                  height: 40,
-                  child: Center(child: CircularProgressIndicator()),
-                )
-                    : ElevatedButton(
-                  onPressed: _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4CAF50),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    'Enregistrer',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+  Widget? _buildProfileFallback() {
+    // Afficher les initiales seulement si aucune photo n'est disponible
+    if (_photoFile == null && 
+        (widget.user.photoProfil == null || widget.user.photoProfil!.isEmpty)) {
+      return Text(
+        '${widget.user.prenom[0]}${widget.user.nom[0]}'.toUpperCase(),
+        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+          color: AppTheme.subTextColor,
+          fontWeight: FontWeight.bold,
         ),
-      ),
-    );
+      );
+    }
+    return null;
   }
 }

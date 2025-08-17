@@ -20,9 +20,13 @@ export default function UserCard({ user }: UserCardProps) {
     try {
       await envoyerDemande(user.username);
       setSent(true);
-      toast.success("Demande envoyée");
-    } catch {
-      toast.error("Erreur lors de l'envoi");
+      toast.success("Votre demande de mentorat a bien été envoyée.");
+    } catch (error: any) {
+      if (error?.response?.status === 500) {
+        toast.error("Vous avez déjà fait une demande à cet alumni.");
+      } else {
+        toast.error("Erreur lors de l'envoi de la demande de mentorat.");
+      }
     }
   };
 

@@ -43,8 +43,8 @@ class EventModel {
     );
   }
 
-  /// Convertit l’EventModel en JSON pour l’envoi à l’API.
-  /// N’inclut que les champs modifiables/corrects pour POST/PUT/PATCH.
+  /// Convertit l'EventModel en JSON pour l'envoi à l'API.
+  /// N'inclut que les champs modifiables/corrects pour POST/PUT/PATCH.
   Map<String, dynamic> toJson() {
     return {
       'titre': titre,
@@ -54,5 +54,32 @@ class EventModel {
       // NB : date_debut_affiche, date_fin_affiche et createur ne doivent pas être
       //      envoyés, ce sont des champs en lecture seule.
     };
+  }
+
+  /// Crée une copie de l'EventModel avec des champs modifiés
+  EventModel copyWith({
+    int? id,
+    String? titre,
+    String? description,
+    DateTime? dateDebut,
+    DateTime? dateFin,
+    String? image,
+    bool? valide,
+    String? dateDebutAffiche,
+    String? dateFinAffiche,
+    String? createur,
+  }) {
+    return EventModel(
+      id: id ?? this.id,
+      titre: titre ?? this.titre,
+      description: description ?? this.description,
+      dateDebut: dateDebut ?? this.dateDebut,
+      dateFin: dateFin ?? this.dateFin,
+      image: image ?? this.image,
+      valide: valide ?? this.valide,
+      dateDebutAffiche: dateDebutAffiche ?? this.dateDebutAffiche,
+      dateFinAffiche: dateFinAffiche ?? this.dateFinAffiche,
+      createur: createur ?? this.createur,
+    );
   }
 }

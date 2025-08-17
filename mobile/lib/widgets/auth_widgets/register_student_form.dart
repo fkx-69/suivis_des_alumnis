@@ -1,7 +1,4 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../../models/filiere_model.dart';
 import '../../../models/student_model.dart';
 import 'package:memoire/services/auth_service.dart';
@@ -41,7 +38,7 @@ class _RegisterStudentFormState extends State<RegisterStudentForm> {
   bool _isLoading = false;
   String? _errorMessage;
   int _currentStep = 0;
-  File? _photoFile;
+
 
   @override
   void initState() {
@@ -58,23 +55,43 @@ class _RegisterStudentFormState extends State<RegisterStudentForm> {
   }
 
   Future<void> _loadFilieres() async {
+    print('🔄 RegisterStudentForm: Chargement des filières...');
     try {
       final filieres = await FiliereService().fetchFilieres();
+      print('✅ RegisterStudentForm: ${filieres.length} filières chargées');
       setState(() {
         _filieres = filieres;
         _selectedFiliere = filieres.isNotEmpty ? filieres.first : null;
+        _errorMessage = null; // Effacer les erreurs précédentes
       });
     } catch (e) {
+      print('❌ RegisterStudentForm: Erreur lors du chargement des filières: $e');
       setState(() {
-        _errorMessage = 'Impossible de charger les filières';
+        _errorMessage = 'Erreur de chargement des filières: ${e.toString().replaceFirst('Exception: ', '')}';
       });
+      
+      // Afficher un SnackBar pour informer l'utilisateur
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppTheme.errorColor,
+            content: Text(
+              'Impossible de charger les filières. Vérifiez votre connexion au serveur.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.white,
+              ),
+            ),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        );
+      }
     }
   }
 
-  Future<void> _pickPhoto() async {
-    final img = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (img != null) setState(() => _photoFile = File(img.path));
-  }
+
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate() || _selectedFiliere == null) return;
@@ -92,7 +109,6 @@ class _RegisterStudentFormState extends State<RegisterStudentForm> {
         filiere: _selectedFiliere!.id,
         niveauEtude: _selectedNiveau,
         anneeEntree: _selectedAnnee!,
-        photo: _photoFile, // à adapter côté backend
       );
       await _authService.registerEtudiant(student);
       await _authService.login(student.email, student.password);
@@ -191,28 +207,9 @@ class _RegisterStudentFormState extends State<RegisterStudentForm> {
     return Column(
       children: [
         // Photo de profil
-        GestureDetector(
-          onTap: _pickPhoto,
-          child: Container(
-            padding: const EdgeInsets.all(3),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-              shape: BoxShape.circle,
-            ),
-            child: CircleAvatar(
-              radius: 40,
-              backgroundImage: _photoFile != null ? FileImage(_photoFile!) : null,
-              child: _photoFile == null
-                  ? Icon(Icons.camera_alt, size: 32, color: Colors.grey.shade500)
-                  : null,
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextButton(
-          onPressed: _pickPhoto,
-          child: Text('Choisir une photo', style: GoogleFonts.poppins(color: const Color(0xFF2196F3))),
-        ),
+
+
+
         const SizedBox(height: 20),
         // Nom
         TextFormField(

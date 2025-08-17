@@ -24,11 +24,27 @@ class HomeService {
       if (token != null) 'Authorization': 'Bearer $token',
     };
 
+    print("🔍 HomeService: Récupération des suggestions...");
+    print("🔍 HomeService: URL: ${ApiConstants.suggestions}");
+    print("🔍 HomeService: Token présent: ${token != null}");
+
     final response = await client.get(Uri.parse(ApiConstants.suggestions), headers: headers);
+    print("🔍 HomeService: Status code: ${response.statusCode}");
+    
     if (response.statusCode == 200) {
       final List data = json.decode(response.body);
+      print("🔍 HomeService: ${data.length} suggestions récupérées");
+      
+      // Debug des données reçues
+      for (int i = 0; i < data.length; i++) {
+        final userData = data[i];
+        print("🔍 HomeService: Utilisateur $i - Username: ${userData['username']}");
+        print("🔍 HomeService: Utilisateur $i - Photo: ${userData['photo_profil']}");
+      }
+      
       return data.map((e) => UserModel.fromJson(e)).toList();
     } else {
+      print("❌ HomeService: Erreur ${response.statusCode} - ${response.body}");
       throw Exception('Erreur lors du chargement des suggestions');
     }
   }
